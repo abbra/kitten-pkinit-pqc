@@ -5,8 +5,8 @@ docname: draft-bokovoy-kitten-pkinit-pqc-latest
 category: std
 submissiontype: IETF
 ipr: trust200902
-area: Security
-workgroup: Common Authentication Technology Next Generation (kitten)
+area: "Security"
+workgroup: "Common Authentication Technology Next Generation"
 keyword:
   - Kerberos
   - PKINIT
