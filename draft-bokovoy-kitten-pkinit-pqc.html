@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>PKINIT Extensions for Post-Quantum Cryptography</title>
+<meta content="Alexander Bokovoy" name="author">
+<meta content="Julien Rische" name="author">
+<meta content="Nico Williams" name="author">
+<meta content="
+       This document specifies extensions to the Kerberos PKINIT
+pre-authentication mechanism     to support
+post-quantum key establishment using the Module-Lattice-Based
+Key-Encapsulation Mechanism (ML-KEM) algorithms defined in  . 
+       The extensions define a new  kemInfo  arm in  PA-PK-AS-REP , a
+ KDCKEMInfo  structure signed by the KDC, HKDF-SHA-512-based AS reply
+key derivation, downgrade-prevention obligations for both client and KDC,
+and a  PAChecksum2  extension providing checksum algorithm agility in
+ PKAuthenticator .  The protocol is designed to be algorithm-agnostic:
+while ML-KEM is the initial mandatory algorithm, the same structure
+accommodates composite KEM algorithms and future KEM standards. 
+    " name="description">
+<meta content="xml2rfc 3.33.0" name="generator">
+<meta content="Kerberos" name="keyword">
+<meta content="PKINIT" name="keyword">
+<meta content="post-quantum" name="keyword">
+<meta content="ML-KEM" name="keyword">
+<meta content="ML-DSA" name="keyword">
+<meta content="KEM" name="keyword">
+<meta content="draft-bokovoy-kitten-pkinit-pqc-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.33.0
+    Python 3.12.13
+    ConfigArgParse 1.7
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.0.2
+    platformdirs 4.9.6
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.32.5
+    wcwidth 0.6.0
+-->
+<link href="draft-bokovoy-kitten-pkinit-pqc.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+/* font-family isn't space-separated, but =~ will have to do */
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+    }
+  }
+  &.olPercent > dt {
+    float: none;
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+}
+dl:not(.dlNewline) > dt {
+  float: left;
+  margin-right: 2ch;
+  min-width: 8ch;
+}
+dl > dd {
+  margin-bottom: .8em;
+  margin-left: var(--indent) !important; /* stupid element overrides */
+  min-height: 2ex;
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href].selfRef, .iref + a[href].internal {
+  color: var(--text-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+}
+@media not print {
+  :hover > a.pilcrow, a.pilcrow:focus {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+/* Comments */
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc nav {
+    font-family: var(--font-title);
+    font-weight: 360;
+    & > ul { margin-bottom: 2em; }
+    & ul {
+      margin: 0 0 0 4px;
+      & :is(p, li) {
+        margin: 2px 0;
+      }
+    }
+  }
+  #toc a.toplink {
+    float: right;
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+    &::before { /* css hamburger */
+      float: right;
+      position: relative;
+      width: 1em;
+      height: 1px;
+      left: -164px;
+      margin: 8px 0 0 0;
+      background: white none repeat scroll 0 0;
+      box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+      content: "";
+    }
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active {
+    opacity: 1;
+    & nav { display: block; }
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:is(:link, :focus, :hover),
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin: 2px 0.5em 0;
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+  #toc a.toplink {
+    margin: 8px 0.5em 0;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
+}
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
+}
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
+}
+svg :is([fill="white"], [fill^="#fff"]) {
+  fill: var(--background-color);
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">PKINIT-PQC</td>
+<td class="right">May 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Bokovoy, et al.</td>
+<td class="center">Expires 2 November 2026</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Common Authentication Technology Next Generation (kitten)</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-bokovoy-kitten-pkinit-pqc-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-05-01" class="published">1 May 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2026-11-02">2 November 2026</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">A. Bokovoy</div>
+<div class="org">Red Hat, Inc.</div>
+</div>
+<div class="author">
+      <div class="author-name">J. Rische</div>
+<div class="org">Red Hat, Inc.</div>
+</div>
+<div class="author">
+      <div class="author-name">N. Williams</div>
+<div class="org">Cryptonector</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">PKINIT Extensions for Post-Quantum Cryptography</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document specifies extensions to the Kerberos PKINIT
+pre-authentication mechanism <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> to support
+post-quantum key establishment using the Module-Lattice-Based
+Key-Encapsulation Mechanism (ML-KEM) algorithms defined in <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">The extensions define a new <code>kemInfo</code> arm in <code>PA-PK-AS-REP</code>, a
+<code>KDCKEMInfo</code> structure signed by the KDC, HKDF-SHA-512-based AS reply
+key derivation, downgrade-prevention obligations for both client and KDC,
+and a <code>PAChecksum2</code> extension providing checksum algorithm agility in
+<code>PKAuthenticator</code>.  The protocol is designed to be algorithm-agnostic:
+while ML-KEM is the initial mandatory algorithm, the same structure
+accommodates composite KEM algorithms and future KEM standards.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 2 November 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-requirements-language" class="internal xref">Requirements Language</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-protocol-overview" class="internal xref">Protocol Overview</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-algorithm-identifier-encodi" class="internal xref">Algorithm Identifier Encoding</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-new-asn1-types" class="internal xref">New ASN.1 Types</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-extended-pa-pk-as-rep" class="internal xref">Extended <code>PA-PK-AS-REP</code></a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-kemrepinfo" class="internal xref"><code>KEMRepInfo</code></a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-kdckeminfo" class="internal xref"><code>KDCKEMInfo</code></a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-extended-authpack" class="internal xref">Extended <code>AuthPack</code></a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.5">
+                <p id="section-toc.1-1.5.2.5.1"><a href="#section-5.5" class="auto internal xref">5.5</a>.  <a href="#name-pkinitkemsupppubinfo" class="internal xref"><code>PkinitKEMSuppPubInfo</code></a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.6">
+                <p id="section-toc.1-1.5.2.6.1"><a href="#section-5.6" class="auto internal xref">5.6</a>.  <a href="#name-pachecksum2-extension" class="internal xref"><code>PAChecksum2</code> Extension</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-mode-selection" class="internal xref">Mode Selection</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-kem-path-operation" class="internal xref">KEM Path Operation</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-client-request-construction" class="internal xref">Client Request Construction</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-kdc-response-construction" class="internal xref">KDC Response Construction</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-client-response-processing" class="internal xref">Client Response Processing</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.4">
+                <p id="section-toc.1-1.7.2.4.1"><a href="#section-7.4" class="auto internal xref">7.4</a>.  <a href="#name-kdc-certificate-validation" class="internal xref">KDC Certificate Validation</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-as-reply-key-derivation" class="internal xref">AS Reply Key Derivation</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-hkdf-oids" class="internal xref">HKDF OIDs</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-derivation" class="internal xref">Derivation</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-error-handling" class="internal xref">Error Handling</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="auto internal xref">9.1</a>.  <a href="#name-kem-path-errors" class="internal xref">KEM Path Errors</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="auto internal xref">9.2</a>.  <a href="#name-dh-path-errors" class="internal xref">DH Path Errors</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-downgrade-prevention" class="internal xref">Downgrade Prevention</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-kdc-obligation" class="internal xref">KDC Obligation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="auto internal xref">10.2</a>.  <a href="#name-client-obligation" class="internal xref">Client Obligation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.3">
+                <p id="section-toc.1-1.10.2.3.1"><a href="#section-10.3" class="auto internal xref">10.3</a>.  <a href="#name-old-kdc-interoperability" class="internal xref">Old KDC Interoperability</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-algorithm-requirements" class="internal xref">Algorithm Requirements</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
+                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-kem-algorithms" class="internal xref">KEM Algorithms</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1.2.1">
+                    <p id="section-toc.1-1.11.2.1.2.1.1"><a href="#section-11.1.1" class="auto internal xref">11.1.1</a>.  <a href="#name-pure-ml-kem-algorithms" class="internal xref">Pure ML-KEM Algorithms</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1.2.2">
+                    <p id="section-toc.1-1.11.2.1.2.2.1"><a href="#section-11.1.2" class="auto internal xref">11.1.2</a>.  <a href="#name-composite-ml-kem-algorithms" class="internal xref">Composite ML-KEM Algorithms</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
+                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-client-algorithm-selection" class="internal xref">Client Algorithm Selection</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.3">
+                <p id="section-toc.1-1.11.2.3.1"><a href="#section-11.3" class="auto internal xref">11.3</a>.  <a href="#name-kdc-minimum-security-level" class="internal xref">KDC Minimum Security Level</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.4">
+                <p id="section-toc.1-1.11.2.4.1"><a href="#section-11.4" class="auto internal xref">11.4</a>.  <a href="#name-kdc-signing-algorithm" class="internal xref">KDC Signing Algorithm</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.5">
+                <p id="section-toc.1-1.11.2.5.1"><a href="#section-11.5" class="auto internal xref">11.5</a>.  <a href="#name-composite-algorithm-orderin" class="internal xref">Composite Algorithm Ordering in <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code></a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-rsa-path-deprecation" class="internal xref">RSA Path Deprecation</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-message-size-considerations" class="internal xref">Message Size Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#section-14" class="auto internal xref">14</a>. <a href="#name-ml-kem-specific-considerati" class="internal xref">ML-KEM-Specific Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.1">
+                <p id="section-toc.1-1.14.2.1.1"><a href="#section-14.1" class="auto internal xref">14.1</a>.  <a href="#name-key-and-ciphertext-sizes" class="internal xref">Key and Ciphertext Sizes</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.2">
+                <p id="section-toc.1-1.14.2.2.1"><a href="#section-14.2" class="auto internal xref">14.2</a>.  <a href="#name-csprng-requirement" class="internal xref">CSPRNG Requirement</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.3">
+                <p id="section-toc.1-1.14.2.3.1"><a href="#section-14.3" class="auto internal xref">14.3</a>.  <a href="#name-encapsulation-and-decapsula" class="internal xref">Encapsulation and Decapsulation</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#section-15" class="auto internal xref">15</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.1">
+                <p id="section-toc.1-1.15.2.1.1"><a href="#section-15.1" class="auto internal xref">15.1</a>.  <a href="#name-quantum-resistance" class="internal xref">Quantum Resistance</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.2">
+                <p id="section-toc.1-1.15.2.2.1"><a href="#section-15.2" class="auto internal xref">15.2</a>.  <a href="#name-ephemeral-key-hygiene" class="internal xref">Ephemeral Key Hygiene</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.3">
+                <p id="section-toc.1-1.15.2.3.1"><a href="#section-15.3" class="auto internal xref">15.3</a>.  <a href="#name-authenticated-kdf-inputs" class="internal xref">Authenticated KDF Inputs</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.4">
+                <p id="section-toc.1-1.15.2.4.1"><a href="#section-15.4" class="auto internal xref">15.4</a>.  <a href="#name-unauthenticated-error-messa" class="internal xref">Unauthenticated Error Messages</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.5">
+                <p id="section-toc.1-1.15.2.5.1"><a href="#section-15.5" class="auto internal xref">15.5</a>.  <a href="#name-algorithm-downgrade-prevent" class="internal xref">Algorithm Downgrade Prevention</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.6">
+                <p id="section-toc.1-1.15.2.6.1"><a href="#section-15.6" class="auto internal xref">15.6</a>.  <a href="#name-pachecksum2-and-replay-prev" class="internal xref"><code>paChecksum2</code> and Replay Prevention</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.7">
+                <p id="section-toc.1-1.15.2.7.1"><a href="#section-15.7" class="auto internal xref">15.7</a>.  <a href="#name-ciphertext-length-validatio" class="internal xref">Ciphertext Length Validation</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16">
+            <p id="section-toc.1-1.16.1"><a href="#section-16" class="auto internal xref">16</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.1">
+                <p id="section-toc.1-1.16.2.1.1"><a href="#section-16.1" class="auto internal xref">16.1</a>.  <a href="#name-new-kerberos-error-code" class="internal xref">New Kerberos Error Code</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.2">
+                <p id="section-toc.1-1.16.2.2.1"><a href="#section-16.2" class="auto internal xref">16.2</a>.  <a href="#name-new-pkinit-oid" class="internal xref">New PKINIT OID</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.3">
+                <p id="section-toc.1-1.16.2.3.1"><a href="#section-16.3" class="auto internal xref">16.3</a>.  <a href="#name-update-to-kerberos-pre-auth" class="internal xref">Update to Kerberos Pre-Authentication Data Types Registry</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17">
+            <p id="section-toc.1-1.17.1"><a href="#section-17" class="auto internal xref">17</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.1">
+                <p id="section-toc.1-1.17.2.1.1"><a href="#section-17.1" class="auto internal xref">17.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.2">
+                <p id="section-toc.1-1.17.2.2.1"><a href="#section-17.2" class="auto internal xref">17.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18">
+            <p id="section-toc.1-1.18.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgements" class="internal xref">Acknowledgements</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.19">
+            <p id="section-toc.1-1.19.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">The Kerberos PKINIT pre-authentication mechanism <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> relies on
+public-key cryptography for initial authentication.  The Diffie-Hellman
+and RSA paths it defines are vulnerable to a cryptographically relevant
+quantum computer.  <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> adds Elliptic Curve Diffie-Hellman (ECDH)
+support but does not address the quantum threat.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">This document defines a new KEM path in PKINIT that uses Key
+Encapsulation Mechanism (KEM) algorithms, in particular the
+Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>.
+Rather than agreeing on a shared secret via a DH exchange, the client
+generates an ephemeral KEM key pair and sends the public key to the KDC
+inside a CMS-signed <code>AuthPack</code>.  The KDC encapsulates against the
+client's ephemeral public key, signs the resulting ciphertext and
+algorithm selection inside a new <code>KDCKEMInfo</code> structure, and returns the
+signed blob.  Both parties independently derive the AS reply key from the
+shared secret using HKDF (<span>[<a href="#RFC5869" class="cite xref">RFC5869</a>]</span>).<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">The design preserves the security properties of the RFC 4556 DH path
+(the client's public key is authenticated by the client's signing
+certificate; the KDC's response is authenticated by the KDC's signing
+certificate) while providing post-quantum forward secrecy through ML-KEM.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This document also defines <code>PAChecksum2</code>, an extension to
+<code>PKAuthenticator</code> that provides checksum algorithm agility, replacing the
+SHA-1-only <code>paChecksum</code> field of RFC 4556 for new deployments.<a href="#section-1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="requirements-language">
+<section id="section-2">
+      <h2 id="name-requirements-language">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-requirements-language" class="section-name selfRef">Requirements Language</a>
+      </h2>
+<p id="section-2-1">The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED",
+"MAY", and "OPTIONAL" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="protocol-overview">
+<section id="section-3">
+      <h2 id="name-protocol-overview">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-protocol-overview" class="section-name selfRef">Protocol Overview</a>
+      </h2>
+<p id="section-3-1">The KEM path is activated when <code>AuthPack.clientPublicValue</code> contains an
+ML-KEM or composite KEM OID.  The exchange proceeds as follows:<a href="#section-3-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3-2">
+<li id="section-3-2.1">
+          <p id="section-3-2.1.1">The client generates an ephemeral KEM key pair, places the public key
+in <code>AuthPack.clientPublicValue</code>, and sends a signed <code>AuthPack</code> in
+<code>PA-PK-AS-REQ</code>.<a href="#section-3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-3-2.2">
+          <p id="section-3-2.2.1">The KDC verifies the <code>AuthPack</code> signature, calls
+<code>KEM.Encapsulate(pk_e)</code> to obtain a shared secret <code>ss</code> and ciphertext
+<code>kemct</code>, signs them in a <code>KDCKEMInfo</code> structure, and returns
+<code>PA-PK-AS-REP.kemInfo</code>.<a href="#section-3-2.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li id="section-3-2.3">
+          <p id="section-3-2.3.1">The client verifies the KDC signature, decapsulates to recover <code>ss</code>,
+and both parties derive the AS reply key using HKDF-SHA-512 over
+<code>PkinitKEMSuppPubInfo</code>.<a href="#section-3-2.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ol>
+<p id="section-3-3">No DH exchange takes place.  The shared secret is established entirely
+through one-sided encapsulation; freshness is provided by the per-request
+ephemeral key pair and the echoed nonce.<a href="#section-3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="alg-id-encoding">
+<section id="section-4">
+      <h2 id="name-algorithm-identifier-encodi">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-algorithm-identifier-encodi" class="section-name selfRef">Algorithm Identifier Encoding</a>
+      </h2>
+<p id="section-4-1">The <code>parameters</code> field MUST be absent from all algorithm identifiers used
+in this specification.  The source of this requirement differs by
+algorithm family:<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">(a)  ML-KEM and ML-DSA identifiers (<span>[<a href="#RFC9935" class="cite xref">RFC9935</a>]</span>, <span>[<a href="#RFC9881" class="cite xref">RFC9881</a>]</span>): the
+     algorithm parameter set is fully encoded in the OID; no parameters
+     field is defined.  Applies to:<a href="#section-4-2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-3">
+<pre>
+ *  `clientPublicValue.algorithm` when carrying an ML-KEM ephemeral key
+ *  `KDCKEMInfo.kemAlgorithm`
+</pre><a href="#section-4-3" class="pilcrow">¶</a>
+</div>
+<p id="section-4-4">(b)  HKDF identifiers (<span>[<a href="#RFC8619" class="cite xref">RFC8619</a>]</span> Section 3): the OID
+     <code>id-alg-hkdf-with-sha512</code> has absent parameters by definition.
+     Only SHA-512 is defined for the KEM path (<a href="#sec-kdf-oids" class="auto internal xref">Section 8.1</a>).
+     Applies to:<a href="#section-4-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-4-5">
+<pre>
+ *  `KDCKEMInfo.kdfAlgorithm`
+ *  `AuthPack.supportedKDFs` entries
+</pre><a href="#section-4-5" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="asn1-types">
+<section id="section-5">
+      <h2 id="name-new-asn1-types">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-new-asn1-types" class="section-name selfRef">New ASN.1 Types</a>
+      </h2>
+<div id="pa-pk-as-rep">
+<section id="section-5.1">
+        <h3 id="name-extended-pa-pk-as-rep">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-extended-pa-pk-as-rep" class="section-name selfRef">Extended <code>PA-PK-AS-REP</code></a>
+        </h3>
+<p id="section-5.1-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> uses an <code>IMPLICIT TAGS</code> module environment; both existing
+arms are <code>IMPLICIT OCTET STRING</code> carrying DER-encoded CMS blobs.  The
+new arm follows the same convention.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<div class="lang-asn1 sourcecode" id="section-5.1-2">
+<pre>
+-- KRB5PkinitTypes DEFINITIONS IMPLICIT TAGS ::= BEGIN
+PA-PK-AS-REP ::= CHOICE {
+    dhSignedData    [0] IMPLICIT OCTET STRING,
+        -- RFC 4556: DH/ECDH path
+        --   content: CMS SignedData(KDCDHKeyInfo)
+    encKeyPack      [1] IMPLICIT OCTET STRING,
+        -- RFC 4556: RSA path (deprecated)
+        --   content: CMS EnvelopedData(ReplyKeyPack)
+    kemInfo         [2] IMPLICIT OCTET STRING,
+        -- NEW: KEM path (this specification)
+        --   content: DER(KEMRepInfo)
+    ...
+}
+</pre><a href="#section-5.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-5.1-3">The field name <code>dhSignedData</code> matches RFC 4556's actual ASN.1 module;
+the informal name <code>dhInfo</code> used in some descriptions refers to the same
+arm.  All three arms are context-tagged DER blobs; receivers identify the
+chosen arm by the context tag alone.<a href="#section-5.1-3" class="pilcrow">¶</a></p>
+<p id="section-5.1-4">Tag <code>[2]</code> MUST be verified against the IANA Kerberos PKINIT Parameters
+registry before publication to confirm no other extension has claimed it.<a href="#section-5.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="kemrepinfo">
+<section id="section-5.2">
+        <h3 id="name-kemrepinfo">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-kemrepinfo" class="section-name selfRef"><code>KEMRepInfo</code></a>
+        </h3>
+<div class="lang-asn1 sourcecode" id="section-5.2-1">
+<pre>
+-- id-pkinit OID arc (RFC 4556):
+-- id-pkinit OBJECT IDENTIFIER ::= { 1 3 6 1 5 2 3 }
+
+id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit TBD-IANA }
+
+KEMRepInfo ::= SEQUENCE {
+    kemSignedData       [0] IMPLICIT OCTET STRING,
+        -- CMS SignedData:
+        --   eContentType = id-pkinit-KEMKeyData
+        --   eContent     = DER(KDCKEMInfo)   [MUST be present]
+        --   signerInfos  = KDC signature over KDCKEMInfo
+    ...
+}
+</pre><a href="#section-5.2-1" class="pilcrow">¶</a>
+</div>
+<p id="section-5.2-2"><code>eContent</code> in <code>kemSignedData</code> MUST be present.  Detached signatures are
+prohibited.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="kdckeminfo">
+<section id="section-5.3">
+        <h3 id="name-kdckeminfo">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-kdckeminfo" class="section-name selfRef"><code>KDCKEMInfo</code></a>
+        </h3>
+<div class="lang-asn1 sourcecode" id="section-5.3-1">
+<pre>
+KDCKEMInfo ::= SEQUENCE {
+    kemAlgorithm    [0] AlgorithmIdentifier,
+        -- KEM algorithm used. MUST match clientPublicValue.algorithm OID.
+        -- Authenticated by KDC signature.
+    kemct           [1] OCTET STRING,
+        -- KEM ciphertext produced by KEM.Encapsulate(client_ephemeral_pk).
+        -- Algorithm-specific sizes: see Section 10.1 for ML-KEM.
+        -- Authenticated by KDC signature.
+    kdfAlgorithm    [2] AlgorithmIdentifier,
+        -- HKDF variant for AS reply key derivation, selected from
+        -- supportedKDFs. Authenticated by KDC signature (fixes the
+        -- RFC 8636 unauthenticated KDF selection flaw).
+    nonce           [3] INTEGER (0..4294967295) OPTIONAL,
+        -- When present, MUST equal pkAuthenticator.nonce from the
+        -- client's AS-REQ. Implementations SHOULD include this field.
+        -- Future KEM variants and hybrid DH+KEM modes MAY omit it if
+        -- alternative freshness mechanisms are defined by their
+        -- respective specifications.
+    serverNonce     [4] OCTET STRING OPTIONAL,
+        -- Reserved for future hybrid DH+KEM modes. Analogous to the
+        -- RFC 4556 serverDHNonce; allows KDC-side caching to avoid
+        -- per-request key generation. MUST be absent in pure ML-KEM
+        -- exchanges defined by this specification.
+    ...
+}
+</pre><a href="#section-5.3-1" class="pilcrow">¶</a>
+</div>
+<p id="section-5.3-2"><code>kemAlgorithm</code> is included even though the KEM algorithm is already
+conveyed in the client's <code>clientPublicValue.algorithm</code>.  Placing it
+inside the KDC-signed structure serves two purposes:<a href="#section-5.3-2" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-5.3-3">
+<li id="section-5.3-3.1">
+            <p id="section-5.3-3.1.1">It makes <code>KDCKEMInfo</code> self-describing — a receiver can parse or log
+the structure without needing external context from the AS-REQ.<a href="#section-5.3-3.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-5.3-3.2">
+            <p id="section-5.3-3.2.1">It gives the client explicit, signed KDC confirmation that the KDC
+recognised and acted on the correct algorithm, rather than relying on
+implicit inference from <code>kemct</code> length alone.<a href="#section-5.3-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-5.3-4">The client verifies this echo in <a href="#sec-client-processing" class="auto internal xref">Section 7.3</a> step 3.<a href="#section-5.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authpack">
+<section id="section-5.4">
+        <h3 id="name-extended-authpack">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-extended-authpack" class="section-name selfRef">Extended <code>AuthPack</code></a>
+        </h3>
+<div class="lang-asn1 sourcecode" id="section-5.4-1">
+<pre>
+AuthPack ::= SEQUENCE {
+    pkAuthenticator     [0] PKAuthenticator,
+    clientPublicValue   [1] SubjectPublicKeyInfo OPTIONAL,
+        -- DH/ECDH path: ephemeral DH/ECDH public key (RFC 4556).
+        -- KEM path:     ephemeral ML-KEM public key, encoded per
+        --               RFC 9935.
+        -- RSA path:     MUST be absent.
+    supportedCMSTypes   [2] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
+    clientDHNonce       [3] DHNonce OPTIONAL,
+        -- Pure KEM path (this specification): MUST be absent when
+        -- clientPublicValue contains a KEM algorithm OID (see
+        -- Section 5). Future hybrid DH+KEM specifications MAY define
+        -- use of this field alongside KEM OIDs.
+    ...,
+    supportedKDFs       [4] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
+        -- KDFAlgorithmId is AlgorithmIdentifier; no separate type is
+        -- defined.
+        -- KEM path: HKDF algorithm OIDs (Section 6.1). Only
+        --   HKDF-SHA512 is defined for the KEM path; this field
+        --   SHOULD contain id-alg-hkdf-with-sha512. If absent when a
+        --   KEM OID is in clientPublicValue, HKDF-SHA512 is assumed.
+        -- DH/ECDH path: DH-KDF algorithm OIDs (RFC 8636).
+    ...
+}
+</pre><a href="#section-5.4-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="supppubinfo">
+<section id="section-5.5">
+        <h3 id="name-pkinitkemsupppubinfo">
+<a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-pkinitkemsupppubinfo" class="section-name selfRef"><code>PkinitKEMSuppPubInfo</code></a>
+        </h3>
+<div class="lang-asn1 sourcecode" id="section-5.5-1">
+<pre>
+-- Types imported from RFC 4120 (KerberosV5 module): Int32
+
+PkinitKEMSuppPubInfo ::= SEQUENCE {
+    enctype         [0] Int32,
+        -- Kerberos enctype of the AS reply key.
+    as-REQ          [1] OCTET STRING,
+        -- DER(AS-REQ).
+    kemSignedData   [2] OCTET STRING,
+        -- DER(KEMRepInfo.kemSignedData): the KDC-signed KDCKEMInfo.
+    kemct           [3] OCTET STRING,
+        -- KEM ciphertext from KDCKEMInfo.kemct.
+        -- Also present inside KDCKEMInfo in the kemSignedData field
+        -- above, but included here for direct binding without requiring
+        -- the receiver to parse the nested structure.
+        -- MUST equal KDCKEMInfo.kemct.
+    kdfAlgorithm    [4] AlgorithmIdentifier,
+        -- Taken from KDCKEMInfo.kdfAlgorithm.
+    ...
+}
+</pre><a href="#section-5.5-1" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="pachecksum2">
+<section id="section-5.6">
+        <h3 id="name-pachecksum2-extension">
+<a href="#section-5.6" class="section-number selfRef">5.6. </a><a href="#name-pachecksum2-extension" class="section-name selfRef"><code>PAChecksum2</code> Extension</a>
+        </h3>
+<p id="section-5.6-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> hardwires the <code>paChecksum</code> field in <code>PKAuthenticator</code> to use
+SHA-1.  <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> Section 3 acknowledges this limitation but does not
+provide a mechanism to negotiate alternative checksum algorithms, noting
+that for DH and ECDH paths the KDF binding (which includes the entire
+AS-REQ in key derivation) provides an eventual integrity check.<a href="#section-5.6-1" class="pilcrow">¶</a></p>
+<p id="section-5.6-2">This specification extends <code>PKAuthenticator</code> with a <code>paChecksum2</code> field
+to provide checksum algorithm agility at the request validation layer.
+<code>PAChecksum2</code> was first defined in <span>[<a href="#MS-PKCA" class="cite xref">MS-PKCA</a>]</span> §2.2.3 (PA-PK-AS-REQ).<a href="#section-5.6-2" class="pilcrow">¶</a></p>
+<div class="lang-asn1 sourcecode" id="section-5.6-3">
+<pre>
+PAChecksum2 ::= SEQUENCE {
+    checksum                [0] OCTET STRING,
+        -- Checksum computed over KDC-REQ-BODY using the algorithm
+        -- specified in algorithmIdentifier.
+    algorithmIdentifier     [1] AlgorithmIdentifier
+        -- Digest algorithm OID. The parameters field MUST be absent.
+        -- Implementations MUST support:
+        --   SHA-512: 2.16.840.1.101.3.4.2.3 (NIST CSOR, RFC 5754)
+        -- Implementations MAY support:
+        --   SHA-256: 2.16.840.1.101.3.4.2.1 (NIST CSOR, RFC 5754)
+        --   SHA-384: 2.16.840.1.101.3.4.2.2 (NIST CSOR, RFC 5754)
+}
+</pre><a href="#section-5.6-3" class="pilcrow">¶</a>
+</div>
+<p id="section-5.6-4">The <code>PKAuthenticator</code> structure from <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> is extended as follows:<a href="#section-5.6-4" class="pilcrow">¶</a></p>
+<div class="lang-asn1 sourcecode" id="section-5.6-5">
+<pre>
+PKAuthenticator ::= SEQUENCE {
+    cusec                   [0] INTEGER (0..999999),
+    ctime                   [1] KerberosTime,
+    nonce                   [2] INTEGER (0..4294967295),
+    paChecksum              [3] OCTET STRING OPTIONAL,
+        -- RFC 4556: SHA-1 checksum over KDC-REQ-BODY.
+    freshnessToken          [4] OCTET STRING OPTIONAL,
+        -- RFC 8070: PA_AS_FRESHNESS token from KDC.
+    paChecksum2             [5] PAChecksum2 OPTIONAL,
+        -- This specification: algorithm-agile checksum over
+        -- KDC-REQ-BODY.
+    ...
+}
+</pre><a href="#section-5.6-5" class="pilcrow">¶</a>
+</div>
+<span class="break"></span><dl class="dlParallel" id="section-5.6-6">
+          <dt id="section-5.6-6.1">Client behavior:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.6-6.2">
+            <p id="section-5.6-6.2.1">A client constructing a PKINIT request conforming to this
+specification MUST include the <code>paChecksum2</code> field and SHOULD include
+the <code>paChecksum</code> field (SHA-1, per <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>).  Both checksums,
+when present, are computed over the same KDC-REQ-BODY input.<a href="#section-5.6-6.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.6-6.3">KDC validation:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.6-6.4">
+            <p id="section-5.6-6.4.1">A KDC conforming to this specification MUST require <code>paChecksum2</code> to
+be present in the request.  If <code>paChecksum2</code> is absent, the KDC
+returns <code>KDC_ERR_PA_CHECKSUM_MUST_BE_INCLUDED</code> (error code 79,
+<span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>).<a href="#section-5.6-6.4.1" class="pilcrow">¶</a></p>
+<p id="section-5.6-6.4.2">The KDC MUST validate <code>paChecksum2</code>.  If <code>paChecksum</code> is also
+present, the KDC MUST validate it as well.  The KDC returns the
+following errors:<a href="#section-5.6-6.4.2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.6-6.4.3.1">
+                <p id="section-5.6-6.4.3.1.1"><code>KDC_ERR_SUMTYPE_NOSUPP</code> (error code 15, <span>[<a href="#RFC4120" class="cite xref">RFC4120</a>]</span>): if the
+digest algorithm in <code>paChecksum2.algorithmIdentifier</code> is not
+supported by the KDC.<a href="#section-5.6-6.4.3.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-5.6-6.4.3.2">
+                <p id="section-5.6-6.4.3.2.1"><code>KRB_AP_ERR_MODIFIED</code> (error code 41, <span>[<a href="#RFC4120" class="cite xref">RFC4120</a>]</span>): if
+verification of <code>paChecksum2</code> fails, or if <code>paChecksum</code> is
+present and its verification fails.<a href="#section-5.6-6.4.3.2.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="mode-selection">
+<section id="section-6">
+      <h2 id="name-mode-selection">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-mode-selection" class="section-name selfRef">Mode Selection</a>
+      </h2>
+<p id="section-6-1">The exchange mode is determined by the algorithm OID in
+<code>clientPublicValue</code>:<a href="#section-6-1" class="pilcrow">¶</a></p>
+<span id="name-mode-selection-by-clientpub"></span><div id="tab-mode-selection">
+<table class="center" id="table-1">
+        <caption>
+<a href="#table-1" class="selfRef">Table 1</a>:
+<a href="#name-mode-selection-by-clientpub" class="selfRef">Mode selection by clientPublicValue OID</a>
+        </caption>
+<thead>
+          <tr>
+            <th class="text-left" rowspan="1" colspan="1">clientPublicValue</th>
+            <th class="text-left" rowspan="1" colspan="1">OID type</th>
+            <th class="text-left" rowspan="1" colspan="1">Mode</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Absent</td>
+            <td class="text-left" rowspan="1" colspan="1">—</td>
+            <td class="text-left" rowspan="1" colspan="1">RSA path (<code>encKeyPack</code>); deprecated for new deployments</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Present</td>
+            <td class="text-left" rowspan="1" colspan="1">DH or ECDH OID</td>
+            <td class="text-left" rowspan="1" colspan="1">DH/ECDH path (<span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> / <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span>)</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Present</td>
+            <td class="text-left" rowspan="1" colspan="1">ML-KEM or composite KEM OID</td>
+            <td class="text-left" rowspan="1" colspan="1">KEM path (this specification)</td>
+          </tr>
+          <tr>
+            <td class="text-left" rowspan="1" colspan="1">Present</td>
+            <td class="text-left" rowspan="1" colspan="1">Unrecognized OID</td>
+            <td class="text-left" rowspan="1" colspan="1">KDC MUST return <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code> with <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> listing supported KEM algorithms; MUST NOT fall back to the RSA path</td>
+          </tr>
+        </tbody>
+      </table>
+</div>
+<p id="section-6-3">For the pure KEM path defined in this specification, when
+<code>clientPublicValue</code> contains a KEM OID and <code>clientDHNonce</code> is also
+present, the KDC MUST return <code>KDC_ERR_PREAUTH_FAILED</code>.  Future hybrid
+DH+KEM specifications may define different nonce semantics and relax this
+requirement.<a href="#section-6-3" class="pilcrow">¶</a></p>
+<p id="section-6-4">The interpretation of <code>supportedKDFs</code> depends on the active path: on the
+KEM path it carries HKDF algorithm OIDs (<a href="#sec-kdf-oids" class="auto internal xref">Section 8.1</a>); on the
+DH/ECDH path it carries DH-KDF algorithm OIDs per <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span>.<a href="#section-6-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="kem-operation">
+<section id="section-7">
+      <h2 id="name-kem-path-operation">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-kem-path-operation" class="section-name selfRef">KEM Path Operation</a>
+      </h2>
+<div id="sec-client-request">
+<section id="section-7.1">
+        <h3 id="name-client-request-construction">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-client-request-construction" class="section-name selfRef">Client Request Construction</a>
+        </h3>
+<ol start="1" type="1" class="normal type-1" id="section-7.1-1">
+<li id="section-7.1-1.1">
+            <p id="section-7.1-1.1.1">Generate a fresh ephemeral KEM key pair <code>(pk_e, sk_e)</code> for the chosen
+algorithm using a cryptographically secure pseudorandom number
+generator (CSPRNG).  The security of the KEM path depends entirely on
+the unpredictability of <code>sk_e</code>.  For ML-KEM CSPRNG requirements, see
+<a href="#sec-mlkem-csprng" class="auto internal xref">Section 14.2</a>.<a href="#section-7.1-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.1-1.2">
+            <p id="section-7.1-1.2.1">Encode <code>pk_e</code> as <code>SubjectPublicKeyInfo</code> and place it in
+<code>AuthPack.clientPublicValue</code>.  <code>parameters</code> MUST be absent.  For
+ML-KEM, encoding follows <span>[<a href="#RFC9935" class="cite xref">RFC9935</a>]</span>.<a href="#section-7.1-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.1-1.3">
+            <p id="section-7.1-1.3.1">Set <code>supportedKDFs</code> to <code>{ id-alg-hkdf-with-sha512 }</code>.  If omitted,
+HKDF-SHA512 is assumed.<a href="#section-7.1-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.1-1.4">
+            <p id="section-7.1-1.4.1">Wrap <code>AuthPack</code> as the <code>eContent</code> of a CMS <code>SignedData</code> per
+<span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2 and sign with the client's signing
+certificate.  For full quantum resistance, the client SHOULD use an
+ML-DSA certificate (<span>[<a href="#RFC9881" class="cite xref">RFC9881</a>]</span>); classical ECDSA and RSA certificates
+are permitted during the transition period.<a href="#section-7.1-1.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-7.1-2">The client's signing key and the ephemeral KEM key are distinct.  No
+ML-KEM encapsulation certificate is required.  Because <code>clientPublicValue</code>
+is carried inside <code>AuthPack</code> as the <code>eContent</code> of a CMS <code>SignedData</code>,
+<code>pk_e</code> is authenticated by the client's signing certificate.  An active
+attacker substituting a different public key in transit would need to
+forge the client's signature — the same requirement as on the <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>
+DH path.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-kdc-response">
+<section id="section-7.2">
+        <h3 id="name-kdc-response-construction">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-kdc-response-construction" class="section-name selfRef">KDC Response Construction</a>
+        </h3>
+<ol start="1" type="1" class="normal type-1" id="section-7.2-1">
+<li id="section-7.2-1.1">
+            <p id="section-7.2-1.1.1">Detect the KEM algorithm OID in <code>clientPublicValue.algorithm</code>.<a href="#section-7.2-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.2-1.2">
+            <p id="section-7.2-1.2.1">Check whether the algorithm is supported and meets the security
+policy:<a href="#section-7.2-1.2.1" class="pilcrow">¶</a></p>
+<p id="section-7.2-1.2.2">
+a.  If the algorithm OID is not recognized or not implemented, return
+    <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code> with
+    <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> listing supported algorithms;
+    stop.<a href="#section-7.2-1.2.2" class="pilcrow">¶</a></p>
+<p id="section-7.2-1.2.3">
+b.  If the algorithm's NIST security category is below the KDC's
+    configured minimum (<a href="#sec-min-security" class="auto internal xref">Section 11.3</a>), return
+    <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code> with
+    <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> listing algorithms at or above
+    the minimum security category; stop.<a href="#section-7.2-1.2.3" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.2-1.3">
+            <p id="section-7.2-1.3.1">Verify <code>supportedKDFs</code> contains <code>id-alg-hkdf-with-sha512</code> (or is
+absent, in which case HKDF-SHA512 is assumed).  If SHA-512 is not
+acceptable, return <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code>; stop.<a href="#section-7.2-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.2-1.4">
+            <p id="section-7.2-1.4.1">Call <code>KEM.Encapsulate(pk_e)</code> → <code>(ss, kemct)</code> using the selected KEM
+algorithm.  The KDC MUST perform exactly one encapsulation per
+exchange.  The same <code>(ss, kemct)</code> pair MUST be used in all subsequent
+steps.  For ML-KEM-specific behavior, see <a href="#sec-mlkem-encap" class="auto internal xref">Section 14.3</a>.<a href="#section-7.2-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.2-1.5">
+            <p id="section-7.2-1.5.1">Build <code>KDCKEMInfo</code>:<a href="#section-7.2-1.5.1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-7.2-1.5.2.1">
+                <p id="section-7.2-1.5.2.1.1"><code>kemAlgorithm</code> = OID from <code>clientPublicValue.algorithm</code> (echoed back)<a href="#section-7.2-1.5.2.1.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-7.2-1.5.2.2">
+                <p id="section-7.2-1.5.2.2.1"><code>kemct</code> = the ciphertext from step 4<a href="#section-7.2-1.5.2.2.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-7.2-1.5.2.3">
+                <p id="section-7.2-1.5.2.3.1"><code>kdfAlgorithm</code> = selected HKDF OID<a href="#section-7.2-1.5.2.3.1" class="pilcrow">¶</a></p>
+</li>
+              <li class="normal" id="section-7.2-1.5.2.4">
+                <p id="section-7.2-1.5.2.4.1"><code>nonce</code> = <code>pkAuthenticator.nonce</code> from the client's request
+(SHOULD be included; see <a href="#kdckeminfo" class="auto internal xref">Section 5.3</a>)<a href="#section-7.2-1.5.2.4.1" class="pilcrow">¶</a></p>
+</li>
+            </ul>
+</li>
+          <li id="section-7.2-1.6">
+            <p id="section-7.2-1.6.1">Sign <code>KDCKEMInfo</code> using CMS SignedData (ML-DSA RECOMMENDED; see
+<a href="#sec-kdc-signing" class="auto internal xref">Section 11.4</a>).  Place in <code>kemSignedData</code>.  <code>eContent</code> MUST be
+present.  Step 7 MUST follow step 6 because
+<code>PkinitKEMSuppPubInfo.kemSignedData</code> is set to the DER encoding of
+<code>KEMRepInfo.kemSignedData</code> produced in this step.<a href="#section-7.2-1.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.2-1.7">
+            <p id="section-7.2-1.7.1">Derive the AS reply key from <code>ss</code> per <a href="#sec-kdf" class="auto internal xref">Section 8</a>.  This is the
+Kerberos AS reply key; it is never transmitted.  The KDC uses it to
+encrypt the AS-REP <code>enc-part</code>.<a href="#section-7.2-1.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.2-1.8">
+            <p id="section-7.2-1.8.1">Return <code>PA-PK-AS-REP.kemInfo</code> containing <code>KEMRepInfo</code>.<a href="#section-7.2-1.8.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+</section>
+</div>
+<div id="sec-client-processing">
+<section id="section-7.3">
+        <h3 id="name-client-response-processing">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-client-response-processing" class="section-name selfRef">Client Response Processing</a>
+        </h3>
+<p id="section-7.3-1">The client MUST perform the following steps in order.  On any abort the
+client MUST erase <code>sk_e</code> before returning.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-7.3-2">
+<li id="section-7.3-2.1">
+            <p id="section-7.3-2.1.1"><strong>Verify KDC signature</strong> over <code>kemSignedData</code>.  Abort if invalid.<a href="#section-7.3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.3-2.2">
+            <p id="section-7.3-2.2.1"><strong>Verify <code>serverNonce</code> is absent</strong>: <code>KDCKEMInfo.serverNonce</code> MUST NOT
+be present in pure ML-KEM exchanges defined by this specification.
+Abort if present.<a href="#section-7.3-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.3-2.3">
+            <p id="section-7.3-2.3.1"><strong>Extract and verify nonce</strong>: If <code>KDCKEMInfo.nonce</code> is present, it
+MUST equal <code>pkAuthenticator.nonce</code>.  Abort if not.  If absent,
+implementations MUST verify freshness through alternative means
+(e.g., timestamp in <code>PKAuthenticator</code>); future KEM specifications
+MUST define which mechanism applies when nonce is omitted.<a href="#section-7.3-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.3-2.4">
+            <p id="section-7.3-2.4.1"><strong>Verify echoed algorithm</strong>: <code>KDCKEMInfo.kemAlgorithm</code> MUST exactly
+match the algorithm OID in the client's own
+<code>clientPublicValue.algorithm</code>.  Abort if they differ.  This confirms
+the KDC did not substitute a different algorithm.<a href="#section-7.3-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.3-2.5">
+            <p id="section-7.3-2.5.1"><strong>Validate <code>kemct</code> length</strong>: the byte length of <code>KDCKEMInfo.kemct</code>
+MUST match the fixed ciphertext size for <code>KDCKEMInfo.kemAlgorithm</code>
+(see <a href="#sec-mlkem-sizes" class="auto internal xref">Section 14.1</a> for ML-KEM sizes).  Abort if not.  KEM
+algorithms MUST NOT be called on incorrectly-sized ciphertexts.<a href="#section-7.3-2.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.3-2.6">
+            <p id="section-7.3-2.6.1"><strong>Decapsulate</strong>: <code>ss = KEM.Decapsulate(sk_e, KDCKEMInfo.kemct)</code>
+using the algorithm in <code>KDCKEMInfo.kemAlgorithm</code>.  Erase <code>sk_e</code>
+immediately after this call completes, before any further processing.<a href="#section-7.3-2.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.3-2.7">
+            <p id="section-7.3-2.7.1"><strong>Derive reply key</strong> from <code>ss</code> per <a href="#sec-kdf" class="auto internal xref">Section 8</a>.  Use this key to
+decrypt the AS-REP <code>enc-part</code>.<a href="#section-7.3-2.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-7.3-2.8">
+            <p id="section-7.3-2.8.1"><strong>Confirm <code>sk_e</code> erasure</strong>.  The ephemeral private key MUST have been
+erased in step 6 and MUST NOT be retained.<a href="#section-7.3-2.8.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-7.3-3">Steps 1–5 MUST complete before step 6.  Decapsulation MUST NOT be called
+on an unauthenticated ciphertext.<a href="#section-7.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-cert-validation">
+<section id="section-7.4">
+        <h3 id="name-kdc-certificate-validation">
+<a href="#section-7.4" class="section-number selfRef">7.4. </a><a href="#name-kdc-certificate-validation" class="section-name selfRef">KDC Certificate Validation</a>
+        </h3>
+<p id="section-7.4-1">The KDC certificate validation rules of <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.3 apply
+unchanged to <code>kemSignedData</code>.  The client uses the same trust anchors and
+validation procedure as for the DH path.<a href="#section-7.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-kdf">
+<section id="section-8">
+      <h2 id="name-as-reply-key-derivation">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-as-reply-key-derivation" class="section-name selfRef">AS Reply Key Derivation</a>
+      </h2>
+<div id="sec-kdf-oids">
+<section id="section-8.1">
+        <h3 id="name-hkdf-oids">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-hkdf-oids" class="section-name selfRef">HKDF OIDs</a>
+        </h3>
+<p id="section-8.1-1">Only SHA-512 is defined for the KEM path.  The <span>[<a href="#RFC8619" class="cite xref">RFC8619</a>]</span> OID is
+reused; no new OID is defined under <code>id-pkinit-kdf</code>:<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+<div class="lang-asn1 sourcecode" id="section-8.1-2">
+<pre>
+id-alg-hkdf-with-sha512 OBJECT IDENTIFIER ::=
+    { 1 2 840 113549 1 9 16 3 30 }
+</pre><a href="#section-8.1-2" class="pilcrow">¶</a>
+</div>
+<span id="name-kdf-algorithm-identifiers-f"></span><div id="tab-kdf-oids">
+<table class="center" id="table-2">
+          <caption>
+<a href="#table-2" class="selfRef">Table 2</a>:
+<a href="#name-kdf-algorithm-identifiers-f" class="selfRef">KDF algorithm identifiers for the KEM path</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">OID</th>
+              <th class="text-left" rowspan="1" colspan="1">Hash</th>
+              <th class="text-left" rowspan="1" colspan="1">Conformance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>id-alg-hkdf-with-sha512</code>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">SHA-512</td>
+              <td class="text-left" rowspan="1" colspan="1">MUST implement</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-8.1-4">SHA-1 MUST NOT appear as a <code>kdfAlgorithm</code> value.  SHA-256 and SHA-384
+MUST NOT be used on the KEM path defined by this specification.<a href="#section-8.1-4" class="pilcrow">¶</a></p>
+<p id="section-8.1-5">A KDC that supports the KEM path MUST support <code>id-alg-hkdf-with-sha512</code>.
+SHA-512 is the sole mandatory KDF for PQC paths, matching the security
+level of ML-KEM-768 and ML-KEM-1024 and available on all modern systems.
+A KDC that cannot accept HKDF-SHA512 MUST NOT advertise KEM support in
+<code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code>.  This guarantees that KDF-only
+negotiation failure cannot occur in a conformant deployment, eliminating
+the need for a separate KDF capability advertisement mechanism.<a href="#section-8.1-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-kdf-derivation">
+<section id="section-8.2">
+        <h3 id="name-derivation">
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-derivation" class="section-name selfRef">Derivation</a>
+        </h3>
+<div class="alignLeft art-text artwork" id="section-8.2-1">
+<pre>
+reply_key_material = HKDF-SHA-512(
+    IKM  = ss,
+        -- KEM.Decapsulate output (see Section 10.1 for ML-KEM sizes)
+    salt = &lt;not provided&gt;,
+        -- defaults to HashLen zero bytes (RFC 5869 Section 2.2);
+        -- ss is uniformly random so extraction is unnecessary
+    info = DER(PkinitKEMSuppPubInfo),
+    L    = &lt;random-to-key input length for enctype&gt;
+)
+reply_key = random-to-key(reply_key_material)
+    -- per RFC 3961 Section 3
+</pre><a href="#section-8.2-1" class="pilcrow">¶</a>
+</div>
+<p id="section-8.2-2"><code>L</code> is the <code>random-to-key</code> input string length for the Kerberos enctype
+in <code>PkinitKEMSuppPubInfo.enctype</code>, as defined in the enctype's
+specification:<a href="#section-8.2-2" class="pilcrow">¶</a></p>
+<span id="name-random-to-key-input-lengths"></span><div id="tab-kdf-length">
+<table class="center" id="table-3">
+          <caption>
+<a href="#table-3" class="selfRef">Table 3</a>:
+<a href="#name-random-to-key-input-lengths" class="selfRef">random-to-key input lengths by enctype</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Enctype</th>
+              <th class="text-left" rowspan="1" colspan="1">L</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>aes128-cts-hmac-sha256-128</code> (<span>[<a href="#RFC8009" class="cite xref">RFC8009</a>]</span>)</td>
+              <td class="text-left" rowspan="1" colspan="1">16 bytes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>aes256-cts-hmac-sha384-192</code> (<span>[<a href="#RFC8009" class="cite xref">RFC8009</a>]</span>)</td>
+              <td class="text-left" rowspan="1" colspan="1">32 bytes</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-8.2-4">For these enctypes <code>random-to-key</code> is the identity function.  Other
+enctypes use the key-generation seedlength from their <span>[<a href="#RFC3961" class="cite xref">RFC3961</a>]</span> crypto
+profile.<a href="#section-8.2-4" class="pilcrow">¶</a></p>
+<p id="section-8.2-5"><code>PkinitKEMSuppPubInfo.kemSignedData</code> is set to
+<code>DER(KEMRepInfo.kemSignedData)</code>: the KDC-signed <code>KDCKEMInfo</code> only, not
+the full <code>PA-PK-AS-REP</code>.  This avoids a circular dependency: the full
+response cannot be included in the context used to derive the key that
+protects it.<a href="#section-8.2-5" class="pilcrow">¶</a></p>
+<p id="section-8.2-6">The value <code>reply_key</code> produced by this derivation IS the AS reply key
+used to encrypt the Kerberos AS-REP <code>enc-part</code>.  Both the KDC and the
+client independently derive the same value from <code>ss</code> using the KDF
+algorithm and context recorded in <code>PkinitKEMSuppPubInfo</code>.  The reply key
+is never transmitted; both parties arrive at it through independent
+computation.<a href="#section-8.2-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-errors">
+<section id="section-9">
+      <h2 id="name-error-handling">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-error-handling" class="section-name selfRef">Error Handling</a>
+      </h2>
+<div id="sec-kem-errors">
+<section id="section-9.1">
+        <h3 id="name-kem-path-errors">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-kem-path-errors" class="section-name selfRef">KEM Path Errors</a>
+        </h3>
+<p id="section-9.1-1">When <code>clientPublicValue</code> contains a KEM OID, the KDC MUST NOT return DH
+digest negotiation errors (<code>KDC_ERR_DIGEST_IN_SIGNED_DATA_NOT_ACCEPTED</code>,
+<code>KDC_ERR_DIGEST_IN_CERT_NOT_ACCEPTED</code>).  The only applicable error for
+parameter negotiation failure on the KEM path is:<a href="#section-9.1-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-9.1-2">
+<pre>
+KDC_ERR_KEM_PARAMS_NOT_ACCEPTED    TBD-IANA
+</pre><a href="#section-9.1-2" class="pilcrow">¶</a>
+</div>
+<p id="section-9.1-3">This error is returned when the KDC does not support the client's chosen
+KEM algorithm, or cannot accept HKDF-SHA512.<a href="#section-9.1-3" class="pilcrow">¶</a></p>
+<p id="section-9.1-4">The KDC SHOULD include <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> in the error:<a href="#section-9.1-4" class="pilcrow">¶</a></p>
+<div class="lang-asn1 sourcecode" id="section-9.1-5">
+<pre>
+-- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
+-- existing IANA integer (RFC 4556 Section 3.2.4, Kerberos
+-- Pre-Authentication Data Types registry). The ASN.1 encoding is
+-- unchanged (SEQUENCE OF AlgorithmIdentifier); the scope is extended
+-- to all ephemeral key-establishment algorithms including ML-KEM and
+-- composite KEM. No new IANA integer allocation is required; the
+-- existing registry entry name and description are updated per this
+-- specification.
+
+TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
+    -- DH, ECDH, ML-KEM, and composite KEM algorithms the KDC supports,
+    -- ordered strongest-first. Clients filter by OID family.
+</pre><a href="#section-9.1-5" class="pilcrow">¶</a>
+</div>
+<p id="section-9.1-6"><code>KRB-ERROR</code> messages are unauthenticated.  The client MUST NOT treat
+<code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> as authoritative beyond advisory use.<a href="#section-9.1-6" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-9.1-7">
+          <dt id="section-9.1-7.1">Proactive advertisement:</dt>
+          <dd style="margin-left: 1.5em" id="section-9.1-7.2">
+            <p id="section-9.1-7.2.1">A KDC SHOULD include <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> in the typed
+data of <code>KDC_ERR_PREAUTH_REQUIRED</code>, listing all DH, ECDH, ML-KEM, and
+composite KEM algorithms it supports.  This allows a client to select
+the appropriate algorithm on its first AS-REQ attempt, avoiding the
+guess-and-retry round trip.  Old clients that parse <code>TD-DH-PARAMETERS</code>
+will receive the same typed data and silently ignore algorithm OIDs
+they do not recognize.<a href="#section-9.1-7.2.1" class="pilcrow">¶</a></p>
+<p id="section-9.1-7.2.2">A KDC SHOULD also include <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> in
+<code>PREAUTH_FAILED</code> errors.  Advertising supported algorithms in both
+<code>PREAUTH_REQUIRED</code> and <code>PREAUTH_FAILED</code> responses improves
+interoperability and avoids unnecessary retry loops when a client's
+initial algorithm choice is not accepted.<a href="#section-9.1-7.2.2" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-9.1-7.3">Client retry:</dt>
+          <dd style="margin-left: 1.5em" id="section-9.1-7.4">
+            <p id="section-9.1-7.4.1">After receiving <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code>, the client MAY
+generate a new ephemeral key pair for a different algorithm from
+<code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> and retry.  The client MUST NOT
+retry with an algorithm below its configured minimum NIST security
+category.  If no algorithm in <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> meets
+the client's minimum policy, the error is terminal.  The client SHOULD
+NOT retry more than once; if the retry also fails, or if
+<code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> is absent from the error, the
+exchange MUST be terminated regardless of any further
+<code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code> messages.<a href="#section-9.1-7.4.1" class="pilcrow">¶</a></p>
+<p id="section-9.1-7.4.2">The client MUST log the KDC's supported algorithm list at a diagnostic
+level.  When no common algorithm exists, the client MUST report: "No
+common KEM algorithm between client and KDC; check KDC configuration."<a href="#section-9.1-7.4.2" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-dh-errors">
+<section id="section-9.2">
+        <h3 id="name-dh-path-errors">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-dh-path-errors" class="section-name selfRef">DH Path Errors</a>
+        </h3>
+<p id="section-9.2-1">When <code>clientPublicValue</code> contains a DH or ECDH OID, <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> error
+handling applies:<a href="#section-9.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-9.2-2.1">
+            <p id="section-9.2-2.1.1"><code>KDC_ERR_DIGEST_IN_SIGNED_DATA_NOT_ACCEPTED</code> with
+<code>TD-CMS-DIGEST-ALGORITHMS-DATA</code><a href="#section-9.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.2-2.2">
+            <p id="section-9.2-2.2.1"><code>KDC_ERR_DIGEST_IN_CERT_NOT_ACCEPTED</code> with
+<code>TD-CERT-DIGEST-ALGORITHMS-DATA</code><a href="#section-9.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-9.2-2.3">
+            <p id="section-9.2-2.3.1">KDF negotiation failure if none of <code>supportedKDFs</code> is acceptable<a href="#section-9.2-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-downgrade">
+<section id="section-10">
+      <h2 id="name-downgrade-prevention">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-downgrade-prevention" class="section-name selfRef">Downgrade Prevention</a>
+      </h2>
+<div id="sec-downgrade-kdc">
+<section id="section-10.1">
+        <h3 id="name-kdc-obligation">
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-kdc-obligation" class="section-name selfRef">KDC Obligation</a>
+        </h3>
+<p id="section-10.1-1">If a client's <code>clientPublicValue</code> contains an ML-KEM or composite KEM
+OID for an algorithm the KDC supports, and the algorithm meets the KDC's
+configured minimum security category (<a href="#sec-min-security" class="auto internal xref">Section 11.3</a>), the KDC MUST
+respond with <code>kemInfo [2]</code>.  The KDC MUST NOT respond with
+<code>dhSignedData [0]</code> or <code>encKeyPack [1]</code>.  If the algorithm is supported
+but falls below the minimum security category, the KDC MUST return
+<code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code> (see <a href="#sec-min-security" class="auto internal xref">Section 11.3</a>).<a href="#section-10.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-downgrade-client">
+<section id="section-10.2">
+        <h3 id="name-client-obligation">
+<a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-client-obligation" class="section-name selfRef">Client Obligation</a>
+        </h3>
+<p id="section-10.2-1">A client that placed a KEM public key in <code>clientPublicValue</code> MUST reject
+any response using <code>dhSignedData [0]</code> or <code>encKeyPack [1]</code>.  The client
+MUST abort and report: "KEM mode was requested but KDC responded on the
+DH/RSA path."  This rejection is unconditional regardless of local policy
+mode.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-downgrade-old-kdc">
+<section id="section-10.3">
+        <h3 id="name-old-kdc-interoperability">
+<a href="#section-10.3" class="section-number selfRef">10.3. </a><a href="#name-old-kdc-interoperability" class="section-name selfRef">Old KDC Interoperability</a>
+        </h3>
+<p id="section-10.3-1">An old KDC that does not support the KEM path will silently ignore the
+KEM OID and respond with <code>dhSignedData</code> or <code>encKeyPack</code>.  The client MUST
+reject this response per <a href="#sec-downgrade-client" class="auto internal xref">Section 10.2</a>.  Before aborting, the
+client MUST emit a diagnostic: "KEM mode was requested but KDC responded
+on the DH/RSA path; the KDC likely does not support PQC PKINIT."<a href="#section-10.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-algorithms">
+<section id="section-11">
+      <h2 id="name-algorithm-requirements">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-algorithm-requirements" class="section-name selfRef">Algorithm Requirements</a>
+      </h2>
+<div id="sec-kem-algs">
+<section id="section-11.1">
+        <h3 id="name-kem-algorithms">
+<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-kem-algorithms" class="section-name selfRef">KEM Algorithms</a>
+        </h3>
+<div id="sec-pure-mlkem">
+<section id="section-11.1.1">
+          <h4 id="name-pure-ml-kem-algorithms">
+<a href="#section-11.1.1" class="section-number selfRef">11.1.1. </a><a href="#name-pure-ml-kem-algorithms" class="section-name selfRef">Pure ML-KEM Algorithms</a>
+          </h4>
+<span id="name-pure-ml-kem-algorithm-requi"></span><div id="tab-pure-mlkem">
+<table class="center" id="table-4">
+            <caption>
+<a href="#table-4" class="selfRef">Table 4</a>:
+<a href="#name-pure-ml-kem-algorithm-requi" class="selfRef">Pure ML-KEM algorithm requirements</a>
+            </caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Algorithm</th>
+                <th class="text-left" rowspan="1" colspan="1">OID</th>
+                <th class="text-left" rowspan="1" colspan="1">NIST Category</th>
+                <th class="text-left" rowspan="1" colspan="1">Conformance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">ML-KEM-512</td>
+                <td class="text-left" rowspan="1" colspan="1">2.16.840.1.101.3.4.4.1</td>
+                <td class="text-left" rowspan="1" colspan="1">1</td>
+                <td class="text-left" rowspan="1" colspan="1">MAY</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">ML-KEM-768</td>
+                <td class="text-left" rowspan="1" colspan="1">2.16.840.1.101.3.4.4.2</td>
+                <td class="text-left" rowspan="1" colspan="1">3</td>
+                <td class="text-left" rowspan="1" colspan="1">MUST implement</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">ML-KEM-1024</td>
+                <td class="text-left" rowspan="1" colspan="1">2.16.840.1.101.3.4.4.3</td>
+                <td class="text-left" rowspan="1" colspan="1">5</td>
+                <td class="text-left" rowspan="1" colspan="1">SHOULD</td>
+              </tr>
+            </tbody>
+          </table>
+</div>
+</section>
+</div>
+<div id="sec-composite-kem">
+<section id="section-11.1.2">
+          <h4 id="name-composite-ml-kem-algorithms">
+<a href="#section-11.1.2" class="section-number selfRef">11.1.2. </a><a href="#name-composite-ml-kem-algorithms" class="section-name selfRef">Composite ML-KEM Algorithms</a>
+          </h4>
+<span id="name-composite-ml-kem-algorithm-"></span><div id="tab-composite-kem">
+<table class="center" id="table-5">
+            <caption>
+<a href="#table-5" class="selfRef">Table 5</a>:
+<a href="#name-composite-ml-kem-algorithm-" class="selfRef">Composite ML-KEM algorithm requirements</a>
+            </caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Algorithm</th>
+                <th class="text-left" rowspan="1" colspan="1">OID</th>
+                <th class="text-left" rowspan="1" colspan="1">NIST Category</th>
+                <th class="text-left" rowspan="1" colspan="1">Conformance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">id-MLKEM768-ECDH-P256-SHA3-256</td>
+                <td class="text-left" rowspan="1" colspan="1">1.3.6.1.5.5.7.6.59</td>
+                <td class="text-left" rowspan="1" colspan="1">3</td>
+                <td class="text-left" rowspan="1" colspan="1">SHOULD</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">id-MLKEM768-X25519-SHA3-256</td>
+                <td class="text-left" rowspan="1" colspan="1">1.3.6.1.5.5.7.6.58</td>
+                <td class="text-left" rowspan="1" colspan="1">3</td>
+                <td class="text-left" rowspan="1" colspan="1">MAY</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">id-MLKEM1024-ECDH-P384-SHA3-256</td>
+                <td class="text-left" rowspan="1" colspan="1">1.3.6.1.5.5.7.6.63</td>
+                <td class="text-left" rowspan="1" colspan="1">5</td>
+                <td class="text-left" rowspan="1" colspan="1">SHOULD</td>
+              </tr>
+            </tbody>
+          </table>
+</div>
+<p id="section-11.1.2-2">Composite algorithms are defined in
+<span>[<a href="#I-D.ietf-lamps-pq-composite-kem" class="cite xref">I-D.ietf-lamps-pq-composite-kem</a>]</span>.<a href="#section-11.1.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-client-alg-selection">
+<section id="section-11.2">
+        <h3 id="name-client-algorithm-selection">
+<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-client-algorithm-selection" class="section-name selfRef">Client Algorithm Selection</a>
+        </h3>
+<p id="section-11.2-1">The client selects the KEM algorithm by choosing which ephemeral key pair
+to generate.  The client SHOULD select the strongest algorithm it expects
+the KDC to support.  Security strength order: <strong>Category 5 &gt; Category 3
+&gt; Category 1</strong>.  Composite algorithm strength is determined by the
+stronger component.<a href="#section-11.2-1" class="pilcrow">¶</a></p>
+<p id="section-11.2-2">When retrying after <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code>, the client SHOULD
+select the strongest algorithm from <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code>
+that is at or above the client's configured minimum security category.<a href="#section-11.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-min-security">
+<section id="section-11.3">
+        <h3 id="name-kdc-minimum-security-level">
+<a href="#section-11.3" class="section-number selfRef">11.3. </a><a href="#name-kdc-minimum-security-level" class="section-name selfRef">KDC Minimum Security Level</a>
+        </h3>
+<p id="section-11.3-1">KDC administrators configure a minimum NIST security category:<a href="#section-11.3-1" class="pilcrow">¶</a></p>
+<span id="name-nist-security-categories-fo"></span><div id="tab-security-levels">
+<table class="center" id="table-6">
+          <caption>
+<a href="#table-6" class="selfRef">Table 6</a>:
+<a href="#name-nist-security-categories-fo" class="selfRef">NIST security categories for ML-KEM</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Category</th>
+              <th class="text-left" rowspan="1" colspan="1">Algorithm</th>
+              <th class="text-left" rowspan="1" colspan="1">Post-quantum bit security</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">1</td>
+              <td class="text-left" rowspan="1" colspan="1">ML-KEM-512</td>
+              <td class="text-left" rowspan="1" colspan="1">128 bits</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">3</td>
+              <td class="text-left" rowspan="1" colspan="1">ML-KEM-768</td>
+              <td class="text-left" rowspan="1" colspan="1">192 bits (RECOMMENDED default)</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">5</td>
+              <td class="text-left" rowspan="1" colspan="1">ML-KEM-1024</td>
+              <td class="text-left" rowspan="1" colspan="1">256 bits</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-11.3-3">The KDC returns <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code> when the client's
+chosen algorithm falls below the configured minimum.  Composite
+algorithms inherit the minimum from their weakest component.<a href="#section-11.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-kdc-signing">
+<section id="section-11.4">
+        <h3 id="name-kdc-signing-algorithm">
+<a href="#section-11.4" class="section-number selfRef">11.4. </a><a href="#name-kdc-signing-algorithm" class="section-name selfRef">KDC Signing Algorithm</a>
+        </h3>
+<p id="section-11.4-1">For a PKINIT exchange to be fully quantum-resistant, the KDC SHOULD sign
+<code>KDCKEMInfo</code> with ML-DSA (<span>[<a href="#RFC9881" class="cite xref">RFC9881</a>]</span>) or a composite ML-DSA variant
+(<span>[<a href="#RFC9882" class="cite xref">RFC9882</a>]</span>).  A KDC using a classical signing algorithm (RSA, ECDSA)
+provides PQC key establishment but not PQC authentication; classical
+signing is permitted during the transition period.<a href="#section-11.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-composite-ordering">
+<section id="section-11.5">
+        <h3 id="name-composite-algorithm-orderin">
+<a href="#section-11.5" class="section-number selfRef">11.5. </a><a href="#name-composite-algorithm-orderin" class="section-name selfRef">Composite Algorithm Ordering in <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code></a>
+        </h3>
+<p id="section-11.5-1">The KDC lists algorithms in decreasing security strength order.  When
+pure ML-KEM and composite KEM algorithms are both present, composite
+algorithms are ordered by security category derived from their weaker
+component.  The complete list MUST be sorted by total security strength.<a href="#section-11.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-rsa-deprecation">
+<section id="section-12">
+      <h2 id="name-rsa-path-deprecation">
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-rsa-path-deprecation" class="section-name selfRef">RSA Path Deprecation</a>
+      </h2>
+<p id="section-12-1">The <code>encKeyPack [1]</code> path is quantum-vulnerable.  New deployments SHOULD
+NOT use <code>encKeyPack</code>.  Existing deployments MAY continue using it for
+classical compatibility during migration.<a href="#section-12-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-message-size">
+<section id="section-13">
+      <h2 id="name-message-size-considerations">
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-message-size-considerations" class="section-name selfRef">Message Size Considerations</a>
+      </h2>
+<p id="section-13-1">An <code>AuthPack</code> with an ephemeral ML-KEM-768 public key (1184 bytes)
+signed with ML-DSA-65 (3293 bytes signature) will exceed UDP datagram
+limits.  TCP transport (<span>[<a href="#RFC5021" class="cite xref">RFC5021</a>]</span>) is REQUIRED for KEM-path PKINIT.
+All Kerberos infrastructure (KDCs, clients, firewalls) MUST support TCP
+Kerberos before enabling PQC PKINIT.<a href="#section-13-1" class="pilcrow">¶</a></p>
+<p id="section-13-2">Fixed ML-KEM key and ciphertext sizes are given in <a href="#sec-mlkem-sizes" class="auto internal xref">Section 14.1</a>.
+An ML-KEM-768 public key (1184 bytes) combined with an ML-DSA-65
+signature (3293 bytes) alone exceeds UDP limits, before any encapsulation
+overhead is added.<a href="#section-13-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-mlkem">
+<section id="section-14">
+      <h2 id="name-ml-kem-specific-considerati">
+<a href="#section-14" class="section-number selfRef">14. </a><a href="#name-ml-kem-specific-considerati" class="section-name selfRef">ML-KEM-Specific Considerations</a>
+      </h2>
+<p id="section-14-1">This section captures behavior specific to ML-KEM (<span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>).  When
+this specification is extended to other KEM algorithms, per-algorithm
+sections following this structure SHOULD be added.  The core protocol
+defined in Sections 4–8 is intentionally algorithm-agnostic; ML-KEM
+details are isolated here following the model of <span>[<a href="#RFC3961" class="cite xref">RFC3961</a>]</span>.<a href="#section-14-1" class="pilcrow">¶</a></p>
+<div id="sec-mlkem-sizes">
+<section id="section-14.1">
+        <h3 id="name-key-and-ciphertext-sizes">
+<a href="#section-14.1" class="section-number selfRef">14.1. </a><a href="#name-key-and-ciphertext-sizes" class="section-name selfRef">Key and Ciphertext Sizes</a>
+        </h3>
+<p id="section-14.1-1">All sizes are fixed by <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>; no variability is permitted.<a href="#section-14.1-1" class="pilcrow">¶</a></p>
+<span id="name-ml-kem-fixed-key-and-cipher"></span><div id="tab-mlkem-sizes">
+<table class="center" id="table-7">
+          <caption>
+<a href="#table-7" class="selfRef">Table 7</a>:
+<a href="#name-ml-kem-fixed-key-and-cipher" class="selfRef">ML-KEM fixed key and ciphertext sizes</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Algorithm</th>
+              <th class="text-left" rowspan="1" colspan="1">Public key</th>
+              <th class="text-left" rowspan="1" colspan="1">Ciphertext</th>
+              <th class="text-left" rowspan="1" colspan="1">Shared secret</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">ML-KEM-512</td>
+              <td class="text-left" rowspan="1" colspan="1">800 bytes</td>
+              <td class="text-left" rowspan="1" colspan="1">768 bytes</td>
+              <td class="text-left" rowspan="1" colspan="1">32 bytes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">ML-KEM-768</td>
+              <td class="text-left" rowspan="1" colspan="1">1184 bytes</td>
+              <td class="text-left" rowspan="1" colspan="1">1088 bytes</td>
+              <td class="text-left" rowspan="1" colspan="1">32 bytes</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">ML-KEM-1024</td>
+              <td class="text-left" rowspan="1" colspan="1">1568 bytes</td>
+              <td class="text-left" rowspan="1" colspan="1">1568 bytes</td>
+              <td class="text-left" rowspan="1" colspan="1">32 bytes</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+<p id="section-14.1-3">The client MUST validate <code>KDCKEMInfo.kemct</code> length against these values
+before calling Decapsulate (<a href="#sec-client-processing" class="auto internal xref">Section 7.3</a> step 5).
+<span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span> does not define behavior for <code>ML-KEM.Decapsulate</code> on
+incorrectly-sized input.<a href="#section-14.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-mlkem-csprng">
+<section id="section-14.2">
+        <h3 id="name-csprng-requirement">
+<a href="#section-14.2" class="section-number selfRef">14.2. </a><a href="#name-csprng-requirement" class="section-name selfRef">CSPRNG Requirement</a>
+        </h3>
+<p id="section-14.2-1">ML-KEM key generation MUST use a cryptographically secure pseudorandom
+number generator (CSPRNG) satisfying the requirements of <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>
+Section 3.3.  The security of the KEM path depends entirely on the
+unpredictability of the ephemeral private key <code>sk_e</code>.<a href="#section-14.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-mlkem-encap">
+<section id="section-14.3">
+        <h3 id="name-encapsulation-and-decapsula">
+<a href="#section-14.3" class="section-number selfRef">14.3. </a><a href="#name-encapsulation-and-decapsula" class="section-name selfRef">Encapsulation and Decapsulation</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-14.3-1">
+          <dt id="section-14.3-1.1">KDC:</dt>
+          <dd style="margin-left: 1.5em" id="section-14.3-1.2">
+            <p id="section-14.3-1.2.1"><code>(ss, kemct) = ML-KEM.Encapsulate(pk_e)</code> — exactly one call per
+exchange; the same <code>(ss, kemct)</code> pair MUST be used in all subsequent
+steps.<a href="#section-14.3-1.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-14.3-1.3">Client:</dt>
+          <dd style="margin-left: 1.5em" id="section-14.3-1.4">
+            <p id="section-14.3-1.4.1"><code>ss = ML-KEM.Decapsulate(sk_e, kemct)</code> — called only after verifying
+the KDC signature, <code>serverNonce</code> absence, and nonce
+(<a href="#sec-client-processing" class="auto internal xref">Section 7.3</a> steps 1–5).  <code>sk_e</code> MUST be erased
+immediately after Decapsulate returns.<a href="#section-14.3-1.4.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-14.3-2">The shared secret <code>ss</code> is 32 bytes for all three ML-KEM variants.<a href="#section-14.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-security">
+<section id="section-15">
+      <h2 id="name-security-considerations">
+<a href="#section-15" class="section-number selfRef">15. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<div id="quantum-resistance">
+<section id="section-15.1">
+        <h3 id="name-quantum-resistance">
+<a href="#section-15.1" class="section-number selfRef">15.1. </a><a href="#name-quantum-resistance" class="section-name selfRef">Quantum Resistance</a>
+        </h3>
+<p id="section-15.1-1">The KEM path achieves post-quantum confidentiality only when both the KEM
+algorithm and the KDC signing algorithm are quantum-resistant.  Using
+ML-KEM with a classical ECDSA or RSA signing certificate provides PQC key
+establishment but not PQC authentication; an adversary with a quantum
+computer could impersonate the KDC by forging its classical signature.
+Deployers seeking full quantum resistance MUST use ML-DSA (<span>[<a href="#RFC9881" class="cite xref">RFC9881</a>]</span>)
+or a composite ML-DSA variant for KDC signing.<a href="#section-15.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ephemeral-key-hygiene">
+<section id="section-15.2">
+        <h3 id="name-ephemeral-key-hygiene">
+<a href="#section-15.2" class="section-number selfRef">15.2. </a><a href="#name-ephemeral-key-hygiene" class="section-name selfRef">Ephemeral Key Hygiene</a>
+        </h3>
+<p id="section-15.2-1">The ephemeral private key <code>sk_e</code> MUST be erased as soon as
+decapsulation completes (<a href="#sec-client-processing" class="auto internal xref">Section 7.3</a> step 6).  Failure to
+erase <code>sk_e</code> negates forward secrecy: an attacker who later recovers
+<code>sk_e</code> can recompute <code>ss</code> and derive the AS reply key for any recorded
+exchange that used the corresponding <code>pk_e</code>.<a href="#section-15.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authenticated-kdf-inputs">
+<section id="section-15.3">
+        <h3 id="name-authenticated-kdf-inputs">
+<a href="#section-15.3" class="section-number selfRef">15.3. </a><a href="#name-authenticated-kdf-inputs" class="section-name selfRef">Authenticated KDF Inputs</a>
+        </h3>
+<p id="section-15.3-1"><span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> leaves the KDF algorithm unprotected: a man-in-the-middle
+could modify the <code>kdfAlgorithm</code> field before the client processes the
+response.  This specification places <code>kdfAlgorithm</code> inside the
+KDC-signed <code>KDCKEMInfo</code>, making it authenticated.  Clients MUST NOT
+derive a reply key using an algorithm not present in the signed
+structure.<a href="#section-15.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="unauthenticated-error-messages">
+<section id="section-15.4">
+        <h3 id="name-unauthenticated-error-messa">
+<a href="#section-15.4" class="section-number selfRef">15.4. </a><a href="#name-unauthenticated-error-messa" class="section-name selfRef">Unauthenticated Error Messages</a>
+        </h3>
+<p id="section-15.4-1"><code>KRB-ERROR</code> messages, including those carrying
+<code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code>, are unauthenticated.  An active
+attacker can inject or modify these messages.  Clients MUST treat the
+algorithm list as advisory only and MUST NOT use an algorithm from the
+list that is below their configured minimum security category, regardless
+of what the list contains.<a href="#section-15.4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="algorithm-downgrade-prevention">
+<section id="section-15.5">
+        <h3 id="name-algorithm-downgrade-prevent">
+<a href="#section-15.5" class="section-number selfRef">15.5. </a><a href="#name-algorithm-downgrade-prevent" class="section-name selfRef">Algorithm Downgrade Prevention</a>
+        </h3>
+<p id="section-15.5-1">The downgrade prevention rules in <a href="#sec-downgrade" class="auto internal xref">Section 10</a> are mandatory and
+unconditional.  A client that allows a fallback from the KEM path to the
+DH/RSA path on receiving a classical response exposes the session to an
+active attacker who can exploit a classical-path vulnerability.<a href="#section-15.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="pachecksum2-and-replay-prevention">
+<section id="section-15.6">
+        <h3 id="name-pachecksum2-and-replay-prev">
+<a href="#section-15.6" class="section-number selfRef">15.6. </a><a href="#name-pachecksum2-and-replay-prev" class="section-name selfRef"><code>paChecksum2</code> and Replay Prevention</a>
+        </h3>
+<p id="section-15.6-1"><code>paChecksum2</code> binds the KDC-REQ-BODY to the authenticator using a
+quantum-safe digest.  Implementations MUST NOT accept requests in which
+<code>paChecksum2</code> is absent when operating in KEM mode, as defined in
+<a href="#pachecksum2" class="auto internal xref">Section 5.6</a>.  The nonce in <code>PKAuthenticator</code> continues to provide
+replay protection; <code>paChecksum2</code> strengthens the integrity binding of the
+request body.<a href="#section-15.6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ciphertext-length-validation">
+<section id="section-15.7">
+        <h3 id="name-ciphertext-length-validatio">
+<a href="#section-15.7" class="section-number selfRef">15.7. </a><a href="#name-ciphertext-length-validatio" class="section-name selfRef">Ciphertext Length Validation</a>
+        </h3>
+<p id="section-15.7-1">Calling <code>ML-KEM.Decapsulate</code> on an incorrectly-sized ciphertext produces
+undefined behavior per <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>.  Clients MUST validate the ciphertext
+length against the fixed values in <a href="#sec-mlkem-sizes" class="auto internal xref">Section 14.1</a> before invoking
+decapsulation (<a href="#sec-client-processing" class="auto internal xref">Section 7.3</a> step 5).<a href="#section-15.7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-iana">
+<section id="section-16">
+      <h2 id="name-iana-considerations">
+<a href="#section-16" class="section-number selfRef">16. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<div id="new-kerberos-error-code">
+<section id="section-16.1">
+        <h3 id="name-new-kerberos-error-code">
+<a href="#section-16.1" class="section-number selfRef">16.1. </a><a href="#name-new-kerberos-error-code" class="section-name selfRef">New Kerberos Error Code</a>
+        </h3>
+<p id="section-16.1-1">IANA is requested to assign a new Kerberos Message Error Code in the
+"Kerberos Message Error Codes" sub-registry of the "Kerberos Parameters"
+registry:<a href="#section-16.1-1" class="pilcrow">¶</a></p>
+<span id="name-new-kerberos-error-code-2"></span><div id="tab-iana-error">
+<table class="center" id="table-8">
+          <caption>
+<a href="#table-8" class="selfRef">Table 8</a>:
+<a href="#name-new-kerberos-error-code-2" class="selfRef">New Kerberos error code</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Value</th>
+              <th class="text-left" rowspan="1" colspan="1">Name</th>
+              <th class="text-left" rowspan="1" colspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+</section>
+</div>
+<div id="new-pkinit-oid">
+<section id="section-16.2">
+        <h3 id="name-new-pkinit-oid">
+<a href="#section-16.2" class="section-number selfRef">16.2. </a><a href="#name-new-pkinit-oid" class="section-name selfRef">New PKINIT OID</a>
+        </h3>
+<p id="section-16.2-1">IANA is requested to assign a new object identifier under the PKINIT OID
+arc (<code>id-pkinit</code>, <code>1.3.6.1.5.2.3</code>) in the "SMI Security for PKIX
+Module Identifier" registry:<a href="#section-16.2-1" class="pilcrow">¶</a></p>
+<span id="name-new-pkinit-oid-assignment"></span><div id="tab-iana-oid">
+<table class="center" id="table-9">
+          <caption>
+<a href="#table-9" class="selfRef">Table 9</a>:
+<a href="#name-new-pkinit-oid-assignment" class="selfRef">New PKINIT OID assignment</a>
+          </caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Decimal</th>
+              <th class="text-left" rowspan="1" colspan="1">Description</th>
+              <th class="text-left" rowspan="1" colspan="1">Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">TBD</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <code>id-pkinit-KEMKeyData</code>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">This document</td>
+            </tr>
+          </tbody>
+        </table>
+</div>
+</section>
+</div>
+<div id="update-to-kerberos-pre-authentication-data-types-registry">
+<section id="section-16.3">
+        <h3 id="name-update-to-kerberos-pre-auth">
+<a href="#section-16.3" class="section-number selfRef">16.3. </a><a href="#name-update-to-kerberos-pre-auth" class="section-name selfRef">Update to Kerberos Pre-Authentication Data Types Registry</a>
+        </h3>
+<p id="section-16.3-1">IANA is requested to update the description of the existing entry for
+<code>TD-DH-PARAMETERS</code> in the "Kerberos Pre-Authentication Data Types"
+sub-registry of the "Kerberos Parameters" registry:<a href="#section-16.3-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-16.3-2">
+          <dt id="section-16.3-2.1">Old description:</dt>
+          <dd style="margin-left: 1.5em" id="section-16.3-2.2">
+            <p id="section-16.3-2.2.1">"Typed data for <code>KDC_ERR_KEY_TOO_WEAK</code>; contains a list of acceptable
+Diffie-Hellman algorithm identifiers."<a href="#section-16.3-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-16.3-2.3">New name and description:</dt>
+          <dd style="margin-left: 1.5em" id="section-16.3-2.4">
+            <p id="section-16.3-2.4.1"><code>TD-EPHEMERAL-KEY-PARAMETERS</code>, "Typed data for
+<code>KDC_ERR_KEM_PARAMS_NOT_ACCEPTED</code> and <code>KDC_ERR_KEY_TOO_WEAK</code>; contains
+a list of acceptable ephemeral key-establishment algorithm identifiers,
+including DH, ECDH, ML-KEM, and composite KEM algorithms."<a href="#section-16.3-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+<p id="section-16.3-3">The integer value and ASN.1 encoding (<code>SEQUENCE OF AlgorithmIdentifier</code>)
+are unchanged.  No new integer allocation is required.<a href="#section-16.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="sec-combined-references">
+<section id="section-17">
+      <h2 id="name-references">
+<a href="#section-17" class="section-number selfRef">17. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-17.1">
+        <h3 id="name-normative-references">
+<a href="#section-17.1" class="section-number selfRef">17.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="FIPS203">[FIPS203]</dt>
+        <dd>
+<span class="refAuthor">National Institute of Standards and Technology (NIST)</span>, <span class="refTitle">"Module-Lattice-Based Key-Encapsulation Mechanism Standard"</span>, <span class="seriesInfo">FIPS PUB 203</span>, <time datetime="2024-08" class="refDate">August 2024</time>, <span>&lt;<a href="https://doi.org/10.6028/NIST.FIPS.203">https://doi.org/10.6028/NIST.FIPS.203</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="FIPS204">[FIPS204]</dt>
+        <dd>
+<span class="refAuthor">National Institute of Standards and Technology (NIST)</span>, <span class="refTitle">"Module-Lattice-Based Digital Signature Standard"</span>, <span class="seriesInfo">FIPS PUB 204</span>, <time datetime="2024-08" class="refDate">August 2024</time>, <span>&lt;<a href="https://doi.org/10.6028/NIST.FIPS.204">https://doi.org/10.6028/NIST.FIPS.204</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3961">[RFC3961]</dt>
+        <dd>
+<span class="refAuthor">Raeburn, K.</span>, <span class="refTitle">"Encryption and Checksum Specifications for Kerberos 5"</span>, <span class="seriesInfo">RFC 3961</span>, <span class="seriesInfo">DOI 10.17487/RFC3961</span>, <time datetime="2005-02" class="refDate">February 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3961">https://www.rfc-editor.org/rfc/rfc3961</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4120">[RFC4120]</dt>
+        <dd>
+<span class="refAuthor">Neuman, C.</span>, <span class="refAuthor">Yu, T.</span>, <span class="refAuthor">Hartman, S.</span>, and <span class="refAuthor">K. Raeburn</span>, <span class="refTitle">"The Kerberos Network Authentication Service (V5)"</span>, <span class="seriesInfo">RFC 4120</span>, <span class="seriesInfo">DOI 10.17487/RFC4120</span>, <time datetime="2005-07" class="refDate">July 2005</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4120">https://www.rfc-editor.org/rfc/rfc4120</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC4556">[RFC4556]</dt>
+        <dd>
+<span class="refAuthor">Zhu, L.</span> and <span class="refAuthor">B. Tung</span>, <span class="refTitle">"Public Key Cryptography for Initial Authentication in Kerberos (PKINIT)"</span>, <span class="seriesInfo">RFC 4556</span>, <span class="seriesInfo">DOI 10.17487/RFC4556</span>, <time datetime="2006-06" class="refDate">June 2006</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc4556">https://www.rfc-editor.org/rfc/rfc4556</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5021">[RFC5021]</dt>
+        <dd>
+<span class="refAuthor">Josefsson, S.</span>, <span class="refTitle">"Extended Kerberos Version 5 Key Distribution Center (KDC) Exchanges over TCP"</span>, <span class="seriesInfo">RFC 5021</span>, <span class="seriesInfo">DOI 10.17487/RFC5021</span>, <time datetime="2007-08" class="refDate">August 2007</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5021">https://www.rfc-editor.org/rfc/rfc5021</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5652">[RFC5652]</dt>
+        <dd>
+<span class="refAuthor">Housley, R.</span>, <span class="refTitle">"Cryptographic Message Syntax (CMS)"</span>, <span class="seriesInfo">STD 70</span>, <span class="seriesInfo">RFC 5652</span>, <span class="seriesInfo">DOI 10.17487/RFC5652</span>, <time datetime="2009-09" class="refDate">September 2009</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5652">https://www.rfc-editor.org/rfc/rfc5652</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC5869">[RFC5869]</dt>
+        <dd>
+<span class="refAuthor">Krawczyk, H.</span> and <span class="refAuthor">P. Eronen</span>, <span class="refTitle">"HMAC-based Extract-and-Expand Key Derivation Function (HKDF)"</span>, <span class="seriesInfo">RFC 5869</span>, <span class="seriesInfo">DOI 10.17487/RFC5869</span>, <time datetime="2010-05" class="refDate">May 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc5869">https://www.rfc-editor.org/rfc/rfc5869</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8009">[RFC8009]</dt>
+        <dd>
+<span class="refAuthor">Jenkins, M.</span>, <span class="refAuthor">Peck, M.</span>, and <span class="refAuthor">K. Burgin</span>, <span class="refTitle">"AES Encryption with HMAC-SHA2 for Kerberos 5"</span>, <span class="seriesInfo">RFC 8009</span>, <span class="seriesInfo">DOI 10.17487/RFC8009</span>, <time datetime="2016-10" class="refDate">October 2016</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8009">https://www.rfc-editor.org/rfc/rfc8009</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8619">[RFC8619]</dt>
+        <dd>
+<span class="refAuthor">Housley, R.</span>, <span class="refTitle">"Algorithm Identifiers for the HMAC-based Extract-and-Expand Key Derivation Function (HKDF)"</span>, <span class="seriesInfo">RFC 8619</span>, <span class="seriesInfo">DOI 10.17487/RFC8619</span>, <time datetime="2019-06" class="refDate">June 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8619">https://www.rfc-editor.org/rfc/rfc8619</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8636">[RFC8636]</dt>
+        <dd>
+<span class="refAuthor">Hornquist Astrand, L.</span>, <span class="refAuthor">Zhu, L.</span>, <span class="refAuthor">Cullen, M.</span>, and <span class="refAuthor">G. Hudson</span>, <span class="refTitle">"Public Key Cryptography for Initial Authentication in Kerberos (PKINIT) Algorithm Agility"</span>, <span class="seriesInfo">RFC 8636</span>, <span class="seriesInfo">DOI 10.17487/RFC8636</span>, <time datetime="2019-07" class="refDate">July 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8636">https://www.rfc-editor.org/rfc/rfc8636</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9881">[RFC9881]</dt>
+        <dd>
+<span class="refAuthor">Massimo, J.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Turner, S.</span>, and <span class="refAuthor">B. E. Westerbaan</span>, <span class="refTitle">"Internet X.509 Public Key Infrastructure -- Algorithm Identifiers for the Module-Lattice-Based Digital Signature Algorithm (ML-DSA)"</span>, <span class="seriesInfo">RFC 9881</span>, <span class="seriesInfo">DOI 10.17487/RFC9881</span>, <time datetime="2025-10" class="refDate">October 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9881">https://www.rfc-editor.org/rfc/rfc9881</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9935">[RFC9935]</dt>
+      <dd>
+<span class="refAuthor">Turner, S.</span>, <span class="refAuthor">Kampanakis, P.</span>, <span class="refAuthor">Massimo, J.</span>, and <span class="refAuthor">B. E. Westerbaan</span>, <span class="refTitle">"Internet X.509 Public Key Infrastructure - Algorithm Identifiers for the Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM)"</span>, <span class="seriesInfo">RFC 9935</span>, <span class="seriesInfo">DOI 10.17487/RFC9935</span>, <time datetime="2026-03" class="refDate">March 2026</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9935">https://www.rfc-editor.org/rfc/rfc9935</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-17.2">
+        <h3 id="name-informative-references">
+<a href="#section-17.2" class="section-number selfRef">17.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="I-D.ietf-lamps-pq-composite-kem">[I-D.ietf-lamps-pq-composite-kem]</dt>
+        <dd>
+<span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite ML-KEM for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-kem-14</span>, <time datetime="2026-03-27" class="refDate">27 March 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-14">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-14</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="MS-PKCA">[MS-PKCA]</dt>
+        <dd>
+<span class="refAuthor">Microsoft Corporation</span>, <span class="refTitle">"[MS-PKCA]: Public Key Cryptography for Initial Authentication (PKINIT) in Kerberos Protocol"</span>, <time datetime="2023-09-20" class="refDate">20 September 2023</time>, <span>&lt;<a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-pkca/">https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-pkca/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9882">[RFC9882]</dt>
+      <dd>
+<span class="refAuthor">Salter, B.</span>, <span class="refAuthor">Raine, A.</span>, and <span class="refAuthor">D. Van Geest</span>, <span class="refTitle">"Use of the ML-DSA Signature Algorithm in the Cryptographic Message Syntax (CMS)"</span>, <span class="seriesInfo">RFC 9882</span>, <span class="seriesInfo">DOI 10.17487/RFC9882</span>, <time datetime="2025-10" class="refDate">October 2025</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9882">https://www.rfc-editor.org/rfc/rfc9882</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="acknowledgements">
+<section id="appendix-A">
+      <h2 id="name-acknowledgements">
+<a href="#name-acknowledgements" class="section-name selfRef">Acknowledgements</a>
+      </h2>
+<p id="appendix-A-1">The author thanks the IETF Kerberos and LAMPS working groups for
+discussion of post-quantum PKINIT approaches, and the NIST team for
+<span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span> and <span>[<a href="#FIPS204" class="cite xref">FIPS204</a>]</span>.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Alexander Bokovoy</span></div>
+<div dir="auto" class="left"><span class="org">Red Hat, Inc.</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:abokovoy@redhat.com" class="email">abokovoy@redhat.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Julien Rische</span></div>
+<div dir="auto" class="left"><span class="org">Red Hat, Inc.</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:abokovoy@redhat.com" class="email">abokovoy@redhat.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Nico Williams</span></div>
+<div dir="auto" class="left"><span class="org">Cryptonector</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:nico@cryptonector.com" class="email">nico@cryptonector.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
