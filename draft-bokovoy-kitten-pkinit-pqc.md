@@ -486,7 +486,7 @@ as on the {{RFC4556}} DH path.
       (SHOULD be included; see {{kdckeminfo}})
 
 6. Sign `KDCKEMInfo` using CMS SignedData ({{RFC5652}} Section 5) with
-   ML-DSA RECOMMENDED; see {{sec-kdc-signing}}.  Place in `kemSignedData`.
+   ML-DSA ({{RFC9882}}) RECOMMENDED; see {{sec-kdc-signing}}.  Place in `kemSignedData`.
    `eContent` MUST be present.  Step 7 MUST follow step 6 because
    `PkinitKEMSuppPubInfo.kemSignedData` is set to the DER encoding of
    `KEMRepInfo.kemSignedData` produced in this step.
