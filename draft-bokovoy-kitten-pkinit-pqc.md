@@ -284,6 +284,7 @@ AuthPack ::= SEQUENCE {
         --               RFC 9935.
         -- RSA path:     MUST be absent.
     supportedCMSTypes   [2] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
+        -- Used in RSA path only. It is deprecated in Section 12.
     clientDHNonce       [3] DHNonce OPTIONAL,
         -- Pure KEM path (this specification): MUST be absent when
         -- clientPublicValue contains a KEM algorithm OID (see
