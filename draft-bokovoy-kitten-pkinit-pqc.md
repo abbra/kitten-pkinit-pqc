@@ -116,11 +116,11 @@ Encapsulation Mechanism (KEM) algorithms, in particular the
 Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
 Rather than agreeing on a shared secret via a DH exchange, the client
 generates an ephemeral KEM key pair and sends the public key to the KDC
-inside a CMS-signed `AuthPack`.  The KDC encapsulates against the
-client's ephemeral public key, signs the resulting ciphertext and
-algorithm selection inside a new `KDCKEMInfo` structure, and returns the
-signed blob.  Both parties independently derive the AS reply key from the
-shared secret using HKDF ({{RFC5869}}).
+inside a CMS-signed `AuthPack` ({{RFC5652}} Section 5).  The KDC
+encapsulates against the client's ephemeral public key, signs the resulting
+ciphertext and algorithm selection inside a new `KDCKEMInfo` structure, and
+returns the signed blob.  Both parties independently derive the AS reply key
+from the shared secret using HKDF ({{RFC5869}}).
 
 The design preserves the security properties of the RFC 4556 DH path
 (the client's public key is authenticated by the client's signing
@@ -191,10 +191,10 @@ new arm follows the same convention.
 PA-PK-AS-REP ::= CHOICE {
     dhSignedData    [0] IMPLICIT OCTET STRING,
         -- RFC 4556: DH/ECDH path
-        --   content: CMS SignedData(KDCDHKeyInfo)
+        --   content: CMS SignedData(KDCDHKeyInfo) ({{RFC5652}} Section 5)
     encKeyPack      [1] IMPLICIT OCTET STRING,
         -- RFC 4556: RSA path (deprecated)
-        --   content: CMS EnvelopedData(ReplyKeyPack)
+        --   content: CMS EnvelopedData(ReplyKeyPack) ({{RFC5652}} Section 6)
     kemInfo         [2] IMPLICIT OCTET STRING,
         -- NEW: KEM path (this specification)
         --   content: DER(KEMRepInfo)
@@ -220,7 +220,7 @@ id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit TBD-IANA }
 
 KEMRepInfo ::= SEQUENCE {
     kemSignedData       [0] IMPLICIT OCTET STRING,
-        -- CMS SignedData:
+        -- CMS SignedData ({{RFC5652}} Section 5):
         --   eContentType = id-pkinit-KEMKeyData
         --   eContent     = DER(KDCKEMInfo)   [MUST be present]
         --   signerInfos  = KDC signature over KDCKEMInfo
@@ -436,19 +436,19 @@ DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
 3. Set `supportedKDFs` to `{ id-alg-hkdf-with-sha512 }`.  If omitted,
    HKDF-SHA512 is assumed.
 
-4. Wrap `AuthPack` as the `eContent` of a CMS `SignedData` per
-   {{RFC4556}} Section 3.2.2 and sign with the client's signing
-   certificate.  For full quantum resistance, the client SHOULD use an
-   ML-DSA certificate ({{RFC9881}}); classical ECDSA and RSA certificates
-   are permitted during the transition period.
+4. Wrap `AuthPack` as the `eContent` of a CMS `SignedData` ({{RFC5652}}
+   Section 5) per {{RFC4556}} Section 3.2.2 and sign with the client's
+   signing certificate.  For full quantum resistance, the client SHOULD
+   use an ML-DSA certificate ({{RFC9881}}); classical ECDSA and RSA
+   certificates are permitted during the transition period.
 
 The client's signing key and the ephemeral KEM key are distinct.  No
 ML-KEM encapsulation certificate is required.  Because `clientPublicValue`
-is carried inside `AuthPack` as the `eContent` of a CMS `SignedData`,
-`pk_e` is authenticated by the client's signing certificate.  An active
-attacker substituting a different public key in transit would need to
-forge the client's signature — the same requirement as on the {{RFC4556}}
-DH path.
+is carried inside `AuthPack` as the `eContent` of a CMS `SignedData`
+({{RFC5652}} Section 5.2), `pk_e` is authenticated by the client's signing
+certificate.  An active attacker substituting a different public key in
+transit would need to forge the client's signature — the same requirement
+as on the {{RFC4556}} DH path.
 
 ## KDC Response Construction {#sec-kdc-response}
 
@@ -485,9 +485,9 @@ DH path.
    *  `nonce` = `pkAuthenticator.nonce` from the client's request
       (SHOULD be included; see {{kdckeminfo}})
 
-6. Sign `KDCKEMInfo` using CMS SignedData (ML-DSA RECOMMENDED; see
-   {{sec-kdc-signing}}).  Place in `kemSignedData`.  `eContent` MUST be
-   present.  Step 7 MUST follow step 6 because
+6. Sign `KDCKEMInfo` using CMS SignedData ({{RFC5652}} Section 5) with
+   ML-DSA RECOMMENDED; see {{sec-kdc-signing}}.  Place in `kemSignedData`.
+   `eContent` MUST be present.  Step 7 MUST follow step 6 because
    `PkinitKEMSuppPubInfo.kemSignedData` is set to the DER encoding of
    `KEMRepInfo.kemSignedData` produced in this step.
 
