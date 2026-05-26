@@ -127,7 +127,7 @@ certificate; the KDC's response is authenticated by the KDC's signing
 certificate) while providing post-quantum forward secrecy through ML-KEM.
 
 This document also defines `PAChecksum2`, an extension to
-`PKAuthenticator` that provides checksum algorithm agility, replacing the
+`PKAuthenticator` that provides checksum algorithm agility, supplementing the
 SHA-1-only `paChecksum` field of RFC 4556 for new deployments.
 
 # Requirements Language
