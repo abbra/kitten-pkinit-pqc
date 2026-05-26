@@ -76,6 +76,7 @@ normative:
 informative:
   RFC9882:
   I-D.ietf-lamps-pq-composite-kem:
+  I-D.ietf-lamps-pq-composite-sigs:
   MS-PKCA:
     title: >
       [MS-PKCA]: Public Key Cryptography for Initial Authentication (PKINIT)
@@ -775,9 +776,10 @@ algorithms inherit the minimum from their weakest component.
 
 For a PKINIT exchange to be fully quantum-resistant, the KDC SHOULD sign
 `KDCKEMInfo` with ML-DSA ({{RFC9881}}) or a composite ML-DSA variant
-({{RFC9882}}).  A KDC using a classical signing algorithm (RSA, ECDSA)
-provides PQC key establishment but not PQC authentication; classical
-signing is permitted during the transition period.
+({{I-D.ietf-lamps-pq-composite-sigs}}).  A KDC using a classical signing
+algorithm (RSA, ECDSA) provides PQC key establishment but not
+PQC authentication; classical signing is permitted during the transition
+period.
 
 ## Composite Algorithm Ordering in `TD-EPHEMERAL-KEY-PARAMETERS-DATA` {#sec-composite-ordering}
 
@@ -860,7 +862,8 @@ ML-KEM with a classical ECDSA or RSA signing certificate provides PQC key
 establishment but not PQC authentication; an adversary with a quantum
 computer could impersonate the KDC by forging its classical signature.
 Deployers seeking full quantum resistance MUST use ML-DSA ({{RFC9881}})
-or a composite ML-DSA variant for KDC signing.
+or a composite ML-DSA variant ({{I-D.ietf-lamps-pq-composite-sigs}}) for
+KDC signing.
 
 ## Ephemeral Key Hygiene
 
