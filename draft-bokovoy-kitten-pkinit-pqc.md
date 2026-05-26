@@ -290,7 +290,6 @@ AuthPack ::= SEQUENCE {
         -- clientPublicValue contains a KEM algorithm OID (see
         -- Section 5). Future hybrid DH+KEM specifications MAY define
         -- use of this field alongside KEM OIDs.
-    ...,
     supportedKDFs       [4] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
         -- KDFAlgorithmId is AlgorithmIdentifier; no separate type is
         -- defined.
