@@ -115,15 +115,15 @@ This document defines a new KEM path in PKINIT that uses Key
 Encapsulation Mechanism (KEM) algorithms, in particular the
 Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
 Rather than agreeing on a shared secret via a DH exchange, the client
-generates an ephemeral KEM key pair and sends the public key to the KDC
-inside a CMS-signed `AuthPack` ({{RFC5652}} Section 5).  The KDC
-encapsulates against the client's ephemeral public key, signs the resulting
-ciphertext and algorithm selection inside a new `KDCKEMInfo` structure, and
-returns the signed blob.  Both parties independently derive the AS reply key
-from the shared secret using HKDF ({{RFC5869}}).
+generates an ephemeral KEM key pair and sends the encapsulation key to the
+KDC inside a CMS-signed `AuthPack` ({{RFC5652}} Section 5).  The KDC
+encapsulates against the client's ephemeral encapsulation key, signs the
+resulting ciphertext and algorithm selection inside a new `KDCKEMInfo`
+structure, and returns the signed blob.  Both parties independently derive
+the AS reply key from the shared secret using HKDF ({{RFC5869}}).
 
 The design preserves the security properties of the RFC 4556 DH path
-(the client's public key is authenticated by the client's signing
+(the client's ephemeral key is authenticated by the client's signing
 certificate; the KDC's response is authenticated by the KDC's signing
 certificate) while providing post-quantum forward secrecy through ML-KEM.
 
@@ -140,12 +140,12 @@ SHA-1-only `paChecksum` field of RFC 4556 for new deployments.
 The KEM path is activated when `AuthPack.clientPublicValue` contains an
 ML-KEM or composite KEM OID.  The exchange proceeds as follows:
 
-1. The client generates an ephemeral KEM key pair, places the public key
-   in `AuthPack.clientPublicValue`, and sends a signed `AuthPack` in
+1. The client generates an ephemeral KEM key pair, places the encapsulation
+   key in `AuthPack.clientPublicValue`, and sends a signed `AuthPack` in
    `PA-PK-AS-REQ`.
 
 2. The KDC verifies the `AuthPack` signature, calls
-   `ML-KEM.Encaps(pk_e)` to obtain a shared secret `ss` and ciphertext
+   `ML-KEM.Encaps(ek)` to obtain a shared secret `ss` and ciphertext
    `kemct`, signs them in a `KDCKEMInfo` structure, and returns
    `PA-PK-AS-REP.kemInfo`.
 
@@ -281,7 +281,7 @@ AuthPack ::= SEQUENCE {
     pkAuthenticator     [0] PKAuthenticator,
     clientPublicValue   [1] SubjectPublicKeyInfo OPTIONAL,
         -- DH/ECDH path: ephemeral DH/ECDH public key (RFC 4556).
-        -- KEM path:     ephemeral ML-KEM public key, encoded per
+        -- KEM path:     ephemeral ML-KEM encapsulation key, encoded per
         --               RFC 9935.
         -- RSA path:     MUST be absent.
     supportedCMSTypes   [2] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
@@ -423,13 +423,13 @@ DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
 
 ## Client Request Construction {#sec-client-request}
 
-1. Generate a fresh ephemeral KEM key pair `(pk_e, sk_e)` for the chosen
+1. Generate a fresh ephemeral KEM key pair `(ek, dk)` for the chosen
    algorithm using a cryptographically secure pseudorandom number
    generator (CSPRNG).  The security of the KEM path depends entirely on
-   the unpredictability of `sk_e`.  For ML-KEM CSPRNG requirements, see
+   the unpredictability of `dk`.  For ML-KEM CSPRNG requirements, see
    {{sec-mlkem-csprng}}.
 
-2. Encode `pk_e` as `SubjectPublicKeyInfo` and place it in
+2. Encode `ek` as `SubjectPublicKeyInfo` and place it in
    `AuthPack.clientPublicValue`.  `parameters` MUST be absent.  For
    ML-KEM, encoding follows {{RFC9935}}.
 
@@ -442,13 +442,13 @@ DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
    use an ML-DSA certificate ({{RFC9881}}); classical ECDSA and RSA
    certificates are permitted during the transition period.
 
-The client's signing key and the ephemeral KEM key are distinct.  No
+The client's signing key and the ephemeral KEM key pair are distinct.  No
 ML-KEM encapsulation certificate is required.  Because `clientPublicValue`
 is carried inside `AuthPack` as the `eContent` of a CMS `SignedData`
-({{RFC5652}} Section 5.2), `pk_e` is authenticated by the client's signing
-certificate.  An active attacker substituting a different public key in
-transit would need to forge the client's signature — the same requirement
-as on the {{RFC4556}} DH path.
+({{RFC5652}} Section 5.2), `ek` is authenticated by the client's signing
+certificate.  An active attacker substituting a different encapsulation
+key in transit would need to forge the client's signature — the same
+requirement as on the {{RFC4556}} DH path.
 
 ## KDC Response Construction {#sec-kdc-response}
 
@@ -472,7 +472,7 @@ as on the {{RFC4556}} DH path.
    absent, in which case HKDF-SHA512 is assumed).  If SHA-512 is not
    acceptable, return `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED`; stop.
 
-4. Call `ML-KEM.Encaps(pk_e)` → `(ss, kemct)` using the selected KEM
+4. Call `ML-KEM.Encaps(ek)` → `(ss, kemct)` using the selected KEM
    algorithm.  The KDC MUST perform exactly one encapsulation per
    exchange.  The same `(ss, kemct)` pair MUST be used in all subsequent
    steps.  For ML-KEM-specific behavior, see {{sec-mlkem-encap}}.
@@ -500,7 +500,7 @@ as on the {{RFC4556}} DH path.
 ## Client Response Processing {#sec-client-processing}
 
 The client MUST perform the following steps in order.  On any abort the
-client MUST erase `sk_e` before returning.
+client MUST erase `dk` before returning.
 
 1. **Verify KDC signature** over `kemSignedData`.  Abort if invalid.
 
@@ -524,15 +524,15 @@ client MUST erase `sk_e` before returning.
    (see {{sec-mlkem-sizes}} for ML-KEM sizes).  Abort if not.  KEM
    algorithms MUST NOT be called on incorrectly-sized ciphertexts.
 
-6. **Decapsulate**: `ss = ML-KEM.Decaps(sk_e, KDCKEMInfo.kemct)`
-   using the algorithm in `KDCKEMInfo.kemAlgorithm`.  Erase `sk_e`
+6. **Decapsulate**: `ss = ML-KEM.Decaps(dk, KDCKEMInfo.kemct)`
+   using the algorithm in `KDCKEMInfo.kemAlgorithm`.  Erase `dk`
    immediately after this call completes, before any further processing.
 
 7. **Derive reply key** from `ss` per {{sec-kdf}}.  Use this key to
    decrypt the AS-REP `enc-part`.
 
-8. **Confirm `sk_e` erasure**.  The ephemeral private key MUST have been
-   erased in step 6 and MUST NOT be retained.
+8. **Confirm `dk` erasure**.  The ephemeral decapsulation key MUST have
+   been erased in step 6 and MUST NOT be retained.
 
 Steps 1–5 MUST complete before step 6.  Decapsulation MUST NOT be called
 on an unauthenticated ciphertext.
@@ -706,11 +706,11 @@ but falls below the minimum security category, the KDC MUST return
 
 ## Client Obligation {#sec-downgrade-client}
 
-A client that placed a KEM public key in `clientPublicValue` MUST reject
-any response using `dhSignedData [0]` or `encKeyPack [1]`.  The client
-MUST abort and report: "KEM mode was requested but KDC responded on the
-DH/RSA path."  This rejection is unconditional regardless of local policy
-mode.
+A client that placed a KEM encapsulation key in `clientPublicValue` MUST
+reject any response using `dhSignedData [0]` or `encKeyPack [1]`.  The
+client MUST abort and report: "KEM mode was requested but KDC responded on
+the DH/RSA path."  This rejection is unconditional regardless of local
+policy mode.
 
 ## Old KDC Interoperability {#sec-downgrade-old-kdc}
 
@@ -796,14 +796,14 @@ classical compatibility during migration.
 
 # Message Size Considerations {#sec-message-size}
 
-An `AuthPack` with an ephemeral ML-KEM-768 public key (1184 bytes)
+An `AuthPack` with an ephemeral ML-KEM-768 encapsulation key (1184 bytes)
 signed with ML-DSA-65 (3309 bytes signature {{FIPS204}}) will exceed UDP
 datagram limits.  TCP transport ({{RFC5021}}) is REQUIRED for KEM-path
 PKINIT.  All Kerberos infrastructure (KDCs, clients, firewalls) MUST
 support TCP Kerberos before enabling PQC PKINIT.
 
 Fixed ML-KEM key and ciphertext sizes are given in {{sec-mlkem-sizes}}.
-An ML-KEM-768 public key (1184 bytes) combined with an ML-DSA-65
+An ML-KEM-768 encapsulation key (1184 bytes) combined with an ML-DSA-65
 signature (3309 bytes) alone exceeds UDP limits, before any encapsulation
 overhead is added.
 
@@ -819,7 +819,7 @@ details are isolated here following the model of {{RFC3961}}.
 
 All sizes are fixed by {{FIPS203}}; no variability is permitted.
 
-| Algorithm | Public key | Ciphertext | Shared secret |
+| Algorithm | Encapsulation key | Ciphertext | Shared secret |
 |:---|:---|:---|:---|
 | ML-KEM-512 | 800 bytes | 768 bytes | 32 bytes |
 | ML-KEM-768 | 1184 bytes | 1088 bytes | 32 bytes |
@@ -836,19 +836,19 @@ incorrectly-sized input.
 ML-KEM key generation MUST use a cryptographically secure pseudorandom
 number generator (CSPRNG) satisfying the requirements of {{FIPS203}}
 Section 3.3.  The security of the KEM path depends entirely on the
-unpredictability of the ephemeral private key `sk_e`.
+unpredictability of the ephemeral decapsulation key `dk`.
 
 ## Encapsulation and Decapsulation {#sec-mlkem-encap}
 
 KDC:
-:  `(ss, kemct) = ML-KEM.Encaps(pk_e)` — exactly one call per exchange;
+:  `(ss, kemct) = ML-KEM.Encaps(ek)` — exactly one call per exchange;
    the same `(ss, kemct)` pair MUST be used in all subsequent steps.
 
 Client:
-:  `ss = ML-KEM.Decaps(sk_e, kemct)` — called only after verifying the
+:  `ss = ML-KEM.Decaps(dk, kemct)` — called only after verifying the
    KDC signature, `serverNonce` absence, and nonce
-   ({{sec-client-processing}} steps 1–5).  `sk_e` MUST be erased
-   immediately after Decapsulate returns.
+   ({{sec-client-processing}} steps 1–5).  `dk` MUST be erased
+   immediately after decapsulation completes.
 
 The shared secret `ss` is 32 bytes for all three ML-KEM variants.
 
@@ -865,13 +865,13 @@ Deployers seeking full quantum resistance MUST use ML-DSA ({{RFC9881}})
 or a composite ML-DSA variant ({{I-D.ietf-lamps-pq-composite-sigs}}) for
 KDC signing.
 
-## Ephemeral Key Hygiene
+## Ephemeral Decapsulation Key Hygiene
 
-The ephemeral private key `sk_e` MUST be erased as soon as
+The ephemeral decapsulation key `dk` MUST be erased as soon as
 decapsulation completes ({{sec-client-processing}} step 6).  Failure to
-erase `sk_e` negates forward secrecy: an attacker who later recovers
-`sk_e` can recompute `ss` and derive the AS reply key for any recorded
-exchange that used the corresponding `pk_e`.
+erase `dk` negates forward secrecy: an attacker who later recovers
+`dk` can recompute `ss` and derive the AS reply key for any recorded
+exchange that used the corresponding `ek`.
 
 ## Authenticated KDF Inputs
 
