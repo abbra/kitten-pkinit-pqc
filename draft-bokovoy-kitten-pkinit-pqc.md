@@ -144,7 +144,7 @@ ML-KEM or composite KEM OID.  The exchange proceeds as follows:
    `PA-PK-AS-REQ`.
 
 2. The KDC verifies the `AuthPack` signature, calls
-   `KEM.Encapsulate(pk_e)` to obtain a shared secret `ss` and ciphertext
+   `ML-KEM.Encaps(pk_e)` to obtain a shared secret `ss` and ciphertext
    `kemct`, signs them in a `KDCKEMInfo` structure, and returns
    `PA-PK-AS-REP.kemInfo`.
 
@@ -238,7 +238,7 @@ KDCKEMInfo ::= SEQUENCE {
         -- KEM algorithm used. MUST match clientPublicValue.algorithm OID.
         -- Authenticated by KDC signature.
     kemct           [1] OCTET STRING,
-        -- KEM ciphertext produced by KEM.Encapsulate(client_ephemeral_pk).
+        -- KEM ciphertext produced by ML-KEM.Encaps(client_ephemeral_pk).
         -- Algorithm-specific sizes: see Section 10.1 for ML-KEM.
         -- Authenticated by KDC signature.
     kdfAlgorithm    [2] AlgorithmIdentifier,
@@ -471,7 +471,7 @@ DH path.
    absent, in which case HKDF-SHA512 is assumed).  If SHA-512 is not
    acceptable, return `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED`; stop.
 
-4. Call `KEM.Encapsulate(pk_e)` → `(ss, kemct)` using the selected KEM
+4. Call `ML-KEM.Encaps(pk_e)` → `(ss, kemct)` using the selected KEM
    algorithm.  The KDC MUST perform exactly one encapsulation per
    exchange.  The same `(ss, kemct)` pair MUST be used in all subsequent
    steps.  For ML-KEM-specific behavior, see {{sec-mlkem-encap}}.
@@ -523,7 +523,7 @@ client MUST erase `sk_e` before returning.
    (see {{sec-mlkem-sizes}} for ML-KEM sizes).  Abort if not.  KEM
    algorithms MUST NOT be called on incorrectly-sized ciphertexts.
 
-6. **Decapsulate**: `ss = KEM.Decapsulate(sk_e, KDCKEMInfo.kemct)`
+6. **Decapsulate**: `ss = ML-KEM.Decaps(sk_e, KDCKEMInfo.kemct)`
    using the algorithm in `KDCKEMInfo.kemAlgorithm`.  Erase `sk_e`
    immediately after this call completes, before any further processing.
 
@@ -575,7 +575,7 @@ the need for a separate KDF capability advertisement mechanism.
 ~~~
 reply_key_material = HKDF-SHA-512(
     IKM  = ss,
-        -- KEM.Decapsulate output (see Section 10.1 for ML-KEM sizes)
+        -- ML-KEM.Decaps output (see Section 10.1 for ML-KEM sizes)
     salt = <not provided>,
         -- defaults to HashLen zero bytes (RFC 5869 Section 2.2);
         -- ss is uniformly random so extraction is unnecessary
@@ -826,7 +826,7 @@ All sizes are fixed by {{FIPS203}}; no variability is permitted.
 
 The client MUST validate `KDCKEMInfo.kemct` length against these values
 before calling Decapsulate ({{sec-client-processing}} step 5).
-{{FIPS203}} does not define behavior for `ML-KEM.Decapsulate` on
+{{FIPS203}} does not define behavior for `ML-KEM.Decaps` on
 incorrectly-sized input.
 
 ## CSPRNG Requirement {#sec-mlkem-csprng}
@@ -839,13 +839,12 @@ unpredictability of the ephemeral private key `sk_e`.
 ## Encapsulation and Decapsulation {#sec-mlkem-encap}
 
 KDC:
-:  `(ss, kemct) = ML-KEM.Encapsulate(pk_e)` — exactly one call per
-   exchange; the same `(ss, kemct)` pair MUST be used in all subsequent
-   steps.
+:  `(ss, kemct) = ML-KEM.Encaps(pk_e)` — exactly one call per exchange;
+   the same `(ss, kemct)` pair MUST be used in all subsequent steps.
 
 Client:
-:  `ss = ML-KEM.Decapsulate(sk_e, kemct)` — called only after verifying
-   the KDC signature, `serverNonce` absence, and nonce
+:  `ss = ML-KEM.Decaps(sk_e, kemct)` — called only after verifying the
+   KDC signature, `serverNonce` absence, and nonce
    ({{sec-client-processing}} steps 1–5).  `sk_e` MUST be erased
    immediately after Decapsulate returns.
 
@@ -907,7 +906,7 @@ request body.
 
 ## Ciphertext Length Validation
 
-Calling `ML-KEM.Decapsulate` on an incorrectly-sized ciphertext produces
+Calling `ML-KEM.Decaps` on an incorrectly-sized ciphertext produces
 undefined behavior per {{FIPS203}}.  Clients MUST validate the ciphertext
 length against the fixed values in {{sec-mlkem-sizes}} before invoking
 decapsulation ({{sec-client-processing}} step 5).
