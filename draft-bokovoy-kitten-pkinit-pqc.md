@@ -144,8 +144,8 @@ ML-KEM or composite KEM OID.  The exchange proceeds as follows:
    key in `AuthPack.clientPublicValue`, and sends a signed `AuthPack` in
    `PA-PK-AS-REQ`.
 
-2. The KDC verifies the `AuthPack` signature, calls
-   `ML-KEM.Encaps(ek)` to obtain a shared secret `ss` and ciphertext
+2. The KDC verifies the `AuthPack` signature, encapsulates against the
+   client's encapsulation key to obtain a shared secret `ss` and ciphertext
    `kemct`, signs them in a `KDCKEMInfo` structure, and returns
    `PA-PK-AS-REP.kemInfo`.
 
@@ -156,6 +156,25 @@ ML-KEM or composite KEM OID.  The exchange proceeds as follows:
 No DH exchange takes place.  The shared secret is established entirely
 through one-sided encapsulation; freshness is provided by the per-request
 ephemeral key pair and the echoed nonce.
+
+# KEM Algorithm Interface {#kem-interface}
+
+This specification uses the following generic KEM algorithm interface:
+
+**Encap(ek) → (ss, ct)**: Takes an encapsulation key `ek` and returns a
+shared secret `ss` and ciphertext `ct`.
+
+**Decap(dk, ct) → ss**: Takes a decapsulation key `dk` and ciphertext `ct`
+and returns the shared secret `ss`.
+
+For ML-KEM ({{FIPS203}}), these correspond to:
+- `Encap(ek)` = `ML-KEM.Encaps(ek)` (FIPS 203 Algorithm 17)
+- `Decap(dk, ct)` = `ML-KEM.Decaps(dk, ct)` (FIPS 203 Algorithm 18)
+
+The notation `Encap()` and `Decap()` is used throughout this document to
+describe the generic KEM path protocol. When implementing ML-KEM specifically,
+use the FIPS 203 algorithms. Future specifications extending this framework
+to other KEM algorithms MUST define their mapping to this interface.
 
 # Algorithm Identifier Encoding {#alg-id-encoding}
 
@@ -239,7 +258,7 @@ KDCKEMInfo ::= SEQUENCE {
         -- KEM algorithm used. MUST match clientPublicValue.algorithm OID.
         -- Authenticated by KDC signature.
     kemct           [1] OCTET STRING,
-        -- KEM ciphertext produced by ML-KEM.Encaps(client_ephemeral_pk).
+        -- KEM ciphertext produced by Encap(ek) (see Section 3).
         -- Algorithm-specific sizes: see Section 10.1 for ML-KEM.
         -- Authenticated by KDC signature.
     kdfAlgorithm    [2] AlgorithmIdentifier,
@@ -524,7 +543,7 @@ client MUST erase `dk` before returning.
    (see {{sec-mlkem-sizes}} for ML-KEM sizes).  Abort if not.  KEM
    algorithms MUST NOT be called on incorrectly-sized ciphertexts.
 
-6. **Decapsulate**: `ss = ML-KEM.Decaps(dk, KDCKEMInfo.kemct)`
+6. **Decapsulate**: `ss = Decap(dk, KDCKEMInfo.kemct)`
    using the algorithm in `KDCKEMInfo.kemAlgorithm`.  Erase `dk`
    immediately after this call completes, before any further processing.
 
