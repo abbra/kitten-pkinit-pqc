@@ -255,7 +255,8 @@ prohibited.
 ~~~ asn1
 KDCKEMInfo ::= SEQUENCE {
     kemAlgorithm    [0] AlgorithmIdentifier,
-        -- KEM algorithm used. MUST match clientPublicValue.algorithm OID.
+        -- KEM algorithm and parameter set used (e.g., ML-KEM-768).
+        -- MUST match clientPublicValue.algorithm OID.
         -- Authenticated by KDC signature.
     kemct           [1] OCTET STRING,
         -- KEM ciphertext produced by Encap(ek) (see Section 3).
@@ -288,8 +289,8 @@ inside the KDC-signed structure serves two purposes:
    the structure without needing external context from the AS-REQ.
 
 2. It gives the client explicit, signed KDC confirmation that the KDC
-   recognised and acted on the correct algorithm, rather than relying on
-   implicit inference from `kemct` length alone.
+   recognised and acted on the correct algorithm and parameter set,
+   rather than relying on implicit inference from `kemct` length alone.
 
 The client verifies this echo in {{sec-client-processing}} step 3.
 
