@@ -426,7 +426,7 @@ The exchange mode is determined by the algorithm OID in
 | Absent | — | RSA path (`encKeyPack`); deprecated for new deployments |
 | Present | DH or ECDH OID | DH/ECDH path ({{RFC4556}} / {{RFC8636}}) |
 | Present | ML-KEM or composite KEM OID | KEM path (this specification) |
-| Present | Unrecognized OID | KDC MUST return `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` with `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing supported KEM algorithms; MUST NOT fall back to the RSA path |
+| Present | Unrecognized OID | KDC MUST return `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` with `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing supported KEM algorithms; MUST NOT fall back to the RSA path |
 {: #tab-mode-selection title="Mode selection by clientPublicValue OID"}
 
 For the pure KEM path defined in this specification, when
@@ -478,22 +478,23 @@ requirement as on the {{RFC4556}} DH path.
    policy:
 
    a.  If the algorithm OID is not recognized or not implemented, return
-       `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` with
+       `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error code 65) with
        `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing supported algorithms;
        stop.
 
    b.  If the algorithm's NIST security category is below the KDC's
        configured minimum ({{sec-min-security}}), return
-       `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` with
+       `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error code 65) with
        `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing algorithms at or above
        the minimum security category; stop.
 
 3. Verify `supportedKDFs` contains `id-alg-hkdf-with-sha512` (or is
    absent, in which case HKDF-SHA512 is assumed).  If SHA-512 is not
-   acceptable, return `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED`; stop.
+   acceptable, return `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error
+   code 65); stop.
 
-4. Call `ML-KEM.Encaps(ek)` → `(ss, kemct)` using the selected KEM
-   algorithm.  The KDC MUST perform exactly one encapsulation per
+4. Call `Encap(ek)` → `(ss, kemct)` using the selected KEM algorithm (see
+   {{kem-interface}}).  The KDC MUST perform exactly one encapsulation per
    exchange.  The same `(ss, kemct)` pair MUST be used in all subsequent
    steps.  For ML-KEM-specific behavior, see {{sec-mlkem-encap}}.
 
@@ -644,27 +645,35 @@ digest negotiation errors (`KDC_ERR_DIGEST_IN_SIGNED_DATA_NOT_ACCEPTED`,
 parameter negotiation failure on the KEM path is:
 
 ~~~
-KDC_ERR_KEM_PARAMS_NOT_ACCEPTED    TBD-IANA
+KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED    65
 ~~~
 
-This error is returned when the KDC does not support the client's chosen
-KEM algorithm, or cannot accept HKDF-SHA512.
+This error code is a renamed and expanded version of
+`KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` from {{RFC4556}}. The error code
+number (65) is reused; the scope is extended to cover all ephemeral
+key-establishment algorithm negotiation (DH, ECDH, ML-KEM, and composite
+KEM).
+
+This error is returned when:
+
+* The parameter set OID in `clientPublicValue.algorithm` is not recognized or
+  not implemented by the KDC
+* The parameter set's NIST security category is below the KDC's configured
+  minimum
+* The requested KDF is not acceptable (for KEM path, HKDF-SHA512 is
+  required)
 
 The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in the error:
 
 ~~~ asn1
 -- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
--- existing IANA integer (RFC 4556 Section 3.2.4, Kerberos
--- Pre-Authentication Data Types registry). The ASN.1 encoding is
--- unchanged (SEQUENCE OF AlgorithmIdentifier); the scope is extended
--- to all ephemeral key-establishment algorithms including ML-KEM and
--- composite KEM. No new IANA integer allocation is required; the
--- existing registry entry name and description are updated per this
--- specification.
+-- existing IANA integer from RFC 4556 Section 3.2.2. The ASN.1 encoding
+-- is unchanged (SEQUENCE OF AlgorithmIdentifier); the scope is extended
+-- to include ECDH, ML-KEM, and composite KEM parameter sets.
 
 TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
     -- DH, ECDH, ML-KEM, and composite KEM algorithms the KDC supports,
-    -- ordered strongest-first. Clients filter by OID family.
+    -- in decreasing preference order (RFC 4556 Section 3.2.2).
 ~~~
 
 `KRB-ERROR` messages are unauthenticated.  The client MUST NOT treat
@@ -686,7 +695,7 @@ Proactive advertisement:
    initial algorithm choice is not accepted.
 
 Client retry:
-:  After receiving `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED`, the client MAY
+:  After receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client MAY
    generate a new ephemeral key pair for a different algorithm from
    `TD-EPHEMERAL-KEY-PARAMETERS-DATA` and retry.  The client MUST NOT
    retry with an algorithm below its configured minimum NIST security
@@ -695,7 +704,7 @@ Client retry:
    NOT retry more than once; if the retry also fails, or if
    `TD-EPHEMERAL-KEY-PARAMETERS-DATA` is absent from the error, the
    exchange MUST be terminated regardless of any further
-   `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` messages.
+   `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` messages.
 
    The client MUST log the KDC's supported algorithm list at a diagnostic
    level.  When no common algorithm exists, the client MUST report: "No
@@ -722,7 +731,7 @@ configured minimum security category ({{sec-min-security}}), the KDC MUST
 respond with `kemInfo [2]`.  The KDC MUST NOT respond with
 `dhSignedData [0]` or `encKeyPack [1]`.  If the algorithm is supported
 but falls below the minimum security category, the KDC MUST return
-`KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` (see {{sec-min-security}}).
+`KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (see {{sec-min-security}}).
 
 ## Client Obligation {#sec-downgrade-client}
 
@@ -773,7 +782,7 @@ the KDC to support.  Security strength order: **Category 5 > Category 3
 > Category 1**.  Composite algorithm strength is determined by the
 stronger component.
 
-When retrying after `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED`, the client SHOULD
+When retrying after `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client SHOULD
 select the strongest algorithm from `TD-EPHEMERAL-KEY-PARAMETERS-DATA`
 that is at or above the client's configured minimum security category.
 
@@ -788,7 +797,7 @@ KDC administrators configure a minimum NIST security category:
 | 5 | ML-KEM-1024 | 256 bits |
 {: #tab-security-levels title="NIST security categories for ML-KEM"}
 
-The KDC returns `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` when the client's
+The KDC returns `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` when the client's
 chosen algorithm falls below the configured minimum.  Composite
 algorithms inherit the minimum from their weakest component.
 
@@ -942,10 +951,10 @@ IANA is requested to assign a new Kerberos Message Error Code in the
 "Kerberos Message Error Codes" sub-registry of the "Kerberos Parameters"
 registry:
 
-| Value | Name | Reference |
-|:---|:---|:---|
-| TBD | `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` | This document |
-{: #tab-iana-error title="New Kerberos error code"}
+| Value | Old Name | New Name | Reference |
+|:---|:---|:---|:---|
+| 65 | `KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` | `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` | {{RFC4556}}, This document |
+{: #tab-iana-error title="Renamed Kerberos error code"}
 
 ## New PKINIT OID
 
@@ -970,7 +979,7 @@ Old description:
 
 New name and description:
 : `TD-EPHEMERAL-KEY-PARAMETERS`, "Typed data for
-  `KDC_ERR_KEM_PARAMS_NOT_ACCEPTED` and `KDC_ERR_KEY_TOO_WEAK`; contains
+  `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` and `KDC_ERR_KEY_TOO_WEAK`; contains
   a list of acceptable ephemeral key-establishment algorithm identifiers,
   including DH, ECDH, ML-KEM, and composite KEM algorithms."
 
