@@ -94,12 +94,12 @@ post-quantum key establishment using the Module-Lattice-Based
 Key-Encapsulation Mechanism (ML-KEM) algorithms defined in {{FIPS203}}.
 
 The extensions define a new `kemInfo` arm in `PA-PK-AS-REP`, a
-`KDCKEMInfo` structure signed by the KDC, HKDF-SHA-512-based AS reply
-key derivation, downgrade-prevention obligations for both client and KDC,
-and a `PAChecksum2` extension providing checksum algorithm agility in
-`PKAuthenticator`.  The protocol is designed to be algorithm-agnostic:
-while ML-KEM is the initial mandatory algorithm, the same structure
-accommodates composite KEM algorithms and future KEM standards.
+`KDCKEMInfo` structure signed by the KDC, HKDF-based AS reply key
+derivation (HKDF-SHA-512 for ML-KEM), downgrade-prevention rules, and a
+`PAChecksum2` extension providing checksum algorithm agility in
+`PKAuthenticator`.  The KEM path framework supports multiple KEM
+algorithms including ML-KEM, composite KEM algorithms, and future KEM
+standards.
 
 --- middle
 
@@ -567,29 +567,24 @@ validation procedure as for the DH path.
 
 ## HKDF OIDs {#sec-kdf-oids}
 
-Only SHA-512 is defined for the KEM path.  The {{RFC8619}} OID is
-reused; no new OID is defined under `id-pkinit-kdf`:
+The KEM path uses {{RFC8636}}'s KDF negotiation mechanism via
+`supportedKDFs`. For ML-KEM and composite ML-KEM, this specification
+approves only HKDF-SHA-512:
 
 ~~~ asn1
 id-alg-hkdf-with-sha512 OBJECT IDENTIFIER ::=
     { 1 2 840 113549 1 9 16 3 30 }
 ~~~
 
-| OID | Hash | Conformance |
+| OID | Hash | Conformance for ML-KEM |
 |:---|:---|:---|
 | `id-alg-hkdf-with-sha512` | SHA-512 | MUST implement |
-{: #tab-kdf-oids title="KDF algorithm identifiers for the KEM path"}
+{: #tab-kdf-oids title="Approved KDFs for ML-KEM"}
 
-SHA-1 MUST NOT appear as a `kdfAlgorithm` value.  SHA-256 and SHA-384
-MUST NOT be used on the KEM path defined by this specification.
-
-A KDC that supports the KEM path MUST support `id-alg-hkdf-with-sha512`.
-SHA-512 is the sole mandatory KDF for PQC paths, matching the security
-level of ML-KEM-768 and ML-KEM-1024 and available on all modern systems.
-A KDC that cannot accept HKDF-SHA512 MUST NOT advertise KEM support in
-`TD-EPHEMERAL-KEY-PARAMETERS-DATA`.  This guarantees that KDF-only
-negotiation failure cannot occur in a conformant deployment, eliminating
-the need for a separate KDF capability advertisement mechanism.
+When `clientPublicValue.algorithm` contains an ML-KEM or composite ML-KEM
+OID, the KDC selects a KDF from `supportedKDFs` that appears in the
+approved list above. If `supportedKDFs` is absent or contains no approved
+KDF, the KDC defaults to `id-alg-hkdf-with-sha512`.
 
 ## Derivation {#sec-kdf-derivation}
 
