@@ -474,19 +474,18 @@ requirement as on the {{RFC4556}} DH path.
 
 1. Detect the KEM algorithm OID in `clientPublicValue.algorithm`.
 
-2. Check whether the algorithm is supported and meets the security
-   policy:
+2. Check whether the algorithm is supported and meets the KDC's security
+   policy (per {{RFC4556}} Section 3.2.2):
 
    a.  If the algorithm OID is not recognized or not implemented, return
        `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error code 65) with
        `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing supported algorithms;
        stop.
 
-   b.  If the algorithm's NIST security category is below the KDC's
-       configured minimum ({{sec-min-security}}), return
+   b.  If the algorithm does not satisfy the KDC's security policy, return
        `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error code 65) with
-       `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing algorithms at or above
-       the minimum security category; stop.
+       `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing acceptable algorithms;
+       stop.
 
 3. Verify `supportedKDFs` contains `id-alg-hkdf-with-sha512` (or is
    absent, in which case HKDF-SHA512 is assumed).  If SHA-512 is not
@@ -654,14 +653,14 @@ number (65) is reused; the scope is extended to cover all ephemeral
 key-establishment algorithm negotiation (DH, ECDH, ML-KEM, and composite
 KEM).
 
-This error is returned when:
+This error is returned when the algorithm and parameter set in
+`clientPublicValue.algorithm` does not satisfy the KDC's security policy,
+including but not limited to:
 
-* The parameter set OID in `clientPublicValue.algorithm` is not recognized or
-  not implemented by the KDC
-* The parameter set's NIST security category is below the KDC's configured
-  minimum
-* The requested KDF is not acceptable (for KEM path, HKDF-SHA512 is
-  required)
+* The algorithm OID is not recognized or not implemented by the KDC
+* The algorithm does not meet the KDC's security requirements
+* The requested KDF is not acceptable (for ML-KEM as defined in this
+  specification, HKDF-SHA512 is required)
 
 The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in the error:
 
@@ -686,10 +685,9 @@ Proactive advertisement:
 Client retry:
 :  After receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client
    follows {{RFC4556}} Section 3.2.2 retry behavior, selecting a different
-   parameter set from `TD-EPHEMERAL-KEY-PARAMETERS-DATA`.  The client MUST NOT
-   retry with a parameter set below its configured minimum NIST security
-   category.  If no acceptable parameter set exists, the exchange MUST be
-   terminated.
+   parameter set from `TD-EPHEMERAL-KEY-PARAMETERS-DATA` that satisfies the
+   client's security policy.  If no mutually acceptable parameter set exists,
+   the exchange MUST be terminated.
 
 # Downgrade Prevention {#sec-downgrade}
 
@@ -739,34 +737,30 @@ Composite algorithms are defined in
 
 ## Client Algorithm Selection {#sec-client-alg-selection}
 
-As with {{RFC4556}} DH path algorithm selection, the client selects the
-ML-KEM parameter set based on local policy. For ML-KEM, security strength
-follows NIST categories: **Category 5 > Category 3 > Category 1**.  Composite
-algorithm strength is determined by the stronger component.
+As with {{RFC4556}} DH path algorithm selection, the client selects which
+KEM algorithm to use based on local policy. Algorithm selection is
+implementation-defined.
 
-## KDC Minimum Security Level {#sec-min-security}
+## KDC Security Policy {#sec-min-security}
 
 As with {{RFC4556}} Section 3.2.2, the KDC enforces a security policy for
-ephemeral key algorithms. For ML-KEM, this is expressed as a minimum NIST
-security category:
+ephemeral key algorithms. The specific policy is implementation-defined.
+
+For ML-KEM, implementations MAY use NIST security categories as a basis for
+policy decisions:
 
 | Category | Algorithm | Post-quantum bit security |
 |:---|:---|:---|
 | 1 | ML-KEM-512 | 128 bits |
-| 3 | ML-KEM-768 | 192 bits (RECOMMENDED default) |
+| 3 | ML-KEM-768 | 192 bits |
 | 5 | ML-KEM-1024 | 256 bits |
 {: #tab-security-levels title="NIST security categories for ML-KEM"}
 
-When the client's chosen parameter set falls below this minimum, the KDC returns
-`KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` per {{RFC4556}} mechanisms.
-Composite parameter sets inherit the security category from their weakest component.
+NIST recommends ML-KEM-768 (Category 3) as the default parameter set, as it
+provides a large security margin at a reasonable performance cost. Composite
+parameter sets combining ML-KEM with traditional algorithms provide the
+security category of their ML-KEM component for post-quantum resistance.
 
-## Composite Algorithm Ordering in `TD-EPHEMERAL-KEY-PARAMETERS-DATA` {#sec-composite-ordering}
-
-The KDC lists algorithms in decreasing security strength order.  When
-pure ML-KEM and composite KEM algorithms are both present, composite
-algorithms are ordered by security category derived from their weaker
-component.  The complete list MUST be sorted by total security strength.
 
 # RSA Path Deprecation {#sec-rsa-deprecation}
 
@@ -866,8 +860,7 @@ structure.
 
 The security considerations in {{RFC4556}} Section 5 regarding unauthenticated
 `KRB-ERROR` messages apply to `TD-EPHEMERAL-KEY-PARAMETERS-DATA`. Clients MUST
-enforce their configured minimum security category regardless of advertised
-algorithms.
+enforce their configured security policy regardless of advertised algorithms.
 
 ## Algorithm Downgrade Prevention
 
