@@ -663,24 +663,19 @@ Client retry:
 
 # Downgrade Prevention {#sec-downgrade}
 
-When a client authenticates using a post-quantum certificate (signed with
-ML-DSA per {{RFC9881}} or composite ML-DSA per
-{{I-D.ietf-lamps-pq-composite-sigs}}), and sends a KEM encapsulation key in
-`clientPublicValue`, the client MUST NOT retry with a non-KEM parameter set
-(DH, ECDH, or RSA) regardless of any error responses received.  The client MAY
-retry with a different KEM parameter set from the KDC's advertised list
-({{sec-kem-errors}}), but MUST abort the authentication if no mutually
-supported KEM algorithm exists.
+When a client uses a post-quantum certificate (e.g., ML-DSA per {{RFC9881}},
+composite ML-DSA per {{I-D.ietf-lamps-pq-composite-sigs}}, or future
+quantum-resistant signature algorithms) and sends a post-quantum KEM
+encapsulation key (ML-KEM or composite ML-KEM) in `clientPublicValue`, the
+client MUST NOT fall back to traditional key-establishment algorithms (DH,
+ECDH, RSA). This ensures quantum-resistant authentication and key
+establishment are paired. The client MAY retry with a different post-quantum
+KEM algorithm from {{sec-kem-errors}}.
 
-This requirement ensures consistent post-quantum security: a client using a PQ
-certificate for authentication clearly requires post-quantum key establishment.
-The security considerations regarding unauthenticated error messages described
-in Section 5 of {{RFC4556}} apply here.
-
-Clients using classical certificates (RSA, ECDSA) MAY fall back from KEM to DH
-or ECDH after receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`.  This
-allows backward compatibility with KDCs that have not yet been upgraded to
-support KEM, while still providing a migration path to post-quantum security.
+Clients using traditional certificates (RSA, ECDSA) MAY fall back from
+post-quantum KEM to traditional key establishment (DH, ECDH) for backward
+compatibility with non-upgraded KDCs. The security considerations regarding
+unauthenticated error messages in {{RFC4556}} Section 5 apply.
 
 # Algorithm Requirements {#sec-algorithms}
 
