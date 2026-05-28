@@ -415,9 +415,10 @@ present, the KDC MUST return `KDC_ERR_PREAUTH_FAILED`.  Future hybrid
 DH+KEM specifications may define different nonce semantics and relax this
 requirement.
 
-The interpretation of `supportedKDFs` depends on the active path: on the
-KEM path it carries HKDF algorithm OIDs ({{sec-kdf-oids}}); on the
-DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
+When present, `supportedKDFs` MUST contain only KDFs applicable to the
+path indicated by `clientPublicValue.algorithm`: HKDF algorithm OIDs
+({{sec-kdf-oids}}) for the KEM path, or DH-KDF algorithm OIDs per
+{{RFC8636}} for the DH/ECDH path.
 
 # KEM Path Operation {#sec-kem-operation}
 
