@@ -439,7 +439,7 @@ DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
 4. Wrap `AuthPack` as the `eContent` of a CMS `SignedData` ({{RFC5652}}
    Section 5) per {{RFC4556}} Section 3.2.2 and sign with the client's
    signing certificate.  For full quantum resistance, the client SHOULD
-   use an ML-DSA certificate ({{RFC9881}}); classical ECDSA and RSA
+   use an ML-DSA certificate ({{RFC9881}}); traditional ECDSA and RSA
    certificates are permitted during the transition period.
 
 The ephemeral encapsulation key `ek` is authenticated by the client's
@@ -733,7 +733,7 @@ security category of their ML-KEM component for post-quantum resistance.
 
 The `encKeyPack [1]` path is quantum-vulnerable.  New deployments SHOULD
 NOT use `encKeyPack`.  Existing deployments MAY continue using it for
-classical compatibility during migration.
+traditional compatibility during migration.
 
 # Message Size Considerations {#sec-message-size}
 
@@ -796,9 +796,9 @@ The shared secret `ss` is 32 bytes for all three ML-KEM variants.
 
 The KEM path achieves post-quantum confidentiality only when both the KEM
 algorithm and the KDC signing algorithm are quantum-resistant.  Using
-ML-KEM with a classical ECDSA or RSA signing certificate provides PQC key
+ML-KEM with a traditional ECDSA or RSA signing certificate provides PQC key
 establishment but not PQC authentication; an adversary with a quantum
-computer could impersonate the KDC by forging its classical signature.
+computer could impersonate the KDC by forging its traditional signature.
 Deployers seeking full quantum resistance MUST use ML-DSA ({{RFC9881}})
 or a composite ML-DSA variant ({{I-D.ietf-lamps-pq-composite-sigs}}) for
 KDC signing.
@@ -830,8 +830,8 @@ enforce their configured security policy regardless of advertised algorithms.
 
 The downgrade prevention rules in {{sec-downgrade}} are mandatory and
 unconditional.  A client that allows a fallback from the KEM path to the
-DH/RSA path on receiving a classical response exposes the session to an
-active attacker who can exploit a classical-path vulnerability.
+DH/RSA path on receiving a traditional response exposes the session to an
+active attacker who can exploit a traditional-path vulnerability.
 
 ## `paChecksum2` and Replay Prevention
 
