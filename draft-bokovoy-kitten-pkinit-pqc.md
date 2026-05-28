@@ -335,14 +335,6 @@ PkinitKEMSuppPubInfo ::= SEQUENCE {
         -- DER(AS-REQ).
     kemSignedData   [2] OCTET STRING,
         -- DER(KEMRepInfo.kemSignedData): the KDC-signed KDCKEMInfo.
-    kemct           [3] OCTET STRING,
-        -- KEM ciphertext from KDCKEMInfo.kemct.
-        -- Also present inside KDCKEMInfo in the kemSignedData field
-        -- above, but included here for direct binding without requiring
-        -- the receiver to parse the nested structure.
-        -- MUST equal KDCKEMInfo.kemct.
-    kdfAlgorithm    [4] AlgorithmIdentifier,
-        -- Taken from KDCKEMInfo.kdfAlgorithm.
     ...
 }
 ~~~
