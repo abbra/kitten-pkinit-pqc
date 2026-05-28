@@ -426,7 +426,7 @@ The exchange mode is determined by the algorithm OID in
 | Absent | — | RSA path (`encKeyPack`); deprecated for new deployments |
 | Present | DH or ECDH OID | DH/ECDH path ({{RFC4556}} / {{RFC8636}}) |
 | Present | ML-KEM or composite KEM OID | KEM path (this specification) |
-| Present | Unrecognized OID | KDC MUST return `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` with `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing supported KEM algorithms; MUST NOT fall back to the RSA path |
+| Present | Unrecognized OID | Error (see {{sec-downgrade}}); MUST NOT fall back to RSA path |
 {: #tab-mode-selection title="Mode selection by clientPublicValue OID"}
 
 For the pure KEM path defined in this specification, when
@@ -507,7 +507,7 @@ requirement as on the {{RFC4556}} DH path.
       (SHOULD be included; see {{kdckeminfo}})
 
 6. Sign `KDCKEMInfo` using CMS SignedData ({{RFC5652}} Section 5) with
-   ML-DSA ({{RFC9882}}) RECOMMENDED; see {{sec-kdc-signing}}.  Place in `kemSignedData`.
+   ML-DSA ({{RFC9882}}) RECOMMENDED.  Place in `kemSignedData`.
    `eContent` MUST be present.  Step 7 MUST follow step 6 because
    `PkinitKEMSuppPubInfo.kemSignedData` is set to the DER encoding of
    `KEMRepInfo.kemSignedData` produced in this step.
@@ -676,78 +676,41 @@ TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
     -- in decreasing preference order (RFC 4556 Section 3.2.2).
 ~~~
 
-`KRB-ERROR` messages are unauthenticated.  The client MUST NOT treat
-`TD-EPHEMERAL-KEY-PARAMETERS-DATA` as authoritative beyond advisory use.
-
 Proactive advertisement:
-:  A KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in the typed
-   data of `KDC_ERR_PREAUTH_REQUIRED`, listing all DH, ECDH, ML-KEM, and
-   composite KEM algorithms it supports.  This allows a client to select
-   the appropriate algorithm on its first AS-REQ attempt, avoiding the
-   guess-and-retry round trip.  Old clients that parse `TD-DH-PARAMETERS`
-   will receive the same typed data and silently ignore algorithm OIDs
-   they do not recognize.
-
-   A KDC SHOULD also include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in
-   `PREAUTH_FAILED` errors.  Advertising supported algorithms in both
-   `PREAUTH_REQUIRED` and `PREAUTH_FAILED` responses improves
-   interoperability and avoids unnecessary retry loops when a client's
-   initial algorithm choice is not accepted.
+:  A KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in
+   `KDC_ERR_PREAUTH_REQUIRED` and `KDC_ERR_PREAUTH_FAILED` to allow the
+   client to select an acceptable parameter set on its first attempt.
+   This allows a client to select the appropriate algorithm on its first
+   AS-REQ attempt, avoiding the guess-and-retry round trip.
 
 Client retry:
-:  After receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client MAY
-   generate a new ephemeral key pair for a different algorithm from
-   `TD-EPHEMERAL-KEY-PARAMETERS-DATA` and retry.  The client MUST NOT
-   retry with an algorithm below its configured minimum NIST security
-   category.  If no algorithm in `TD-EPHEMERAL-KEY-PARAMETERS-DATA` meets
-   the client's minimum policy, the error is terminal.  The client SHOULD
-   NOT retry more than once; if the retry also fails, or if
-   `TD-EPHEMERAL-KEY-PARAMETERS-DATA` is absent from the error, the
-   exchange MUST be terminated regardless of any further
-   `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` messages.
-
-   The client MUST log the KDC's supported algorithm list at a diagnostic
-   level.  When no common algorithm exists, the client MUST report: "No
-   common KEM algorithm between client and KDC; check KDC configuration."
-
-## DH Path Errors {#sec-dh-errors}
-
-When `clientPublicValue` contains a DH or ECDH OID, {{RFC8636}} error
-handling applies:
-
-*  `KDC_ERR_DIGEST_IN_SIGNED_DATA_NOT_ACCEPTED` with
-   `TD-CMS-DIGEST-ALGORITHMS-DATA`
-*  `KDC_ERR_DIGEST_IN_CERT_NOT_ACCEPTED` with
-   `TD-CERT-DIGEST-ALGORITHMS-DATA`
-*  KDF negotiation failure if none of `supportedKDFs` is acceptable
+:  After receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client
+   follows {{RFC4556}} Section 3.2.2 retry behavior, selecting a different
+   parameter set from `TD-EPHEMERAL-KEY-PARAMETERS-DATA`.  The client MUST NOT
+   retry with a parameter set below its configured minimum NIST security
+   category.  If no acceptable parameter set exists, the exchange MUST be
+   terminated.
 
 # Downgrade Prevention {#sec-downgrade}
 
-## KDC Obligation {#sec-downgrade-kdc}
+When a client authenticates using a post-quantum certificate (signed with
+ML-DSA per {{RFC9881}} or composite ML-DSA per
+{{I-D.ietf-lamps-pq-composite-sigs}}), and sends a KEM encapsulation key in
+`clientPublicValue`, the client MUST NOT retry with a non-KEM parameter set
+(DH, ECDH, or RSA) regardless of any error responses received.  The client MAY
+retry with a different KEM parameter set from the KDC's advertised list
+({{sec-kem-errors}}), but MUST abort the authentication if no mutually
+supported KEM algorithm exists.
 
-If a client's `clientPublicValue` contains an ML-KEM or composite KEM
-OID for an algorithm the KDC supports, and the algorithm meets the KDC's
-configured minimum security category ({{sec-min-security}}), the KDC MUST
-respond with `kemInfo [2]`.  The KDC MUST NOT respond with
-`dhSignedData [0]` or `encKeyPack [1]`.  If the algorithm is supported
-but falls below the minimum security category, the KDC MUST return
-`KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (see {{sec-min-security}}).
+This requirement ensures consistent post-quantum security: a client using a PQ
+certificate for authentication clearly requires post-quantum key establishment.
+The security considerations regarding unauthenticated error messages described
+in Section 5 of {{RFC4556}} apply here.
 
-## Client Obligation {#sec-downgrade-client}
-
-A client that placed a KEM encapsulation key in `clientPublicValue` MUST
-reject any response using `dhSignedData [0]` or `encKeyPack [1]`.  The
-client MUST abort and report: "KEM mode was requested but KDC responded on
-the DH/RSA path."  This rejection is unconditional regardless of local
-policy mode.
-
-## Old KDC Interoperability {#sec-downgrade-old-kdc}
-
-An old KDC that does not support the KEM path will silently ignore the
-KEM OID and respond with `dhSignedData` or `encKeyPack`.  The client MUST
-reject this response per {{sec-downgrade-client}}.  Before aborting, the
-client MUST emit a diagnostic: "KEM mode was requested but KDC responded
-on the DH/RSA path; the KDC likely does not support PQC PKINIT."
+Clients using classical certificates (RSA, ECDSA) MAY fall back from KEM to DH
+or ECDH after receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`.  This
+allows backward compatibility with KDCs that have not yet been upgraded to
+support KEM, while still providing a migration path to post-quantum security.
 
 # Algorithm Requirements {#sec-algorithms}
 
@@ -776,19 +739,16 @@ Composite algorithms are defined in
 
 ## Client Algorithm Selection {#sec-client-alg-selection}
 
-The client selects the KEM algorithm by choosing which ephemeral key pair
-to generate.  The client SHOULD select the strongest algorithm it expects
-the KDC to support.  Security strength order: **Category 5 > Category 3
-> Category 1**.  Composite algorithm strength is determined by the
-stronger component.
-
-When retrying after `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client SHOULD
-select the strongest algorithm from `TD-EPHEMERAL-KEY-PARAMETERS-DATA`
-that is at or above the client's configured minimum security category.
+As with {{RFC4556}} DH path algorithm selection, the client selects the
+ML-KEM parameter set based on local policy. For ML-KEM, security strength
+follows NIST categories: **Category 5 > Category 3 > Category 1**.  Composite
+algorithm strength is determined by the stronger component.
 
 ## KDC Minimum Security Level {#sec-min-security}
 
-KDC administrators configure a minimum NIST security category:
+As with {{RFC4556}} Section 3.2.2, the KDC enforces a security policy for
+ephemeral key algorithms. For ML-KEM, this is expressed as a minimum NIST
+security category:
 
 | Category | Algorithm | Post-quantum bit security |
 |:---|:---|:---|
@@ -797,18 +757,9 @@ KDC administrators configure a minimum NIST security category:
 | 5 | ML-KEM-1024 | 256 bits |
 {: #tab-security-levels title="NIST security categories for ML-KEM"}
 
-The KDC returns `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` when the client's
-chosen algorithm falls below the configured minimum.  Composite
-algorithms inherit the minimum from their weakest component.
-
-## KDC Signing Algorithm {#sec-kdc-signing}
-
-For a PKINIT exchange to be fully quantum-resistant, the KDC SHOULD sign
-`KDCKEMInfo` with ML-DSA ({{RFC9881}}) or a composite ML-DSA variant
-({{I-D.ietf-lamps-pq-composite-sigs}}).  A KDC using a classical signing
-algorithm (RSA, ECDSA) provides PQC key establishment but not
-PQC authentication; classical signing is permitted during the transition
-period.
+When the client's chosen parameter set falls below this minimum, the KDC returns
+`KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` per {{RFC4556}} mechanisms.
+Composite parameter sets inherit the security category from their weakest component.
 
 ## Composite Algorithm Ordering in `TD-EPHEMERAL-KEY-PARAMETERS-DATA` {#sec-composite-ordering}
 
@@ -913,12 +864,10 @@ structure.
 
 ## Unauthenticated Error Messages
 
-`KRB-ERROR` messages, including those carrying
-`TD-EPHEMERAL-KEY-PARAMETERS-DATA`, are unauthenticated.  An active
-attacker can inject or modify these messages.  Clients MUST treat the
-algorithm list as advisory only and MUST NOT use an algorithm from the
-list that is below their configured minimum security category, regardless
-of what the list contains.
+The security considerations in {{RFC4556}} Section 5 regarding unauthenticated
+`KRB-ERROR` messages apply to `TD-EPHEMERAL-KEY-PARAMETERS-DATA`. Clients MUST
+enforce their configured minimum security category regardless of advertised
+algorithms.
 
 ## Algorithm Downgrade Prevention
 
