@@ -115,12 +115,11 @@ This document defines a new KEM path in PKINIT that uses Key
 Encapsulation Mechanism (KEM) algorithms, in particular the
 Module-Lattice-Based Key-Encapsulation Mechanism (ML-KEM) {{FIPS203}}.
 Rather than agreeing on a shared secret via a DH exchange, the client
-generates an ephemeral KEM key pair and sends the encapsulation key to the
-KDC inside a CMS-signed `AuthPack` ({{RFC5652}} Section 5).  The KDC
-encapsulates against the client's ephemeral encapsulation key, signs the
-resulting ciphertext and algorithm selection inside a new `KDCKEMInfo`
-structure, and returns the signed blob.  Both parties independently derive
-the AS reply key from the shared secret using HKDF ({{RFC5869}}).
+generates an ephemeral KEM key pair and sends the encapsulation key in a
+CMS-signed `AuthPack` ({{RFC5652}} Section 5). The KDC encapsulates
+against it, signs the ciphertext and algorithm selection in `KDCKEMInfo`,
+and returns the signed structure. Both parties derive the AS reply key
+using HKDF ({{RFC5869}}).
 
 The design preserves the security properties of the RFC 4556 DH path
 (the client's ephemeral key is authenticated by the client's signing
@@ -263,9 +262,8 @@ KDCKEMInfo ::= SEQUENCE {
         -- Algorithm-specific sizes: see Section 10.1 for ML-KEM.
         -- Authenticated by KDC signature.
     kdfAlgorithm    [2] AlgorithmIdentifier,
-        -- HKDF variant for AS reply key derivation, selected from
-        -- supportedKDFs. Authenticated by KDC signature (fixes the
-        -- RFC 8636 unauthenticated KDF selection flaw).
+        -- HKDF variant selected from supportedKDFs. Authenticated by
+        -- KDC signature (fixes RFC 8636 unauthenticated selection flaw).
     nonce           [3] INTEGER (0..4294967295) OPTIONAL,
         -- When present, MUST equal pkAuthenticator.nonce from the
         -- client's AS-REQ. Implementations SHOULD include this field.
@@ -273,26 +271,16 @@ KDCKEMInfo ::= SEQUENCE {
         -- alternative freshness mechanisms are defined by their
         -- respective specifications.
     serverNonce     [4] OCTET STRING OPTIONAL,
-        -- Reserved for future hybrid DH+KEM modes. Analogous to the
-        -- RFC 4556 serverDHNonce; allows KDC-side caching to avoid
-        -- per-request key generation. MUST be absent in pure ML-KEM
-        -- exchanges defined by this specification.
+        -- Reserved for future hybrid DH+KEM modes. Analogous to
+        -- RFC 4556 serverDHNonce. MUST be absent in pure ML-KEM.
     ...
 }
 ~~~
 
-`kemAlgorithm` is included even though the KEM algorithm is already
-conveyed in the client's `clientPublicValue.algorithm`.  Placing it
-inside the KDC-signed structure serves two purposes:
-
-1. It makes `KDCKEMInfo` self-describing — a receiver can parse or log
-   the structure without needing external context from the AS-REQ.
-
-2. It gives the client explicit, signed KDC confirmation that the KDC
-   recognised and acted on the correct algorithm and parameter set,
-   rather than relying on implicit inference from `kemct` length alone.
-
-The client verifies this echo in {{sec-client-processing}} step 3.
+`kemAlgorithm` makes `KDCKEMInfo` self-describing and provides signed
+confirmation that the KDC processed the correct algorithm (verified in
+{{sec-client-processing}} step 4), avoiding implicit inference from
+`kemct` length alone.
 
 ## Extended `AuthPack` {#authpack}
 
@@ -438,8 +426,8 @@ DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
 1. Generate a fresh ephemeral KEM key pair `(ek, dk)` for the chosen
    algorithm using a cryptographically secure pseudorandom number
    generator (CSPRNG).  The security of the KEM path depends entirely on
-   the unpredictability of `dk`.  For ML-KEM CSPRNG requirements, see
-   {{sec-mlkem-csprng}}.
+   the unpredictability of `dk` (for ML-KEM CSPRNG requirements, see
+   {{sec-mlkem-csprng}}).
 
 2. Encode `ek` as `SubjectPublicKeyInfo` and place it in
    `AuthPack.clientPublicValue`.  `parameters` MUST be absent.  For
@@ -454,13 +442,10 @@ DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
    use an ML-DSA certificate ({{RFC9881}}); classical ECDSA and RSA
    certificates are permitted during the transition period.
 
-The client's signing key and the ephemeral KEM key pair are distinct.  No
-ML-KEM encapsulation certificate is required.  Because `clientPublicValue`
-is carried inside `AuthPack` as the `eContent` of a CMS `SignedData`
-({{RFC5652}} Section 5.2), `ek` is authenticated by the client's signing
-certificate.  An active attacker substituting a different encapsulation
-key in transit would need to forge the client's signature — the same
-requirement as on the {{RFC4556}} DH path.
+The ephemeral encapsulation key `ek` is authenticated by the client's
+signing certificate via `AuthPack.SignedData` ({{RFC5652}} Section 5.2),
+following the {{RFC4556}} DH path model. No separate encapsulation
+certificate is required.
 
 ## KDC Response Construction {#sec-kdc-response}
 
@@ -484,10 +469,10 @@ requirement as on the {{RFC4556}} DH path.
    acceptable, return `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error
    code 65); stop.
 
-4. Call `Encap(ek)` → `(ss, kemct)` using the selected KEM algorithm (see
-   {{kem-interface}}).  The KDC MUST perform exactly one encapsulation per
-   exchange.  The same `(ss, kemct)` pair MUST be used in all subsequent
-   steps.  For ML-KEM-specific behavior, see {{sec-mlkem-encap}}.
+4. Call `Encap(ek)` → `(ss, kemct)` using the selected algorithm (see
+   {{kem-interface}}).  Exactly one encapsulation MUST be performed per
+   exchange; the resulting `(ss, kemct)` pair MUST be used in all
+   subsequent steps (for ML-KEM specifics, see {{sec-mlkem-encap}}).
 
 5. Build `KDCKEMInfo`:
 
@@ -802,14 +787,11 @@ unpredictability of the ephemeral decapsulation key `dk`.
 ## Encapsulation and Decapsulation {#sec-mlkem-encap}
 
 KDC:
-:  `(ss, kemct) = ML-KEM.Encaps(ek)` — exactly one call per exchange;
-   the same `(ss, kemct)` pair MUST be used in all subsequent steps.
+:  `(ss, kemct) = ML-KEM.Encaps(ek)` per {{sec-kdc-response}} step 4.
 
 Client:
-:  `ss = ML-KEM.Decaps(dk, kemct)` — called only after verifying the
-   KDC signature, `serverNonce` absence, and nonce
-   ({{sec-client-processing}} steps 1–5).  `dk` MUST be erased
-   immediately after decapsulation completes.
+:  `ss = ML-KEM.Decaps(dk, kemct)` per {{sec-client-processing}} step 6,
+   followed by immediate `dk` erasure.
 
 The shared secret `ss` is 32 bytes for all three ML-KEM variants.
 
