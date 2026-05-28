@@ -303,9 +303,9 @@ AuthPack ::= SEQUENCE {
         -- KDFAlgorithmId is AlgorithmIdentifier; no separate type is
         -- defined.
         -- KEM path: HKDF algorithm OIDs ({{sec-kdf-oids}}). Only
-        --   HKDF-SHA512 is defined for the KEM path; this field
+        --   HKDF-SHA-512 is defined for the KEM path; this field
         --   SHOULD contain id-alg-hkdf-with-sha512. If absent when a
-        --   KEM OID is in clientPublicValue, HKDF-SHA512 is assumed.
+        --   KEM OID is in clientPublicValue, HKDF-SHA-512 is assumed.
         -- DH/ECDH path: DH-KDF algorithm OIDs (RFC 8636).
     ...
 }
@@ -434,7 +434,7 @@ DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
    ML-KEM, encoding follows {{RFC9935}}.
 
 3. Set `supportedKDFs` to `{ id-alg-hkdf-with-sha512 }`.  If omitted,
-   HKDF-SHA512 is assumed.
+   HKDF-SHA-512 is assumed.
 
 4. Wrap `AuthPack` as the `eContent` of a CMS `SignedData` ({{RFC5652}}
    Section 5) per {{RFC4556}} Section 3.2.2 and sign with the client's
@@ -465,7 +465,7 @@ certificate is required.
        stop.
 
 3. Verify `supportedKDFs` contains `id-alg-hkdf-with-sha512` (or is
-   absent, in which case HKDF-SHA512 is assumed).  If SHA-512 is not
+   absent, in which case HKDF-SHA-512 is assumed).  If SHA-512 is not
    acceptable, return `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error
    code 65); stop.
 
@@ -632,7 +632,7 @@ including but not limited to:
 * The algorithm OID is not recognized or not implemented by the KDC
 * The algorithm does not meet the KDC's security requirements
 * The requested KDF is not acceptable (for ML-KEM as defined in this
-  specification, HKDF-SHA512 is required)
+  specification, HKDF-SHA-512 is required)
 
 The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in the error:
 
