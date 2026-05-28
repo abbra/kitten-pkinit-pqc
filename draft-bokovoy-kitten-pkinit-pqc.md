@@ -652,8 +652,10 @@ Proactive advertisement:
 :  A KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in
    `KDC_ERR_PREAUTH_REQUIRED` and `KDC_ERR_PREAUTH_FAILED` to allow the
    client to select an acceptable parameter set on its first attempt.
-   This allows a client to select the appropriate algorithm on its first
-   AS-REQ attempt, avoiding the guess-and-retry round trip.
+   This avoids a retry round trip, which is particularly valuable for
+   post-quantum deployments where both ML-DSA signatures and ML-KEM
+   encapsulation keys are significantly larger than their traditional
+   counterparts, making the overhead of a failed attempt much higher.
 
 Client retry:
 :  After receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client
