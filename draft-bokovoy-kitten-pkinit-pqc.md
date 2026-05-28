@@ -156,7 +156,7 @@ No DH exchange takes place.  The shared secret is established entirely
 through one-sided encapsulation; freshness is provided by the per-request
 ephemeral key pair and the echoed nonce.
 
-# KEM Algorithm Interface {#kem-interface}
+# KEM Algorithm Interface {#sec-kem-interface}
 
 This specification uses the following generic KEM algorithm interface:
 
@@ -175,7 +175,7 @@ describe the generic KEM path protocol. When implementing ML-KEM specifically,
 use the FIPS 203 algorithms. Future specifications extending this framework
 to other KEM algorithms MUST define their mapping to this interface.
 
-# Algorithm Identifier Encoding {#alg-id-encoding}
+# Algorithm Identifier Encoding {#sec-alg-id-encoding}
 
 The `parameters` field MUST be absent from all algorithm identifiers used
 in this specification.  The source of this requirement differs by
@@ -196,9 +196,9 @@ algorithm family:
      *  `KDCKEMInfo.kdfAlgorithm`
      *  `AuthPack.supportedKDFs` entries
 
-# New ASN.1 Types {#asn1-types}
+# New ASN.1 Types {#sec-asn1-types}
 
-## Extended `PA-PK-AS-REP` {#pa-pk-as-rep}
+## Extended `PA-PK-AS-REP` {#sec-pa-pk-as-rep}
 
 {{RFC4556}} uses an `IMPLICIT TAGS` module environment; both existing
 arms are `IMPLICIT OCTET STRING` carrying DER-encoded CMS blobs.  The
@@ -215,7 +215,7 @@ PA-PK-AS-REP ::= CHOICE {
         --   content: CMS EnvelopedData(ReplyKeyPack) ({{RFC5652}} Section 6)
     kemInfo         [2] IMPLICIT OCTET STRING,
         -- NEW: KEM path (this specification)
-        --   content: DER(KEMRepInfo)
+        --   content: DEF(KEMRepInfo) ({{sec-kemrepinfo}})
     ...
 }
 ~~~
@@ -228,7 +228,7 @@ chosen arm by the context tag alone.
 Tag `[2]` MUST be verified against the IANA Kerberos PKINIT Parameters
 registry before publication to confirm no other extension has claimed it.
 
-## `KEMRepInfo` {#kemrepinfo}
+## `KEMRepInfo` {#sec-kemrepinfo}
 
 ~~~ asn1
 -- id-pkinit OID arc (RFC 4556):
@@ -249,7 +249,7 @@ KEMRepInfo ::= SEQUENCE {
 `eContent` in `kemSignedData` MUST be present.  Detached signatures are
 prohibited.
 
-## `KDCKEMInfo` {#kdckeminfo}
+## `KDCKEMInfo` {#sec-kdckeminfo}
 
 ~~~ asn1
 KDCKEMInfo ::= SEQUENCE {
@@ -258,8 +258,8 @@ KDCKEMInfo ::= SEQUENCE {
         -- MUST match clientPublicValue.algorithm OID.
         -- Authenticated by KDC signature.
     kemct           [1] OCTET STRING,
-        -- KEM ciphertext produced by Encap(ek) (see Section 3).
-        -- Algorithm-specific sizes: see Section 10.1 for ML-KEM.
+        -- KEM ciphertext produced by Encap(ek) (see {{sec-kem-interface}}).
+        -- Algorithm-specific sizes: see {{sec-mlkem-sizes}} for ML-KEM.
         -- Authenticated by KDC signature.
     kdfAlgorithm    [2] AlgorithmIdentifier,
         -- HKDF variant selected from supportedKDFs. Authenticated by
@@ -282,7 +282,7 @@ confirmation that the KDC processed the correct algorithm (verified in
 {{sec-client-processing}} step 4), avoiding implicit inference from
 `kemct` length alone.
 
-## Extended `AuthPack` {#authpack}
+## Extended `AuthPack` {#sec-authpack}
 
 ~~~ asn1
 AuthPack ::= SEQUENCE {
@@ -293,16 +293,16 @@ AuthPack ::= SEQUENCE {
         --               RFC 9935.
         -- RSA path:     MUST be absent.
     supportedCMSTypes   [2] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
-        -- Used in RSA path only. It is deprecated in Section 12.
+        -- Used in RSA path only. It is deprecated in {{sec-rsa-deprecation}}.
     clientDHNonce       [3] DHNonce OPTIONAL,
         -- Pure KEM path (this specification): MUST be absent when
         -- clientPublicValue contains a KEM algorithm OID (see
-        -- Section 5). Future hybrid DH+KEM specifications MAY define
+        -- {{sec-asn1-types}}). Future hybrid DH+KEM specifications MAY define
         -- use of this field alongside KEM OIDs.
     supportedKDFs       [4] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
         -- KDFAlgorithmId is AlgorithmIdentifier; no separate type is
         -- defined.
-        -- KEM path: HKDF algorithm OIDs (Section 6.1). Only
+        -- KEM path: HKDF algorithm OIDs ({{sec-kdf-oids}}). Only
         --   HKDF-SHA512 is defined for the KEM path; this field
         --   SHOULD contain id-alg-hkdf-with-sha512. If absent when a
         --   KEM OID is in clientPublicValue, HKDF-SHA512 is assumed.
@@ -311,7 +311,7 @@ AuthPack ::= SEQUENCE {
 }
 ~~~
 
-## `PkinitKEMSuppPubInfo` {#supppubinfo}
+## `PkinitKEMSuppPubInfo` {#sec-supppubinfo}
 
 ~~~ asn1
 -- Types imported from RFC 4120 (KerberosV5 module): Int32
@@ -327,7 +327,7 @@ PkinitKEMSuppPubInfo ::= SEQUENCE {
 }
 ~~~
 
-## `PAChecksum2` Extension {#pachecksum2}
+## `PAChecksum2` Extension {#sec-pachecksum2}
 
 {{RFC4556}} hardwires the `paChecksum` field in `PKAuthenticator` to use
 SHA-1.  {{RFC8636}} Section 3 acknowledges this limitation but does not
@@ -396,7 +396,7 @@ KDC validation:
       verification of `paChecksum2` fails, or if `paChecksum` is
       present and its verification fails.
 
-# Mode Selection {#mode-selection}
+# Mode Selection {#sec-mode-selection}
 
 The exchange mode is determined by the algorithm OID in
 `clientPublicValue`:
@@ -419,7 +419,7 @@ The interpretation of `supportedKDFs` depends on the active path: on the
 KEM path it carries HKDF algorithm OIDs ({{sec-kdf-oids}}); on the
 DH/ECDH path it carries DH-KDF algorithm OIDs per {{RFC8636}}.
 
-# KEM Path Operation {#kem-operation}
+# KEM Path Operation {#sec-kem-operation}
 
 ## Client Request Construction {#sec-client-request}
 
@@ -470,7 +470,7 @@ certificate is required.
    code 65); stop.
 
 4. Call `Encap(ek)` → `(ss, kemct)` using the selected algorithm (see
-   {{kem-interface}}).  Exactly one encapsulation MUST be performed per
+   {{sec-kem-interface}}).  Exactly one encapsulation MUST be performed per
    exchange; the resulting `(ss, kemct)` pair MUST be used in all
    subsequent steps (for ML-KEM specifics, see {{sec-mlkem-encap}}).
 
@@ -480,7 +480,7 @@ certificate is required.
    *  `kemct` = the ciphertext from step 4
    *  `kdfAlgorithm` = selected HKDF OID
    *  `nonce` = `pkAuthenticator.nonce` from the client's request
-      (SHOULD be included; see {{kdckeminfo}})
+      (SHOULD be included; see {{sec-kdckeminfo}})
 
 6. Sign `KDCKEMInfo` using CMS SignedData ({{RFC5652}} Section 5) with
    ML-DSA ({{RFC9882}}) RECOMMENDED.  Place in `kemSignedData`.
@@ -568,7 +568,7 @@ KDF, the KDC defaults to `id-alg-hkdf-with-sha512`.
 ~~~
 reply_key_material = HKDF-SHA-512(
     IKM  = ss,
-        -- ML-KEM.Decaps output (see Section 10.1 for ML-KEM sizes)
+        -- ML-KEM.Decaps output (see {{sec-mlkem-sizes}} for ML-KEM sizes)
     salt = <not provided>,
         -- defaults to HashLen zero bytes (RFC 5869 Section 2.2);
         -- ss is uniformly random so extraction is unnecessary
@@ -753,8 +753,9 @@ overhead is added.
 This section captures behavior specific to ML-KEM ({{FIPS203}}).  When
 this specification is extended to other KEM algorithms, per-algorithm
 sections following this structure SHOULD be added.  The core protocol
-defined in Sections 4–8 is intentionally algorithm-agnostic; ML-KEM
-details are isolated here following the model of {{RFC3961}}.
+defined in {{sec-kem-interface}} through {{sec-errors}} is intentionally
+algorithm-agnostic; ML-KEM details are isolated here following the model
+of {{RFC3961}}.
 
 ## Key and Ciphertext Sizes {#sec-mlkem-sizes}
 
@@ -838,7 +839,7 @@ active attacker who can exploit a traditional-path vulnerability.
 `paChecksum2` binds the KDC-REQ-BODY to the authenticator using a
 quantum-safe digest.  Implementations MUST NOT accept requests in which
 `paChecksum2` is absent when operating in KEM mode, as defined in
-{{pachecksum2}}.  The nonce in `PKAuthenticator` continues to provide
+{{sec-pachecksum2}}.  The nonce in `PKAuthenticator` continues to provide
 replay protection; `paChecksum2` strengthens the integrity binding of the
 request body.
 
