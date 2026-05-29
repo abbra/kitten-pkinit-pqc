@@ -486,8 +486,7 @@ certificate is required.
    `PkinitKEMSuppPubInfo.kemSignedData` is set to the DER encoding of
    `KEMRepInfo.kemSignedData` produced in this step.
 
-7. Derive the AS reply key from `ss` per {{sec-kdf}}.  This is the
-   Kerberos AS reply key; it is never transmitted.  The KDC uses it to
+7. Derive the AS reply key from `ss` per {{sec-kdf}}.  The KDC uses it to
    encrypt the AS-REP `enc-part`.
 
 8. Return `PA-PK-AS-REP.kemInfo` containing `KEMRepInfo`.
