@@ -742,7 +742,7 @@ traditional compatibility during migration.
 # Message Size Considerations {#sec-message-size}
 
 An `AuthPack` with an ephemeral ML-KEM-768 encapsulation key (1184 bytes)
-signed with ML-DSA-65 (3309 bytes signature {{FIPS204}}) will exceed UDP
+signed with ML-DSA-65 (3309-bytes signature {{FIPS204}}) will exceed UDP
 datagram limits.  TCP transport ({{RFC5021}}) is REQUIRED for KEM-path
 PKINIT.  All Kerberos infrastructure (KDCs, clients, firewalls) MUST
 support TCP Kerberos before enabling PQC PKINIT.
