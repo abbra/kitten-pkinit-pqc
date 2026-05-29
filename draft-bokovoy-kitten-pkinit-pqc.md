@@ -98,7 +98,7 @@ The extensions define a new `kemInfo` arm in `PA-PK-AS-REP`, a
 derivation (HKDF-SHA-512 for ML-KEM), downgrade-prevention rules, and a
 `PAChecksum2` extension providing checksum algorithm agility in
 `PKAuthenticator`.  The KEM path framework supports multiple KEM
-algorithms including ML-KEM, composite KEM algorithms, and future KEM
+algorithms including ML-KEM, composite ML-KEM algorithms, and future KEM
 standards.
 
 --- middle
@@ -137,7 +137,7 @@ SHA-1-only `paChecksum` field of RFC 4556 for new deployments.
 # Protocol Overview
 
 The KEM path is activated when `AuthPack.clientPublicValue` contains an
-ML-KEM or composite KEM OID.  The exchange proceeds as follows:
+ML-KEM or composite ML-KEM OID.  The exchange proceeds as follows:
 
 1. The client generates an ephemeral KEM key pair, places the encapsulation
    key in `AuthPack.clientPublicValue`, and sends a signed `AuthPack` in
@@ -402,7 +402,7 @@ The exchange mode is determined by the algorithm OID in
 |:---|:---|:---|
 | Absent | — | RSA path (`encKeyPack`); deprecated for new deployments |
 | Present | DH or ECDH OID | DH/ECDH path ({{RFC4556}} / {{RFC8636}}) |
-| Present | ML-KEM or composite KEM OID | KEM path (this specification) |
+| Present | ML-KEM or composite ML-KEM OID | KEM path (this specification) |
 | Present | Unrecognized OID | Error (see {{sec-downgrade}}); MUST NOT fall back to RSA path |
 {: #tab-mode-selection title="Mode selection by clientPublicValue OID"}
 
@@ -619,10 +619,10 @@ higher.
 -- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
 -- existing IANA integer from RFC 4556 Section 3.2.2. The ASN.1 encoding
 -- is unchanged (SEQUENCE OF AlgorithmIdentifier); the scope is extended
--- to include ECDH, ML-KEM, and composite KEM parameter sets.
+-- to include ECDH, ML-KEM, and composite ML-KEM parameter sets.
 
 TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
-    -- DH, ECDH, ML-KEM, and composite KEM algorithms the KDC supports,
+    -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms the KDC supports,
     -- in decreasing preference order (RFC 4556 Section 3.2.2).
 ~~~
 
@@ -639,7 +639,7 @@ This error code is a renamed and expanded version of
 `KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` from {{RFC4556}}. The error code
 number (65) is reused; the scope is extended to cover all ephemeral
 key-establishment algorithm negotiation (DH, ECDH, ML-KEM, and composite
-KEM).
+ML-KEM).
 
 This error is returned when:
 
@@ -895,7 +895,7 @@ New name and description:
 : `TD-EPHEMERAL-KEY-PARAMETERS`, "Typed data for
   `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` and `KDC_ERR_KEY_TOO_WEAK`; contains
   a list of acceptable ephemeral key-establishment algorithm identifiers,
-  including DH, ECDH, ML-KEM, and composite KEM algorithms."
+  including DH, ECDH, ML-KEM, and composite ML-KEM algorithms."
 
 The integer value and ASN.1 encoding (`SEQUENCE OF AlgorithmIdentifier`)
 are unchanged.  No new integer allocation is required.
