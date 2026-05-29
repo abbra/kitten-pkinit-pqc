@@ -49,6 +49,7 @@ normative:
   RFC4120:
   RFC4556:
   RFC5021:
+  RFC5349:
   RFC5652:
   RFC5869:
   RFC8009:
@@ -618,8 +619,9 @@ higher.
 ~~~ asn1
 -- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
 -- existing IANA integer from RFC 4556 Section 3.2.2. The ASN.1 encoding
--- is unchanged (SEQUENCE OF AlgorithmIdentifier); the scope is extended
--- to include ECDH, ML-KEM, and composite ML-KEM parameter sets.
+-- is unchanged (SEQUENCE OF AlgorithmIdentifier); RFC 5349 extended the
+-- scope to include ECDH. This specification further extends it to include
+-- ML-KEM and composite ML-KEM parameter sets.
 
 TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
     -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms the KDC supports,
@@ -636,10 +638,10 @@ KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED    65
 ~~~
 
 This error code is a renamed and expanded version of
-`KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` from {{RFC4556}}. The error code
-number (65) is reused; the scope is extended to cover all ephemeral
-key-establishment algorithm negotiation (DH, ECDH, ML-KEM, and composite
-ML-KEM).
+`KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` from {{RFC4556}}, which already
+covers DH ({{RFC4556}}) and ECDH ({{RFC5349}}). The error code number (65)
+is reused; this specification extends the scope to also cover ML-KEM and
+composite ML-KEM.
 
 This error is returned when:
 
