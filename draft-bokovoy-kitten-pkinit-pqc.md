@@ -784,10 +784,17 @@ incorrectly-sized input.
 
 ## CSPRNG Requirement {#sec-mlkem-csprng}
 
-ML-KEM key generation MUST use a cryptographically secure pseudorandom
-number generator (CSPRNG) satisfying the requirements of {{FIPS203}}
-Section 3.3.  The security of the KEM path depends entirely on the
-unpredictability of the ephemeral decapsulation key `dk`.
+Both ML-KEM key generation and encapsulation MUST use a cryptographically
+secure pseudorandom number generator (CSPRNG) satisfying the requirements
+of {{FIPS203}} Section 3.3.  The security of the KEM path depends on:
+
+- Client-side: the unpredictability of the ephemeral decapsulation key `dk`
+  during key generation.
+- KDC-side: the unpredictability of the randomness used during
+  `ML-KEM.Encaps(ek)`, which produces the shared secret `ss` and ciphertext
+  `kemct`.
+
+A weak or predictable RNG on either side compromises the AS reply key.
 
 ## Encapsulation and Decapsulation {#sec-mlkem-encap}
 
@@ -848,9 +855,14 @@ active attacker who can exploit a traditional-path vulnerability.
 `paChecksum2` binds the KDC-REQ-BODY to the authenticator using a
 quantum-safe digest.  Implementations MUST NOT accept requests in which
 `paChecksum2` is absent when operating in KEM mode, as defined in
-{{sec-pachecksum2}}.  The nonce in `PKAuthenticator` continues to provide
-replay protection; `paChecksum2` strengthens the integrity binding of the
-request body.
+{{sec-pachecksum2}}.
+
+## Nonce Generation
+
+The nonce in `PKAuthenticator` provides replay protection. Implementations
+MUST generate nonces from a cryptographically secure random number generator
+satisfying {{FIPS203}} Section 3.3. Counter-based or predictable nonces
+compromise replay protection.
 
 ## Ciphertext Length Validation
 
