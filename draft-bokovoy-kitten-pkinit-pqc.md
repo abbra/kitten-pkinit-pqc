@@ -865,13 +865,6 @@ MUST generate nonces from a cryptographically secure random number generator
 satisfying {{FIPS203}} Section 3.3. Counter-based or predictable nonces
 compromise replay protection.
 
-## Ciphertext Length Validation
-
-Calling `ML-KEM.Decaps` on an incorrectly-sized ciphertext produces
-undefined behavior per {{FIPS203}}.  Clients MUST validate the ciphertext
-length against the fixed values in {{sec-mlkem-sizes}} before invoking
-decapsulation ({{sec-client-processing}} step 5).
-
 # IANA Considerations {#sec-iana}
 
 ## New Kerberos Error Code
