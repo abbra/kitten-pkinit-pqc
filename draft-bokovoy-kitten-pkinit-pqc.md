@@ -472,10 +472,11 @@ certificate is required.
        `TD-EPHEMERAL-KEY-PARAMETERS-DATA` listing acceptable algorithms;
        stop.
 
-3. Verify `supportedKDFs` contains `id-alg-hkdf-with-sha512` (or is
-   absent, in which case HKDF-SHA-512 is assumed).  If SHA-512 is not
-   acceptable, return `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` (error
-   code 65); stop.
+3. Select a KDF from `supportedKDFs` that is approved for the KEM
+   algorithm (see {{sec-kdf-oids}}).  If `supportedKDFs` is absent,
+   default to `id-alg-hkdf-with-sha512`.  If no approved KDF can be
+   selected, return `KDC_ERR_NO_ACCEPTABLE_KDF` (error code 100,
+   {{RFC8636}}); stop.
 
 4. Call `Encap(ek)` → `(ss, kemct)` using the selected algorithm (see
    {{sec-kem-interface}}).  Exactly one encapsulation MUST be performed per
@@ -656,8 +657,6 @@ This error is returned when:
 
 * The algorithm OID is not recognized or not implemented by the KDC
 * The algorithm does not meet the KDC's security requirements
-* None of the KDFs in `supportedKDFs` (if present) is acceptable to the KDC
-  (for ML-KEM as defined in this specification, HKDF-SHA-512 is required)
 
 The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` (as defined in
 {{sec-proactive-adv}}) in the error response. After receiving this error,
