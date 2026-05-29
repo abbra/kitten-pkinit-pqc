@@ -73,6 +73,14 @@ normative:
       org: "National Institute of Standards and Technology (NIST)"
     seriesinfo:
       "FIPS PUB": "204"
+  SP800-90A:
+    title: "Recommendation for Random Number Generation Using Deterministic Random Bit Generators"
+    target: https://doi.org/10.6028/NIST.SP.800-90Ar1
+    date: 2015-06
+    author:
+      org: "National Institute of Standards and Technology (NIST)"
+    seriesinfo:
+      "NIST SP": "800-90A Rev. 1"
 
 informative:
   RFC9882:
@@ -856,9 +864,9 @@ quantum-safe digest.  Implementations MUST NOT accept requests in which
 ## Nonce Generation
 
 The nonce in `PKAuthenticator` provides replay protection. Implementations
-MUST generate nonces from a cryptographically secure random number generator
-satisfying {{FIPS203}} Section 3.3. Counter-based or predictable nonces
-compromise replay protection.
+MUST generate nonces from a Deterministic Random Bit Generator (DRBG)
+approved by {{SP800-90A}}. Counter-based or predictable nonces compromise
+replay protection.
 
 # IANA Considerations {#sec-iana}
 
