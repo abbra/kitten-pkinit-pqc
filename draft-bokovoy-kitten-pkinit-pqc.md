@@ -669,7 +669,8 @@ encapsulation key (ML-KEM or composite ML-KEM) in `clientPublicValue`, the
 client MUST NOT fall back to traditional key-establishment algorithms (DH,
 ECDH, RSA). This ensures quantum-resistant authentication and key
 establishment are paired. The client MAY retry with a different post-quantum
-KEM algorithm from {{sec-kem-errors}}.
+KEM algorithm from {{sec-kem-errors}}.  If no post-quantum KEM is available,
+the client MUST fail the authentication attempt.
 
 Clients using traditional certificates (RSA, ECDSA) MAY fall back from
 post-quantum KEM to traditional key establishment (DH, ECDH) for backward
@@ -706,6 +707,10 @@ Composite algorithms are defined in
 As with {{RFC4556}} DH path algorithm selection, the client selects which
 KEM algorithm to use based on local policy. Algorithm selection is
 implementation-defined.
+
+If the client receives proactive advertisement ({{sec-proactive-adv}}) and
+supports none of the advertised algorithms, it MUST fail the authentication
+attempt rather than trying an unadvertised algorithm.
 
 ## KDC Security Policy {#sec-min-security}
 
