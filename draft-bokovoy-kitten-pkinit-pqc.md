@@ -109,8 +109,9 @@ standards.
 The Kerberos PKINIT pre-authentication mechanism {{RFC4556}} relies on
 public-key cryptography for initial authentication.  The Diffie-Hellman
 and RSA paths it defines are vulnerable to a cryptographically relevant
-quantum computer.  {{RFC8636}} adds Elliptic Curve Diffie-Hellman (ECDH)
-support but does not address the quantum threat.
+quantum computer.  {{RFC5349}} adds Elliptic Curve Diffie-Hellman (ECDH)
+support and {{RFC8636}} adds algorithm agility, but neither addresses the
+quantum threat.
 
 This document defines a new KEM path in PKINIT that uses Key
 Encapsulation Mechanism (KEM) algorithms, in particular the
