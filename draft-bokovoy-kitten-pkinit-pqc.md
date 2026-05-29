@@ -605,33 +605,15 @@ computation.
 
 # Error Handling {#sec-errors}
 
-## KEM Path Errors {#sec-kem-errors}
+## Proactive Advertisement {#sec-proactive-adv}
 
-When `clientPublicValue` contains a KEM OID, the KDC MUST NOT return DH
-digest negotiation errors (`KDC_ERR_DIGEST_IN_SIGNED_DATA_NOT_ACCEPTED`,
-`KDC_ERR_DIGEST_IN_CERT_NOT_ACCEPTED`).  The only applicable error for
-parameter negotiation failure on the KEM path is:
-
-~~~
-KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED    65
-~~~
-
-This error code is a renamed and expanded version of
-`KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` from {{RFC4556}}. The error code
-number (65) is reused; the scope is extended to cover all ephemeral
-key-establishment algorithm negotiation (DH, ECDH, ML-KEM, and composite
-KEM).
-
-This error is returned when the algorithm and parameter set in
-`clientPublicValue.algorithm` does not satisfy the KDC's security policy,
-including but not limited to:
-
-* The algorithm OID is not recognized or not implemented by the KDC
-* The algorithm does not meet the KDC's security requirements
-* The requested KDF is not acceptable (for ML-KEM as defined in this
-  specification, HKDF-SHA-512 is required)
-
-The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in the error:
+A KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in
+`KDC_ERR_PREAUTH_REQUIRED` to allow the client to select an acceptable
+algorithm on its first attempt. This avoids a retry round trip, which is
+particularly valuable for post-quantum deployments where both ML-DSA
+signatures and ML-KEM encapsulation keys are significantly larger than their
+traditional counterparts, making the overhead of a failed attempt much
+higher.
 
 ~~~ asn1
 -- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
@@ -644,21 +626,42 @@ TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
     -- in decreasing preference order (RFC 4556 Section 3.2.2).
 ~~~
 
-Proactive advertisement:
-:  A KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in
-   `KDC_ERR_PREAUTH_REQUIRED` and `KDC_ERR_PREAUTH_FAILED` to allow the
-   client to select an acceptable parameter set on its first attempt.
-   This avoids a retry round trip, which is particularly valuable for
-   post-quantum deployments where both ML-DSA signatures and ML-KEM
-   encapsulation keys are significantly larger than their traditional
-   counterparts, making the overhead of a failed attempt much higher.
+## Ephemeral Key Parameter Errors {#sec-ephemeral-key-errors}
 
-Client retry:
-:  After receiving `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED`, the client
-   follows {{RFC4556}} Section 3.2.2 retry behavior, selecting a different
-   parameter set from `TD-EPHEMERAL-KEY-PARAMETERS-DATA` that satisfies the
-   client's security policy.  If no mutually acceptable parameter set exists,
-   the exchange MUST be terminated.
+When the algorithm and parameter set in `clientPublicValue.algorithm` does
+not satisfy the KDC's security policy, the KDC returns:
+
+~~~
+KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED    65
+~~~
+
+This error code is a renamed and expanded version of
+`KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` from {{RFC4556}}. The error code
+number (65) is reused; the scope is extended to cover all ephemeral
+key-establishment algorithm negotiation (DH, ECDH, ML-KEM, and composite
+KEM).
+
+This error is returned when:
+
+* The algorithm OID is not recognized or not implemented by the KDC
+* The algorithm does not meet the KDC's security requirements
+* None of the KDFs in `supportedKDFs` (if present) is acceptable to the KDC
+  (for ML-KEM as defined in this specification, HKDF-SHA-512 is required)
+
+The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` (as defined in
+{{sec-proactive-adv}}) in the error response. After receiving this error,
+the client follows {{RFC4556}} Section 3.2.2 retry behavior, selecting a
+different parameter set from `TD-EPHEMERAL-KEY-PARAMETERS-DATA` that
+satisfies the client's security policy. If no mutually acceptable parameter
+set exists, the exchange MUST be terminated.
+
+## KEM Path Errors {#sec-kem-errors}
+
+When `clientPublicValue` contains a KEM OID, the KDC MUST NOT return DH
+digest negotiation errors (`KDC_ERR_DIGEST_IN_SIGNED_DATA_NOT_ACCEPTED`,
+`KDC_ERR_DIGEST_IN_CERT_NOT_ACCEPTED`). The only applicable error for
+parameter negotiation failure on the KEM path is
+`KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` ({{sec-ephemeral-key-errors}}).
 
 # Downgrade Prevention {#sec-downgrade}
 
