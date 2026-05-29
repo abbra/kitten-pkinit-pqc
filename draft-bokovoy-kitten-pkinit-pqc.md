@@ -200,30 +200,29 @@ algorithm family:
 
 ## Extended `PA-PK-AS-REP` {#sec-pa-pk-as-rep}
 
-{{RFC4556}} uses an `IMPLICIT TAGS` module environment; both existing
-arms are `IMPLICIT OCTET STRING` carrying DER-encoded CMS blobs.  The
-new arm follows the same convention.
+{{RFC4556}} uses an `IMPLICIT TAGS` module environment.  All three arms
+are `IMPLICIT OCTET STRING` carrying DER-encoded structures; receivers
+identify the chosen arm by the context tag alone.
 
 ~~~ asn1
 -- KRB5PkinitTypes DEFINITIONS IMPLICIT TAGS ::= BEGIN
 PA-PK-AS-REP ::= CHOICE {
     dhSignedData    [0] IMPLICIT OCTET STRING,
         -- RFC 4556: DH/ECDH path
-        --   content: CMS SignedData(KDCDHKeyInfo) ({{RFC5652}} Section 5)
+        --   content: KDCDHKeyInfo ({{RFC4556}} Section 3.2.3.1)
     encKeyPack      [1] IMPLICIT OCTET STRING,
         -- RFC 4556: RSA path (deprecated)
-        --   content: CMS EnvelopedData(ReplyKeyPack) ({{RFC5652}} Section 6)
+        --   content: ReplyKeyPack ({{RFC4556}} Section 3.2.3.2)
     kemInfo         [2] IMPLICIT OCTET STRING,
         -- NEW: KEM path (this specification)
-        --   content: DEF(KEMRepInfo) ({{sec-kemrepinfo}})
+        --   content: KEMRepInfo ({{sec-kemrepinfo}})
     ...
 }
 ~~~
 
 The field name `dhSignedData` matches RFC 4556's actual ASN.1 module;
 the informal name `dhInfo` used in some descriptions refers to the same
-arm.  All three arms are context-tagged DER blobs; receivers identify the
-chosen arm by the context tag alone.
+arm.
 
 Tag `[2]` MUST be verified against the IANA Kerberos PKINIT Parameters
 registry before publication to confirm no other extension has claimed it.
@@ -240,14 +239,14 @@ KEMRepInfo ::= SEQUENCE {
     kemSignedData       [0] IMPLICIT OCTET STRING,
         -- CMS SignedData ({{RFC5652}} Section 5):
         --   eContentType = id-pkinit-KEMKeyData
-        --   eContent     = DER(KDCKEMInfo)   [MUST be present]
+        --   eContent     = DER(KDCKEMInfo)
         --   signerInfos  = KDC signature over KDCKEMInfo
     ...
 }
 ~~~
 
-`eContent` in `kemSignedData` MUST be present.  Detached signatures are
-prohibited.
+`eContent` in `kemSignedData` MUST be present (detached signatures are
+prohibited).
 
 ## `KDCKEMInfo` {#sec-kdckeminfo}
 
@@ -256,14 +255,12 @@ KDCKEMInfo ::= SEQUENCE {
     kemAlgorithm    [0] AlgorithmIdentifier,
         -- KEM algorithm and parameter set used (e.g., ML-KEM-768).
         -- MUST match clientPublicValue.algorithm OID.
-        -- Authenticated by KDC signature.
     kemct           [1] OCTET STRING,
         -- KEM ciphertext produced by Encap(ek) (see {{sec-kem-interface}}).
         -- Algorithm-specific sizes: see {{sec-mlkem-sizes}} for ML-KEM.
-        -- Authenticated by KDC signature.
     kdfAlgorithm    [2] AlgorithmIdentifier,
-        -- HKDF variant selected from supportedKDFs. Authenticated by
-        -- KDC signature (fixes RFC 8636 unauthenticated selection flaw).
+        -- HKDF variant selected from supportedKDFs (fixes RFC 8636
+        -- unauthenticated selection flaw).
     nonce           [3] INTEGER (0..4294967295) OPTIONAL,
         -- When present, MUST equal pkAuthenticator.nonce from the
         -- client's AS-REQ. Implementations SHOULD include this field.
