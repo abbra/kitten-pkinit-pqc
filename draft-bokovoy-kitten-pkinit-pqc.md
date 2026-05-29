@@ -1,5 +1,5 @@
 ---
-title: "PKINIT Extensions for Post-Quantum Cryptography"
+title: "Post-quantum Key Encapsulation with ML-KEM in Public Key Cryptography for Initial Authentication in Kerberos (PKINIT)"
 abbrev: "PKINIT-PQC"
 docname: draft-bokovoy-kitten-pkinit-pqc-latest
 category: std
