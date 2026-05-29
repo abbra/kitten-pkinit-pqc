@@ -34,7 +34,7 @@ author:
     ins: J. Rische
     name: Julien Rische
     organization: Red Hat, Inc.
-    email: abokovoy@redhat.com
+    email: jrische@redhat.com
 
   -
     ins: N. Williams
