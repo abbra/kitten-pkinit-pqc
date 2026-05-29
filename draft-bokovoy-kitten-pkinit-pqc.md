@@ -915,6 +915,6 @@ are unchanged.  No new integer allocation is required.
 # Acknowledgements
 {:numbered="false"}
 
-The author thanks the IETF Kerberos and LAMPS working groups for
+The authors thank the IETF KITTEN and LAMPS working groups for
 discussion of post-quantum PKINIT approaches, and the NIST team for
 {{FIPS203}} and {{FIPS204}}.
