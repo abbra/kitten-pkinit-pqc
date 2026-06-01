@@ -1,3 +1,5 @@
+export UPDATE_EMAIL ?= abokovoy@redhat.com
+
 LIBDIR := lib
 -include $(LIBDIR)/main.mk
 
