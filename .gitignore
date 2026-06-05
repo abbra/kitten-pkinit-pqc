@@ -19,6 +19,7 @@
 Gemfile.lock
 archive.json
 draft-bokovoy-kitten-pkinit-pqc.xml
+draft-rische-kitten-pkinit-crypto-deprec.xml
 package-lock.json
 report.xml
 !requirements.txt
