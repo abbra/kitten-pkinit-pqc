@@ -82,18 +82,12 @@ normative:
     seriesinfo:
       "NIST SP": "800-90A Rev. 1"
 
+  I-D.rische-kitten-pkinit-crypto-deprec:
+
 informative:
   RFC9882:
   I-D.ietf-lamps-pq-composite-kem:
   I-D.ietf-lamps-pq-composite-sigs:
-  MS-PKCA:
-    title: >
-      [MS-PKCA]: Public Key Cryptography for Initial Authentication (PKINIT)
-      in Kerberos Protocol
-    target: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-pkca/
-    date: 2023-09-20
-    author:
-      org: "Microsoft Corporation"
 
 --- abstract
 
@@ -104,11 +98,9 @@ Key-Encapsulation Mechanism (ML-KEM) algorithms defined in {{FIPS203}}.
 
 The extensions define a new `kemInfo` arm in `PA-PK-AS-REP`, a
 `KDCKEMInfo` structure signed by the KDC, HKDF-based AS reply key
-derivation (HKDF-SHA-512 for ML-KEM), downgrade-prevention rules, and a
-`PAChecksum2` extension providing checksum algorithm agility in
-`PKAuthenticator`.  The KEM path framework supports multiple KEM
-algorithms including ML-KEM, composite ML-KEM algorithms, and future KEM
-standards.
+derivation (HKDF-SHA-512 for ML-KEM), and downgrade-prevention rules.
+The KEM path framework supports multiple KEM algorithms including
+ML-KEM, composite ML-KEM algorithms, and future KEM standards.
 
 --- middle
 
@@ -135,10 +127,6 @@ The design preserves the security properties of the RFC 4556 DH path
 (the client's ephemeral key is authenticated by the client's signing
 certificate; the KDC's response is authenticated by the KDC's signing
 certificate) while providing post-quantum forward secrecy through ML-KEM.
-
-This document also defines `PAChecksum2`, an extension to
-`PKAuthenticator` that provides checksum algorithm agility, supplementing the
-SHA-1-only `paChecksum` field of RFC 4556 for new deployments.
 
 # Requirements Language
 
@@ -300,7 +288,7 @@ AuthPack ::= SEQUENCE {
         --               RFC 9935.
         -- RSA path:     MUST be absent.
     supportedCMSTypes   [2] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
-        -- Used in RSA path only. It is deprecated in {{sec-rsa-deprecation}}.
+        -- Used in RSA path only (deprecated; see RFC 4556 Section 3.1.4).
     clientDHNonce       [3] DHNonce OPTIONAL,
         -- Pure KEM path (this specification): MUST be absent when
         -- clientPublicValue contains a KEM algorithm OID (see
@@ -334,75 +322,6 @@ PkinitKEMSuppPubInfo ::= SEQUENCE {
 }
 ~~~
 
-## `PAChecksum2` Extension {#sec-pachecksum2}
-
-{{RFC4556}} hardwires the `paChecksum` field in `PKAuthenticator` to use
-SHA-1.  {{RFC8636}} Section 3 acknowledges this limitation but does not
-provide a mechanism to negotiate alternative checksum algorithms, noting
-that for DH and ECDH paths the KDF binding (which includes the entire
-AS-REQ in key derivation) provides an eventual integrity check.
-
-This specification extends `PKAuthenticator` with a `paChecksum2` field
-to provide checksum algorithm agility at the request validation layer.
-`PAChecksum2` was first defined in {{MS-PKCA}} §2.2.3 (PA-PK-AS-REQ).
-
-~~~ asn1
-PAChecksum2 ::= SEQUENCE {
-    checksum                [0] OCTET STRING,
-        -- Checksum computed over KDC-REQ-BODY using the algorithm
-        -- specified in algorithmIdentifier.
-    algorithmIdentifier     [1] AlgorithmIdentifier
-        -- Digest algorithm OID. The parameters field MUST be absent.
-        -- Implementations MUST support:
-        --   SHA-512: 2.16.840.1.101.3.4.2.3 (NIST CSOR, RFC 5754)
-        -- Implementations MAY support:
-        --   SHA-256: 2.16.840.1.101.3.4.2.1 (NIST CSOR, RFC 5754)
-        --   SHA-384: 2.16.840.1.101.3.4.2.2 (NIST CSOR, RFC 5754)
-}
-~~~
-
-The `PKAuthenticator` structure from {{RFC4556}} is extended as follows:
-
-~~~ asn1
-PKAuthenticator ::= SEQUENCE {
-    cusec                   [0] INTEGER (0..999999),
-    ctime                   [1] KerberosTime,
-    nonce                   [2] INTEGER (0..4294967295),
-    paChecksum              [3] OCTET STRING OPTIONAL,
-        -- RFC 4556: SHA-1 checksum over KDC-REQ-BODY.
-    freshnessToken          [4] OCTET STRING OPTIONAL,
-        -- RFC 8070: PA_AS_FRESHNESS token from KDC.
-    paChecksum2             [5] PAChecksum2 OPTIONAL,
-        -- This specification: algorithm-agile checksum over
-        -- KDC-REQ-BODY.
-    ...
-}
-~~~
-
-Client behavior:
-:  A client constructing a PKINIT request conforming to this
-   specification MUST include the `paChecksum2` field and SHOULD include
-   the `paChecksum` field (SHA-1, per {{RFC4556}}).  Both checksums,
-   when present, are computed over the same KDC-REQ-BODY input.
-
-KDC validation:
-:  A KDC conforming to this specification MUST require `paChecksum2` to
-   be present in the request.  If `paChecksum2` is absent, the KDC
-   returns `KDC_ERR_PA_CHECKSUM_MUST_BE_INCLUDED` (error code 79,
-   {{RFC4556}}).
-
-   The KDC MUST validate `paChecksum2`.  If `paChecksum` is also
-   present, the KDC MUST validate it as well.  The KDC returns the
-   following errors:
-
-   *  `KDC_ERR_SUMTYPE_NOSUPP` (error code 15, {{RFC4120}}): if the
-      digest algorithm in `paChecksum2.algorithmIdentifier` is not
-      supported by the KDC.
-
-   *  `KRB_AP_ERR_MODIFIED` (error code 41, {{RFC4120}}): if
-      verification of `paChecksum2` fails, or if `paChecksum` is
-      present and its verification fails.
-
 # Mode Selection {#sec-mode-selection}
 
 The exchange mode is determined by the algorithm OID in
@@ -410,7 +329,7 @@ The exchange mode is determined by the algorithm OID in
 
 | `clientPublicValue` | OID type | Mode |
 |:---|:---|:---|
-| Absent | — | RSA path (`encKeyPack`); deprecated for new deployments |
+| Absent | — | RSA path (`encKeyPack`); deprecated by {{I-D.rische-kitten-pkinit-crypto-deprec}} |
 | Present | DH or ECDH OID | DH/ECDH path ({{RFC4556}} / {{RFC8636}}) |
 | Present | ML-KEM or composite ML-KEM OID | KEM path (this specification) |
 | Present | Unrecognized OID | Error (see {{sec-downgrade}}); MUST NOT fall back to RSA path |
@@ -746,12 +665,6 @@ parameter sets combining ML-KEM with traditional algorithms provide the
 security category of their ML-KEM component for post-quantum resistance.
 
 
-# RSA Path Deprecation {#sec-rsa-deprecation}
-
-The `encKeyPack [1]` path is quantum-vulnerable.  New deployments SHOULD
-NOT use `encKeyPack`.  Existing deployments MAY continue using it for
-traditional compatibility during migration.
-
 # Message Size Considerations {#sec-message-size}
 
 An `AuthPack` with an ephemeral ML-KEM-768 encapsulation key (1184 bytes,
@@ -852,13 +765,6 @@ The downgrade prevention rules in {{sec-downgrade}} are mandatory and
 unconditional.  A client that allows a fallback from the KEM path to the
 DH/RSA path on receiving a traditional response exposes the session to an
 active attacker who can exploit a traditional-path vulnerability.
-
-## `paChecksum2` and Replay Prevention
-
-`paChecksum2` binds the KDC-REQ-BODY to the authenticator using a
-quantum-safe digest.  Implementations MUST NOT accept requests in which
-`paChecksum2` is absent when operating in KEM mode, as defined in
-{{sec-pachecksum2}}.
 
 ## Nonce Generation
 
