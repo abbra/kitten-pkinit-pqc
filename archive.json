@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-07T03:42:42.089393+00:00",
+  "timestamp": "2026-06-09T02:55:44.420570+00:00",
   "repo": "abbra/kitten-pkinit-pqc",
   "labels": [
     {
@@ -160,13 +160,13 @@
       "labels": [],
       "body": "## Summary by Sourcery\n\nFactor PKINIT cryptographic deprecation and checksum agility content into a new standalone draft and update the PQC PKINIT draft to reference it.\n\nNew Features:\n- Introduce a new PKINIT cryptographic deprecation draft covering RSA key transport, weak DH groups, SHA-1-based KDFs, SHA-1 CMS signatures, and the paChecksum2 extension.\n\nEnhancements:\n- Simplify the PKINIT PQC draft by removing embedded RSA path and paChecksum2 deprecation text and referencing the new deprecation draft instead.",
       "createdAt": "2026-06-05T18:01:29Z",
-      "updatedAt": "2026-06-05T18:02:55Z",
+      "updatedAt": "2026-06-08T11:30:31Z",
       "baseRepository": "abbra/kitten-pkinit-pqc",
       "baseRefName": "main",
       "baseRefOid": "03abbe56ff8a39200bee3496ff308376d8b92e60",
       "headRepository": "jrisc/kitten-pkinit-pqc",
       "headRefName": "pkinit-cypdpr",
-      "headRefOid": "8b00a0ed12e3425c033f21878271fabf514e340b",
+      "headRefOid": "ddc903fd5d154a3618093483bb3bf578fbec1798",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
@@ -195,15 +195,15 @@
           "comments": [
             {
               "originalPosition": 85,
-              "body": "**suggestion (typo):** Use the standard CMS identifier spelling `sha1WithRSAEncryption` instead of `sha-1WithRSAEncryption`.\n\nIn the abstract and Section {{sec-sig-deprec}} it\u2019s written as `sha-1WithRSAEncryption`, which may mislead readers or those searching for the exact identifier from the RFCs. Please update these to `sha1WithRSAEncryption` for consistency with the standard naming.\n\nSuggested implementation:\n\n```\ngroup 2 (1024-bit) parameter, the SHA-1-based octetstring2key key\nderivation function, and the sha1WithRSAEncryption CMS signature\n\n```\n\nAlso update Section {{sec-sig-deprec}} (and any other sections) where `sha-1WithRSAEncryption` appears, replacing it with `sha1WithRSAEncryption` to maintain consistency with the standard CMS identifier spelling.",
+              "body": "**suggestion (typo):** Use the standard CMS identifier spelling `sha1WithRSAEncryption` instead of `sha-1WithRSAEncryption`.\n\nIn the abstract and Section {{sec-sig-deprec}} it\u2019s written as `sha-1WithRSAEncryption`, which may mislead readers or those searching for the exact identifier from the RFCs. Please update these to `sha1WithRSAEncryption` for consistency with the standard naming.\n\nSuggested implementation:\n\n```\ngroup 2 (1024-bit) parameter, the SHA-1-based octetstring2key key\nderivation function, and the sha1WithRSAEncryption CMS signature\n\n```\n\nAlso update Section {{sec-sig-deprec}} (and any other sections) where `sha-1WithRSAEncryption` appears, replacing it with `sha1WithRSAEncryption` to maintain consistency with the standard CMS identifier spelling.\n\n\u2705 Addressed in ddc903fd5d154a3618093483bb3bf578fbec1798: Occurrences of `sha-1WithRSAEncryption` in the abstract and Section {{sec-sig-deprec}} have been updated to the correct `sha1WithRSAEncryption` identifier.",
               "createdAt": "2026-06-05T18:02:55Z",
-              "updatedAt": "2026-06-05T18:02:55Z"
+              "updatedAt": "2026-06-08T11:31:00Z"
             },
             {
               "originalPosition": 221,
-              "body": "**suggestion:** Align the `ecdsa-with-Sha*` identifiers with the conventional `ecdsa-with-SHA*` spelling.\n\nIn CMS/PKIX specs these identifiers are conventionally spelled with `SHA` in all caps (e.g., `ecdsa-with-SHA256`, `ecdsa-with-SHA1`). Consider updating the names here to use `SHA` instead of `Sha` to match the standard terminology and avoid confusion.\n\n```suggestion\nFor ECDSA signatures, the requirements from {{RFC5349}} Section 3 are\nupdated as follows:\n\n* Implementations MUST support `ecdsa-with-SHA256`.\n\n* Implementations SHOULD support `ecdsa-with-SHA384` and\n  `ecdsa-with-SHA512`.\n\n* Implementations SHOULD NOT use `ecdsa-with-SHA1`.  The SHOULD\n  requirement for `ecdsa-with-SHA1` in {{RFC5349}} is downgraded.\n```",
+              "body": "**suggestion:** Align the `ecdsa-with-Sha*` identifiers with the conventional `ecdsa-with-SHA*` spelling.\n\nIn CMS/PKIX specs these identifiers are conventionally spelled with `SHA` in all caps (e.g., `ecdsa-with-SHA256`, `ecdsa-with-SHA1`). Consider updating the names here to use `SHA` instead of `Sha` to match the standard terminology and avoid confusion.\n\n```suggestion\nFor ECDSA signatures, the requirements from {{RFC5349}} Section 3 are\nupdated as follows:\n\n* Implementations MUST support `ecdsa-with-SHA256`.\n\n* Implementations SHOULD support `ecdsa-with-SHA384` and\n  `ecdsa-with-SHA512`.\n\n* Implementations SHOULD NOT use `ecdsa-with-SHA1`.  The SHOULD\n  requirement for `ecdsa-with-SHA1` in {{RFC5349}} is downgraded.\n```\n\n\u2705 Addressed in ddc903fd5d154a3618093483bb3bf578fbec1798: The ECDSA algorithm identifiers have been updated from `ecdsa-with-Sha*` to the standard `ecdsa-with-SHA*` spelling throughout the section.",
               "createdAt": "2026-06-05T18:02:55Z",
-              "updatedAt": "2026-06-05T18:02:55Z"
+              "updatedAt": "2026-06-08T11:31:02Z"
             }
           ]
         }
