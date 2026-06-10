@@ -15,11 +15,9 @@ post-quantum key establishment using the Module-Lattice-Based
 Key-Encapsulation Mechanism (ML-KEM) algorithms defined in  . 
        The extensions define a new  kemInfo  arm in  PA-PK-AS-REP , a
  KDCKEMInfo  structure signed by the KDC, HKDF-based AS reply key
-derivation (HKDF-SHA-512 for ML-KEM), downgrade-prevention rules, and a
- PAChecksum2  extension providing checksum algorithm agility in
- PKAuthenticator .  The KEM path framework supports multiple KEM
-algorithms including ML-KEM, composite ML-KEM algorithms, and future KEM
-standards. 
+derivation (HKDF-SHA-512 for ML-KEM), and downgrade-prevention rules.
+The KEM path framework supports multiple KEM algorithms including
+ML-KEM, composite ML-KEM algorithms, and future KEM standards. 
     " name="description">
 <meta content="xml2rfc 3.33.0" name="generator">
 <meta content="Kerberos" name="keyword">
@@ -1064,7 +1062,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Bokovoy, et al.</td>
-<td class="center">Expires 3 December 2026</td>
+<td class="center">Expires 12 December 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1077,12 +1075,12 @@ svg {
 <dd class="internet-draft">draft-bokovoy-kitten-pkinit-pqc-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-06-01" class="published">1 June 2026</time>
+<time datetime="2026-06-10" class="published">10 June 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-12-03">3 December 2026</time></dd>
+<dd class="expires"><time datetime="2026-12-12">12 December 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1109,11 +1107,9 @@ post-quantum key establishment using the Module-Lattice-Based
 Key-Encapsulation Mechanism (ML-KEM) algorithms defined in <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 <p id="section-abstract-2">The extensions define a new <code>kemInfo</code> arm in <code>PA-PK-AS-REP</code>, a
 <code>KDCKEMInfo</code> structure signed by the KDC, HKDF-based AS reply key
-derivation (HKDF-SHA-512 for ML-KEM), downgrade-prevention rules, and a
-<code>PAChecksum2</code> extension providing checksum algorithm agility in
-<code>PKAuthenticator</code>.  The KEM path framework supports multiple KEM
-algorithms including ML-KEM, composite ML-KEM algorithms, and future KEM
-standards.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+derivation (HKDF-SHA-512 for ML-KEM), and downgrade-prevention rules.
+The KEM path framework supports multiple KEM algorithms including
+ML-KEM, composite ML-KEM algorithms, and future KEM standards.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1145,7 +1141,7 @@ standards.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 3 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 12 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1206,9 +1202,6 @@ standards.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.5">
                 <p id="section-toc.1-1.6.2.5.1"><a href="#section-6.5" class="auto internal xref">6.5</a>.  <a href="#name-pkinitkemsupppubinfo" class="internal xref"><code>PkinitKEMSuppPubInfo</code></a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.6">
-                <p id="section-toc.1-1.6.2.6.1"><a href="#section-6.6" class="auto internal xref">6.6</a>.  <a href="#name-pachecksum2-extension" class="internal xref"><code>PAChecksum2</code> Extension</a></p>
 </li>
             </ul>
 </li>
@@ -1283,81 +1276,75 @@ standards.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
-            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-rsa-path-deprecation" class="internal xref">RSA Path Deprecation</a></p>
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-message-size-considerations" class="internal xref">Message Size Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
-            <p id="section-toc.1-1.14.1"><a href="#section-14" class="auto internal xref">14</a>. <a href="#name-message-size-considerations" class="internal xref">Message Size Considerations</a></p>
+            <p id="section-toc.1-1.14.1"><a href="#section-14" class="auto internal xref">14</a>. <a href="#name-ml-kem-specific-considerati" class="internal xref">ML-KEM-Specific Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.1">
+                <p id="section-toc.1-1.14.2.1.1"><a href="#section-14.1" class="auto internal xref">14.1</a>.  <a href="#name-key-and-ciphertext-sizes" class="internal xref">Key and Ciphertext Sizes</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.2">
+                <p id="section-toc.1-1.14.2.2.1"><a href="#section-14.2" class="auto internal xref">14.2</a>.  <a href="#name-csprng-requirement" class="internal xref">CSPRNG Requirement</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14.2.3">
+                <p id="section-toc.1-1.14.2.3.1"><a href="#section-14.3" class="auto internal xref">14.3</a>.  <a href="#name-encapsulation-and-decapsula" class="internal xref">Encapsulation and Decapsulation</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
-            <p id="section-toc.1-1.15.1"><a href="#section-15" class="auto internal xref">15</a>. <a href="#name-ml-kem-specific-considerati" class="internal xref">ML-KEM-Specific Considerations</a></p>
+            <p id="section-toc.1-1.15.1"><a href="#section-15" class="auto internal xref">15</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.1">
-                <p id="section-toc.1-1.15.2.1.1"><a href="#section-15.1" class="auto internal xref">15.1</a>.  <a href="#name-key-and-ciphertext-sizes" class="internal xref">Key and Ciphertext Sizes</a></p>
+                <p id="section-toc.1-1.15.2.1.1"><a href="#section-15.1" class="auto internal xref">15.1</a>.  <a href="#name-quantum-resistance" class="internal xref">Quantum Resistance</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.2">
-                <p id="section-toc.1-1.15.2.2.1"><a href="#section-15.2" class="auto internal xref">15.2</a>.  <a href="#name-csprng-requirement" class="internal xref">CSPRNG Requirement</a></p>
+                <p id="section-toc.1-1.15.2.2.1"><a href="#section-15.2" class="auto internal xref">15.2</a>.  <a href="#name-ephemeral-decapsulation-key" class="internal xref">Ephemeral Decapsulation Key Hygiene</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.3">
-                <p id="section-toc.1-1.15.2.3.1"><a href="#section-15.3" class="auto internal xref">15.3</a>.  <a href="#name-encapsulation-and-decapsula" class="internal xref">Encapsulation and Decapsulation</a></p>
+                <p id="section-toc.1-1.15.2.3.1"><a href="#section-15.3" class="auto internal xref">15.3</a>.  <a href="#name-authenticated-kdf-inputs" class="internal xref">Authenticated KDF Inputs</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.4">
+                <p id="section-toc.1-1.15.2.4.1"><a href="#section-15.4" class="auto internal xref">15.4</a>.  <a href="#name-unauthenticated-error-messa" class="internal xref">Unauthenticated Error Messages</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.5">
+                <p id="section-toc.1-1.15.2.5.1"><a href="#section-15.5" class="auto internal xref">15.5</a>.  <a href="#name-algorithm-downgrade-prevent" class="internal xref">Algorithm Downgrade Prevention</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15.2.6">
+                <p id="section-toc.1-1.15.2.6.1"><a href="#section-15.6" class="auto internal xref">15.6</a>.  <a href="#name-nonce-generation" class="internal xref">Nonce Generation</a></p>
 </li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16">
-            <p id="section-toc.1-1.16.1"><a href="#section-16" class="auto internal xref">16</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+            <p id="section-toc.1-1.16.1"><a href="#section-16" class="auto internal xref">16</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.1">
-                <p id="section-toc.1-1.16.2.1.1"><a href="#section-16.1" class="auto internal xref">16.1</a>.  <a href="#name-quantum-resistance" class="internal xref">Quantum Resistance</a></p>
+                <p id="section-toc.1-1.16.2.1.1"><a href="#section-16.1" class="auto internal xref">16.1</a>.  <a href="#name-new-kerberos-error-code" class="internal xref">New Kerberos Error Code</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.2">
-                <p id="section-toc.1-1.16.2.2.1"><a href="#section-16.2" class="auto internal xref">16.2</a>.  <a href="#name-ephemeral-decapsulation-key" class="internal xref">Ephemeral Decapsulation Key Hygiene</a></p>
+                <p id="section-toc.1-1.16.2.2.1"><a href="#section-16.2" class="auto internal xref">16.2</a>.  <a href="#name-new-pkinit-oid" class="internal xref">New PKINIT OID</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.3">
-                <p id="section-toc.1-1.16.2.3.1"><a href="#section-16.3" class="auto internal xref">16.3</a>.  <a href="#name-authenticated-kdf-inputs" class="internal xref">Authenticated KDF Inputs</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.4">
-                <p id="section-toc.1-1.16.2.4.1"><a href="#section-16.4" class="auto internal xref">16.4</a>.  <a href="#name-unauthenticated-error-messa" class="internal xref">Unauthenticated Error Messages</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.5">
-                <p id="section-toc.1-1.16.2.5.1"><a href="#section-16.5" class="auto internal xref">16.5</a>.  <a href="#name-algorithm-downgrade-prevent" class="internal xref">Algorithm Downgrade Prevention</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.6">
-                <p id="section-toc.1-1.16.2.6.1"><a href="#section-16.6" class="auto internal xref">16.6</a>.  <a href="#name-pachecksum2-and-replay-prev" class="internal xref"><code>paChecksum2</code> and Replay Prevention</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.7">
-                <p id="section-toc.1-1.16.2.7.1"><a href="#section-16.7" class="auto internal xref">16.7</a>.  <a href="#name-nonce-generation" class="internal xref">Nonce Generation</a></p>
+                <p id="section-toc.1-1.16.2.3.1"><a href="#section-16.3" class="auto internal xref">16.3</a>.  <a href="#name-update-to-kerberos-pre-auth" class="internal xref">Update to Kerberos Pre-Authentication Data Types Registry</a></p>
 </li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17">
-            <p id="section-toc.1-1.17.1"><a href="#section-17" class="auto internal xref">17</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+            <p id="section-toc.1-1.17.1"><a href="#section-17" class="auto internal xref">17</a>. <a href="#name-references" class="internal xref">References</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.1">
-                <p id="section-toc.1-1.17.2.1.1"><a href="#section-17.1" class="auto internal xref">17.1</a>.  <a href="#name-new-kerberos-error-code" class="internal xref">New Kerberos Error Code</a></p>
+                <p id="section-toc.1-1.17.2.1.1"><a href="#section-17.1" class="auto internal xref">17.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.2">
-                <p id="section-toc.1-1.17.2.2.1"><a href="#section-17.2" class="auto internal xref">17.2</a>.  <a href="#name-new-pkinit-oid" class="internal xref">New PKINIT OID</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.17.2.3">
-                <p id="section-toc.1-1.17.2.3.1"><a href="#section-17.3" class="auto internal xref">17.3</a>.  <a href="#name-update-to-kerberos-pre-auth" class="internal xref">Update to Kerberos Pre-Authentication Data Types Registry</a></p>
+                <p id="section-toc.1-1.17.2.2.1"><a href="#section-17.2" class="auto internal xref">17.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
 </li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18">
-            <p id="section-toc.1-1.18.1"><a href="#section-18" class="auto internal xref">18</a>. <a href="#name-references" class="internal xref">References</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18.2.1">
-                <p id="section-toc.1-1.18.2.1.1"><a href="#section-18.1" class="auto internal xref">18.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.18.2.2">
-                <p id="section-toc.1-1.18.2.2.1"><a href="#section-18.2" class="auto internal xref">18.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
-</li>
-            </ul>
+            <p id="section-toc.1-1.18.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgements" class="internal xref">Acknowledgements</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.19">
-            <p id="section-toc.1-1.19.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgements" class="internal xref">Acknowledgements</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.20">
-            <p id="section-toc.1-1.20.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+            <p id="section-toc.1-1.19.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1387,9 +1374,6 @@ using HKDF (<span>[<a href="#RFC5869" class="cite xref">RFC5869</a>]</span>).<a 
 (the client's ephemeral key is authenticated by the client's signing
 certificate; the KDC's response is authenticated by the KDC's signing
 certificate) while providing post-quantum forward secrecy through ML-KEM.<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">This document also defines <code>PAChecksum2</code>, an extension to
-<code>PKAuthenticator</code> that provides checksum algorithm agility, supplementing the
-SHA-1-only <code>paChecksum</code> field of RFC 4556 for new deployments.<a href="#section-1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="requirements-language">
@@ -1596,7 +1580,7 @@ AuthPack ::= SEQUENCE {
         --               RFC 9935.
         -- RSA path:     MUST be absent.
     supportedCMSTypes   [2] SEQUENCE OF AlgorithmIdentifier OPTIONAL,
-        -- Used in RSA path only. It is deprecated in {{sec-rsa-deprecation}}.
+        -- Used in RSA path only (deprecated; see RFC 4556 Section 3.1.4).
     clientDHNonce       [3] DHNonce OPTIONAL,
         -- Pure KEM path (this specification): MUST be absent when
         -- clientPublicValue contains a KEM algorithm OID (see
@@ -1638,88 +1622,6 @@ PkinitKEMSuppPubInfo ::= SEQUENCE {
 </div>
 </section>
 </div>
-<div id="sec-pachecksum2">
-<section id="section-6.6">
-        <h3 id="name-pachecksum2-extension">
-<a href="#section-6.6" class="section-number selfRef">6.6. </a><a href="#name-pachecksum2-extension" class="section-name selfRef"><code>PAChecksum2</code> Extension</a>
-        </h3>
-<p id="section-6.6-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> hardwires the <code>paChecksum</code> field in <code>PKAuthenticator</code> to use
-SHA-1.  <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> Section 3 acknowledges this limitation but does not
-provide a mechanism to negotiate alternative checksum algorithms, noting
-that for DH and ECDH paths the KDF binding (which includes the entire
-AS-REQ in key derivation) provides an eventual integrity check.<a href="#section-6.6-1" class="pilcrow">¶</a></p>
-<p id="section-6.6-2">This specification extends <code>PKAuthenticator</code> with a <code>paChecksum2</code> field
-to provide checksum algorithm agility at the request validation layer.
-<code>PAChecksum2</code> was first defined in <span>[<a href="#MS-PKCA" class="cite xref">MS-PKCA</a>]</span> §2.2.3 (PA-PK-AS-REQ).<a href="#section-6.6-2" class="pilcrow">¶</a></p>
-<div class="lang-asn1 sourcecode" id="section-6.6-3">
-<pre>
-PAChecksum2 ::= SEQUENCE {
-    checksum                [0] OCTET STRING,
-        -- Checksum computed over KDC-REQ-BODY using the algorithm
-        -- specified in algorithmIdentifier.
-    algorithmIdentifier     [1] AlgorithmIdentifier
-        -- Digest algorithm OID. The parameters field MUST be absent.
-        -- Implementations MUST support:
-        --   SHA-512: 2.16.840.1.101.3.4.2.3 (NIST CSOR, RFC 5754)
-        -- Implementations MAY support:
-        --   SHA-256: 2.16.840.1.101.3.4.2.1 (NIST CSOR, RFC 5754)
-        --   SHA-384: 2.16.840.1.101.3.4.2.2 (NIST CSOR, RFC 5754)
-}
-</pre><a href="#section-6.6-3" class="pilcrow">¶</a>
-</div>
-<p id="section-6.6-4">The <code>PKAuthenticator</code> structure from <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> is extended as follows:<a href="#section-6.6-4" class="pilcrow">¶</a></p>
-<div class="lang-asn1 sourcecode" id="section-6.6-5">
-<pre>
-PKAuthenticator ::= SEQUENCE {
-    cusec                   [0] INTEGER (0..999999),
-    ctime                   [1] KerberosTime,
-    nonce                   [2] INTEGER (0..4294967295),
-    paChecksum              [3] OCTET STRING OPTIONAL,
-        -- RFC 4556: SHA-1 checksum over KDC-REQ-BODY.
-    freshnessToken          [4] OCTET STRING OPTIONAL,
-        -- RFC 8070: PA_AS_FRESHNESS token from KDC.
-    paChecksum2             [5] PAChecksum2 OPTIONAL,
-        -- This specification: algorithm-agile checksum over
-        -- KDC-REQ-BODY.
-    ...
-}
-</pre><a href="#section-6.6-5" class="pilcrow">¶</a>
-</div>
-<span class="break"></span><dl class="dlParallel" id="section-6.6-6">
-          <dt id="section-6.6-6.1">Client behavior:</dt>
-          <dd style="margin-left: 1.5em" id="section-6.6-6.2">
-            <p id="section-6.6-6.2.1">A client constructing a PKINIT request conforming to this
-specification MUST include the <code>paChecksum2</code> field and SHOULD include
-the <code>paChecksum</code> field (SHA-1, per <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>).  Both checksums,
-when present, are computed over the same KDC-REQ-BODY input.<a href="#section-6.6-6.2.1" class="pilcrow">¶</a></p>
-</dd>
-          <dd class="break"></dd>
-<dt id="section-6.6-6.3">KDC validation:</dt>
-          <dd style="margin-left: 1.5em" id="section-6.6-6.4">
-            <p id="section-6.6-6.4.1">A KDC conforming to this specification MUST require <code>paChecksum2</code> to
-be present in the request.  If <code>paChecksum2</code> is absent, the KDC
-returns <code>KDC_ERR_PA_CHECKSUM_MUST_BE_INCLUDED</code> (error code 79,
-<span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>).<a href="#section-6.6-6.4.1" class="pilcrow">¶</a></p>
-<p id="section-6.6-6.4.2">The KDC MUST validate <code>paChecksum2</code>.  If <code>paChecksum</code> is also
-present, the KDC MUST validate it as well.  The KDC returns the
-following errors:<a href="#section-6.6-6.4.2" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-6.6-6.4.3.1">
-                <p id="section-6.6-6.4.3.1.1"><code>KDC_ERR_SUMTYPE_NOSUPP</code> (error code 15, <span>[<a href="#RFC4120" class="cite xref">RFC4120</a>]</span>): if the
-digest algorithm in <code>paChecksum2.algorithmIdentifier</code> is not
-supported by the KDC.<a href="#section-6.6-6.4.3.1.1" class="pilcrow">¶</a></p>
-</li>
-              <li class="normal" id="section-6.6-6.4.3.2">
-                <p id="section-6.6-6.4.3.2.1"><code>KRB_AP_ERR_MODIFIED</code> (error code 41, <span>[<a href="#RFC4120" class="cite xref">RFC4120</a>]</span>): if
-verification of <code>paChecksum2</code> fails, or if <code>paChecksum</code> is
-present and its verification fails.<a href="#section-6.6-6.4.3.2.1" class="pilcrow">¶</a></p>
-</li>
-            </ul>
-</dd>
-        <dd class="break"></dd>
-</dl>
-</section>
-</div>
 </section>
 </div>
 <div id="sec-mode-selection">
@@ -1746,7 +1648,8 @@ present and its verification fails.<a href="#section-6.6-6.4.3.2.1" class="pilcr
           <tr>
             <td class="text-left" rowspan="1" colspan="1">Absent</td>
             <td class="text-left" rowspan="1" colspan="1">—</td>
-            <td class="text-left" rowspan="1" colspan="1">RSA path (<code>encKeyPack</code>); deprecated for new deployments</td>
+            <td class="text-left" rowspan="1" colspan="1">RSA path (<code>encKeyPack</code>); deprecated by <span>[<a href="#I-D.rische-kitten-pkinit-crypto-deprec" class="cite xref">I-D.rische-kitten-pkinit-crypto-deprec</a>]</span>
+</td>
           </tr>
           <tr>
             <td class="text-left" rowspan="1" colspan="1">Present</td>
@@ -1793,7 +1696,7 @@ path indicated by <code>clientPublicValue.algorithm</code>: HKDF algorithm OIDs
 algorithm using a cryptographically secure pseudorandom number
 generator (CSPRNG).  The security of the KEM path depends entirely on
 the unpredictability of <code>dk</code> (for ML-KEM CSPRNG requirements, see
-<a href="#sec-mlkem-csprng" class="auto internal xref">Section 15.2</a>).<a href="#section-8.1-1.1.1" class="pilcrow">¶</a></p>
+<a href="#sec-mlkem-csprng" class="auto internal xref">Section 14.2</a>).<a href="#section-8.1-1.1.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.1-1.2">
             <p id="section-8.1-1.2.1">Encode <code>ek</code> as <code>SubjectPublicKeyInfo</code> and place it in
@@ -1852,7 +1755,7 @@ selected, return <code>KDC_ERR_NO_ACCEPTABLE_KDF</code> (error code 100,
             <p id="section-8.2-1.4.1">Call <code>Encap(ek)</code> → <code>(ss, kemct)</code> using the selected algorithm (see
 <a href="#sec-kem-interface" class="auto internal xref">Section 4</a>).  Exactly one encapsulation MUST be performed per
 exchange; the resulting <code>(ss, kemct)</code> pair MUST be used in all
-subsequent steps (for ML-KEM specifics, see <a href="#sec-mlkem-encap" class="auto internal xref">Section 15.3</a>).<a href="#section-8.2-1.4.1" class="pilcrow">¶</a></p>
+subsequent steps (for ML-KEM specifics, see <a href="#sec-mlkem-encap" class="auto internal xref">Section 14.3</a>).<a href="#section-8.2-1.4.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.2-1.5">
             <p id="section-8.2-1.5.1">Build <code>KDCKEMInfo</code>:<a href="#section-8.2-1.5.1" class="pilcrow">¶</a></p>
@@ -1921,7 +1824,7 @@ the KDC did not substitute a different algorithm.<a href="#section-8.3-2.4.1" cl
           <li id="section-8.3-2.5">
             <p id="section-8.3-2.5.1"><strong>Validate <code>kemct</code> length</strong>: the byte length of <code>KDCKEMInfo.kemct</code>
 MUST match the fixed ciphertext size for <code>KDCKEMInfo.kemAlgorithm</code>
-(see <a href="#sec-mlkem-sizes" class="auto internal xref">Section 15.1</a> for ML-KEM sizes).  Abort if not.  KEM
+(see <a href="#sec-mlkem-sizes" class="auto internal xref">Section 14.1</a> for ML-KEM sizes).  Abort if not.  KEM
 algorithms MUST NOT be called on incorrectly-sized ciphertexts.<a href="#section-8.3-2.5.1" class="pilcrow">¶</a></p>
 </li>
           <li id="section-8.3-2.6">
@@ -2332,45 +2235,35 @@ security category of their ML-KEM component for post-quantum resistance.<a href=
 </div>
 </section>
 </div>
-<div id="sec-rsa-deprecation">
-<section id="section-13">
-      <h2 id="name-rsa-path-deprecation">
-<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-rsa-path-deprecation" class="section-name selfRef">RSA Path Deprecation</a>
-      </h2>
-<p id="section-13-1">The <code>encKeyPack [1]</code> path is quantum-vulnerable.  New deployments SHOULD
-NOT use <code>encKeyPack</code>.  Existing deployments MAY continue using it for
-traditional compatibility during migration.<a href="#section-13-1" class="pilcrow">¶</a></p>
-</section>
-</div>
 <div id="sec-message-size">
-<section id="section-14">
+<section id="section-13">
       <h2 id="name-message-size-considerations">
-<a href="#section-14" class="section-number selfRef">14. </a><a href="#name-message-size-considerations" class="section-name selfRef">Message Size Considerations</a>
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-message-size-considerations" class="section-name selfRef">Message Size Considerations</a>
       </h2>
-<p id="section-14-1">An <code>AuthPack</code> with an ephemeral ML-KEM-768 encapsulation key (1184 bytes,
-see <a href="#sec-mlkem-sizes" class="auto internal xref">Section 15.1</a>) signed with ML-DSA-65 (3309-bytes signature
+<p id="section-13-1">An <code>AuthPack</code> with an ephemeral ML-KEM-768 encapsulation key (1184 bytes,
+see <a href="#sec-mlkem-sizes" class="auto internal xref">Section 14.1</a>) signed with ML-DSA-65 (3309-bytes signature
 <span>[<a href="#FIPS204" class="cite xref">FIPS204</a>]</span>) will exceed UDP datagram limits.  TCP transport (<span>[<a href="#RFC5021" class="cite xref">RFC5021</a>]</span>)
 is REQUIRED for ML-KEM PKINIT.  All Kerberos infrastructure (KDCs, clients,
-firewalls) MUST support TCP Kerberos before enabling ML-KEM PKINIT.<a href="#section-14-1" class="pilcrow">¶</a></p>
+firewalls) MUST support TCP Kerberos before enabling ML-KEM PKINIT.<a href="#section-13-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-mlkem">
-<section id="section-15">
+<section id="section-14">
       <h2 id="name-ml-kem-specific-considerati">
-<a href="#section-15" class="section-number selfRef">15. </a><a href="#name-ml-kem-specific-considerati" class="section-name selfRef">ML-KEM-Specific Considerations</a>
+<a href="#section-14" class="section-number selfRef">14. </a><a href="#name-ml-kem-specific-considerati" class="section-name selfRef">ML-KEM-Specific Considerations</a>
       </h2>
-<p id="section-15-1">This section captures behavior specific to ML-KEM (<span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>).  When
+<p id="section-14-1">This section captures behavior specific to ML-KEM (<span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>).  When
 this specification is extended to other KEM algorithms, per-algorithm
 sections following this structure SHOULD be added.  The core protocol
 defined in <a href="#sec-kem-interface" class="auto internal xref">Section 4</a> through <a href="#sec-errors" class="auto internal xref">Section 10</a> is intentionally
 algorithm-agnostic; ML-KEM details are isolated here following the model
-of <span>[<a href="#RFC3961" class="cite xref">RFC3961</a>]</span>.<a href="#section-15-1" class="pilcrow">¶</a></p>
+of <span>[<a href="#RFC3961" class="cite xref">RFC3961</a>]</span>.<a href="#section-14-1" class="pilcrow">¶</a></p>
 <div id="sec-mlkem-sizes">
-<section id="section-15.1">
+<section id="section-14.1">
         <h3 id="name-key-and-ciphertext-sizes">
-<a href="#section-15.1" class="section-number selfRef">15.1. </a><a href="#name-key-and-ciphertext-sizes" class="section-name selfRef">Key and Ciphertext Sizes</a>
+<a href="#section-14.1" class="section-number selfRef">14.1. </a><a href="#name-key-and-ciphertext-sizes" class="section-name selfRef">Key and Ciphertext Sizes</a>
         </h3>
-<p id="section-15.1-1">All sizes are fixed by <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>; no variability is permitted.<a href="#section-15.1-1" class="pilcrow">¶</a></p>
+<p id="section-14.1-1">All sizes are fixed by <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span>; no variability is permitted.<a href="#section-14.1-1" class="pilcrow">¶</a></p>
 <span id="name-ml-kem-fixed-key-and-cipher"></span><div id="tab-mlkem-sizes">
 <table class="center" id="table-7">
           <caption>
@@ -2407,160 +2300,149 @@ of <span>[<a href="#RFC3961" class="cite xref">RFC3961</a>]</span>.<a href="#sec
           </tbody>
         </table>
 </div>
-<p id="section-15.1-3">The client MUST validate <code>KDCKEMInfo.kemct</code> length against these values
+<p id="section-14.1-3">The client MUST validate <code>KDCKEMInfo.kemct</code> length against these values
 before calling Decapsulate (<a href="#sec-client-processing" class="auto internal xref">Section 8.3</a> step 5).
 <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span> does not define behavior for <code>ML-KEM.Decaps</code> on
-incorrectly-sized input.<a href="#section-15.1-3" class="pilcrow">¶</a></p>
+incorrectly-sized input.<a href="#section-14.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-mlkem-csprng">
-<section id="section-15.2">
+<section id="section-14.2">
         <h3 id="name-csprng-requirement">
-<a href="#section-15.2" class="section-number selfRef">15.2. </a><a href="#name-csprng-requirement" class="section-name selfRef">CSPRNG Requirement</a>
+<a href="#section-14.2" class="section-number selfRef">14.2. </a><a href="#name-csprng-requirement" class="section-name selfRef">CSPRNG Requirement</a>
         </h3>
-<p id="section-15.2-1">Both ML-KEM key generation and encapsulation MUST use a cryptographically
+<p id="section-14.2-1">Both ML-KEM key generation and encapsulation MUST use a cryptographically
 secure pseudorandom number generator (CSPRNG) satisfying the requirements
-of <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span> Section 3.3.  The security of the KEM path depends on:<a href="#section-15.2-1" class="pilcrow">¶</a></p>
+of <span>[<a href="#FIPS203" class="cite xref">FIPS203</a>]</span> Section 3.3.  The security of the KEM path depends on:<a href="#section-14.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-15.2-2.1">
-            <p id="section-15.2-2.1.1">Client-side: the unpredictability of the ephemeral decapsulation key <code>dk</code>
-during key generation.<a href="#section-15.2-2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-14.2-2.1">
+            <p id="section-14.2-2.1.1">Client-side: the unpredictability of the ephemeral decapsulation key <code>dk</code>
+during key generation.<a href="#section-14.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-15.2-2.2">
-            <p id="section-15.2-2.2.1">KDC-side: the unpredictability of the randomness used during
+          <li class="normal" id="section-14.2-2.2">
+            <p id="section-14.2-2.2.1">KDC-side: the unpredictability of the randomness used during
 <code>ML-KEM.Encaps(ek)</code>, which produces the shared secret <code>ss</code> and ciphertext
-<code>kemct</code>.<a href="#section-15.2-2.2.1" class="pilcrow">¶</a></p>
+<code>kemct</code>.<a href="#section-14.2-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-15.2-3">A weak or predictable RNG on either side compromises the AS reply key.<a href="#section-15.2-3" class="pilcrow">¶</a></p>
+<p id="section-14.2-3">A weak or predictable RNG on either side compromises the AS reply key.<a href="#section-14.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-mlkem-encap">
-<section id="section-15.3">
+<section id="section-14.3">
         <h3 id="name-encapsulation-and-decapsula">
-<a href="#section-15.3" class="section-number selfRef">15.3. </a><a href="#name-encapsulation-and-decapsula" class="section-name selfRef">Encapsulation and Decapsulation</a>
+<a href="#section-14.3" class="section-number selfRef">14.3. </a><a href="#name-encapsulation-and-decapsula" class="section-name selfRef">Encapsulation and Decapsulation</a>
         </h3>
-<span class="break"></span><dl class="dlParallel" id="section-15.3-1">
-          <dt id="section-15.3-1.1">KDC:</dt>
-          <dd style="margin-left: 1.5em" id="section-15.3-1.2">
-            <p id="section-15.3-1.2.1"><code>(ss, kemct) = ML-KEM.Encaps(ek)</code> per <a href="#sec-kdc-response" class="auto internal xref">Section 8.2</a> step 4.<a href="#section-15.3-1.2.1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-14.3-1">
+          <dt id="section-14.3-1.1">KDC:</dt>
+          <dd style="margin-left: 1.5em" id="section-14.3-1.2">
+            <p id="section-14.3-1.2.1"><code>(ss, kemct) = ML-KEM.Encaps(ek)</code> per <a href="#sec-kdc-response" class="auto internal xref">Section 8.2</a> step 4.<a href="#section-14.3-1.2.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
-<dt id="section-15.3-1.3">Client:</dt>
-          <dd style="margin-left: 1.5em" id="section-15.3-1.4">
-            <p id="section-15.3-1.4.1"><code>ss = ML-KEM.Decaps(dk, kemct)</code> per <a href="#sec-client-processing" class="auto internal xref">Section 8.3</a> step 6,
-followed by immediate <code>dk</code> erasure.<a href="#section-15.3-1.4.1" class="pilcrow">¶</a></p>
+<dt id="section-14.3-1.3">Client:</dt>
+          <dd style="margin-left: 1.5em" id="section-14.3-1.4">
+            <p id="section-14.3-1.4.1"><code>ss = ML-KEM.Decaps(dk, kemct)</code> per <a href="#sec-client-processing" class="auto internal xref">Section 8.3</a> step 6,
+followed by immediate <code>dk</code> erasure.<a href="#section-14.3-1.4.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 </dl>
-<p id="section-15.3-2">The shared secret <code>ss</code> is 32 bytes for all three ML-KEM variants.<a href="#section-15.3-2" class="pilcrow">¶</a></p>
+<p id="section-14.3-2">The shared secret <code>ss</code> is 32 bytes for all three ML-KEM variants.<a href="#section-14.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="sec-security">
-<section id="section-16">
+<section id="section-15">
       <h2 id="name-security-considerations">
-<a href="#section-16" class="section-number selfRef">16. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+<a href="#section-15" class="section-number selfRef">15. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
 <div id="quantum-resistance">
-<section id="section-16.1">
+<section id="section-15.1">
         <h3 id="name-quantum-resistance">
-<a href="#section-16.1" class="section-number selfRef">16.1. </a><a href="#name-quantum-resistance" class="section-name selfRef">Quantum Resistance</a>
+<a href="#section-15.1" class="section-number selfRef">15.1. </a><a href="#name-quantum-resistance" class="section-name selfRef">Quantum Resistance</a>
         </h3>
-<p id="section-16.1-1">The KEM path achieves post-quantum confidentiality only when both the KEM
+<p id="section-15.1-1">The KEM path achieves post-quantum confidentiality only when both the KEM
 algorithm and the KDC signing algorithm are quantum-resistant.  Using
 ML-KEM with a traditional ECDSA or RSA signing certificate provides PQC key
 establishment but not PQC authentication; an adversary with a quantum
 computer could impersonate the KDC by forging its traditional signature.
 Deployers seeking full quantum resistance MUST use ML-DSA (<span>[<a href="#RFC9881" class="cite xref">RFC9881</a>]</span>)
 or a composite ML-DSA variant (<span>[<a href="#I-D.ietf-lamps-pq-composite-sigs" class="cite xref">I-D.ietf-lamps-pq-composite-sigs</a>]</span>) for
-KDC signing.<a href="#section-16.1-1" class="pilcrow">¶</a></p>
+KDC signing.<a href="#section-15.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="ephemeral-decapsulation-key-hygiene">
-<section id="section-16.2">
+<section id="section-15.2">
         <h3 id="name-ephemeral-decapsulation-key">
-<a href="#section-16.2" class="section-number selfRef">16.2. </a><a href="#name-ephemeral-decapsulation-key" class="section-name selfRef">Ephemeral Decapsulation Key Hygiene</a>
+<a href="#section-15.2" class="section-number selfRef">15.2. </a><a href="#name-ephemeral-decapsulation-key" class="section-name selfRef">Ephemeral Decapsulation Key Hygiene</a>
         </h3>
-<p id="section-16.2-1">The ephemeral decapsulation key <code>dk</code> MUST be erased as soon as
+<p id="section-15.2-1">The ephemeral decapsulation key <code>dk</code> MUST be erased as soon as
 decapsulation completes (<a href="#sec-client-processing" class="auto internal xref">Section 8.3</a> step 6).  Failure to
 erase <code>dk</code> negates forward secrecy: an attacker who later recovers
 <code>dk</code> can recompute <code>ss</code> and derive the AS reply key for any recorded
-exchange that used the corresponding <code>ek</code>.<a href="#section-16.2-1" class="pilcrow">¶</a></p>
+exchange that used the corresponding <code>ek</code>.<a href="#section-15.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="authenticated-kdf-inputs">
-<section id="section-16.3">
+<section id="section-15.3">
         <h3 id="name-authenticated-kdf-inputs">
-<a href="#section-16.3" class="section-number selfRef">16.3. </a><a href="#name-authenticated-kdf-inputs" class="section-name selfRef">Authenticated KDF Inputs</a>
+<a href="#section-15.3" class="section-number selfRef">15.3. </a><a href="#name-authenticated-kdf-inputs" class="section-name selfRef">Authenticated KDF Inputs</a>
         </h3>
-<p id="section-16.3-1"><span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> leaves the KDF algorithm unprotected: a man-in-the-middle
+<p id="section-15.3-1"><span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span> leaves the KDF algorithm unprotected: a man-in-the-middle
 could modify the <code>kdfAlgorithm</code> field before the client processes the
 response.  This specification places <code>kdfAlgorithm</code> inside the
 KDC-signed <code>KDCKEMInfo</code>, making it authenticated.  Clients MUST NOT
 derive a reply key using an algorithm not present in the signed
-structure.<a href="#section-16.3-1" class="pilcrow">¶</a></p>
+structure.<a href="#section-15.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="unauthenticated-error-messages">
-<section id="section-16.4">
+<section id="section-15.4">
         <h3 id="name-unauthenticated-error-messa">
-<a href="#section-16.4" class="section-number selfRef">16.4. </a><a href="#name-unauthenticated-error-messa" class="section-name selfRef">Unauthenticated Error Messages</a>
+<a href="#section-15.4" class="section-number selfRef">15.4. </a><a href="#name-unauthenticated-error-messa" class="section-name selfRef">Unauthenticated Error Messages</a>
         </h3>
-<p id="section-16.4-1">The security considerations in <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 5 regarding unauthenticated
+<p id="section-15.4-1">The security considerations in <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 5 regarding unauthenticated
 <code>KRB-ERROR</code> messages apply to <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code>. Clients MUST
-enforce their configured security policy regardless of advertised algorithms.<a href="#section-16.4-1" class="pilcrow">¶</a></p>
+enforce their configured security policy regardless of advertised algorithms.<a href="#section-15.4-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="algorithm-downgrade-prevention">
-<section id="section-16.5">
+<section id="section-15.5">
         <h3 id="name-algorithm-downgrade-prevent">
-<a href="#section-16.5" class="section-number selfRef">16.5. </a><a href="#name-algorithm-downgrade-prevent" class="section-name selfRef">Algorithm Downgrade Prevention</a>
+<a href="#section-15.5" class="section-number selfRef">15.5. </a><a href="#name-algorithm-downgrade-prevent" class="section-name selfRef">Algorithm Downgrade Prevention</a>
         </h3>
-<p id="section-16.5-1">The downgrade prevention rules in <a href="#sec-downgrade" class="auto internal xref">Section 11</a> are mandatory and
+<p id="section-15.5-1">The downgrade prevention rules in <a href="#sec-downgrade" class="auto internal xref">Section 11</a> are mandatory and
 unconditional.  A client that allows a fallback from the KEM path to the
 DH/RSA path on receiving a traditional response exposes the session to an
-active attacker who can exploit a traditional-path vulnerability.<a href="#section-16.5-1" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="pachecksum2-and-replay-prevention">
-<section id="section-16.6">
-        <h3 id="name-pachecksum2-and-replay-prev">
-<a href="#section-16.6" class="section-number selfRef">16.6. </a><a href="#name-pachecksum2-and-replay-prev" class="section-name selfRef"><code>paChecksum2</code> and Replay Prevention</a>
-        </h3>
-<p id="section-16.6-1"><code>paChecksum2</code> binds the KDC-REQ-BODY to the authenticator using a
-quantum-safe digest.  Implementations MUST NOT accept requests in which
-<code>paChecksum2</code> is absent when operating in KEM mode, as defined in
-<a href="#sec-pachecksum2" class="auto internal xref">Section 6.6</a>.<a href="#section-16.6-1" class="pilcrow">¶</a></p>
+active attacker who can exploit a traditional-path vulnerability.<a href="#section-15.5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="nonce-generation">
-<section id="section-16.7">
+<section id="section-15.6">
         <h3 id="name-nonce-generation">
-<a href="#section-16.7" class="section-number selfRef">16.7. </a><a href="#name-nonce-generation" class="section-name selfRef">Nonce Generation</a>
+<a href="#section-15.6" class="section-number selfRef">15.6. </a><a href="#name-nonce-generation" class="section-name selfRef">Nonce Generation</a>
         </h3>
-<p id="section-16.7-1">The nonce in <code>PKAuthenticator</code> provides replay protection. Implementations
+<p id="section-15.6-1">The nonce in <code>PKAuthenticator</code> provides replay protection. Implementations
 MUST generate nonces from a Deterministic Random Bit Generator (DRBG)
 approved by <span>[<a href="#SP800-90A" class="cite xref">SP800-90A</a>]</span>. Counter-based or predictable nonces compromise
-replay protection.<a href="#section-16.7-1" class="pilcrow">¶</a></p>
+replay protection.<a href="#section-15.6-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="sec-iana">
-<section id="section-17">
+<section id="section-16">
       <h2 id="name-iana-considerations">
-<a href="#section-17" class="section-number selfRef">17. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-16" class="section-number selfRef">16. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
 <div id="new-kerberos-error-code">
-<section id="section-17.1">
+<section id="section-16.1">
         <h3 id="name-new-kerberos-error-code">
-<a href="#section-17.1" class="section-number selfRef">17.1. </a><a href="#name-new-kerberos-error-code" class="section-name selfRef">New Kerberos Error Code</a>
+<a href="#section-16.1" class="section-number selfRef">16.1. </a><a href="#name-new-kerberos-error-code" class="section-name selfRef">New Kerberos Error Code</a>
         </h3>
-<p id="section-17.1-1">IANA is requested to assign a new Kerberos Message Error Code in the
+<p id="section-16.1-1">IANA is requested to assign a new Kerberos Message Error Code in the
 "Kerberos Message Error Codes" sub-registry of the "Kerberos Parameters"
-registry:<a href="#section-17.1-1" class="pilcrow">¶</a></p>
+registry:<a href="#section-16.1-1" class="pilcrow">¶</a></p>
 <span id="name-renamed-kerberos-error-code"></span><div id="tab-iana-error">
 <table class="center" id="table-8">
           <caption>
@@ -2593,13 +2475,13 @@ registry:<a href="#section-17.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="new-pkinit-oid">
-<section id="section-17.2">
+<section id="section-16.2">
         <h3 id="name-new-pkinit-oid">
-<a href="#section-17.2" class="section-number selfRef">17.2. </a><a href="#name-new-pkinit-oid" class="section-name selfRef">New PKINIT OID</a>
+<a href="#section-16.2" class="section-number selfRef">16.2. </a><a href="#name-new-pkinit-oid" class="section-name selfRef">New PKINIT OID</a>
         </h3>
-<p id="section-17.2-1">IANA is requested to assign a new object identifier under the PKINIT OID
+<p id="section-16.2-1">IANA is requested to assign a new object identifier under the PKINIT OID
 arc (<code>id-pkinit</code>, <code>1.3.6.1.5.2.3</code>) in the "SMI Security for PKIX
-Module Identifier" registry:<a href="#section-17.2-1" class="pilcrow">¶</a></p>
+Module Identifier" registry:<a href="#section-16.2-1" class="pilcrow">¶</a></p>
 <span id="name-new-pkinit-oid-assignment"></span><div id="tab-iana-oid">
 <table class="center" id="table-9">
           <caption>
@@ -2627,44 +2509,44 @@ Module Identifier" registry:<a href="#section-17.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="update-to-kerberos-pre-authentication-data-types-registry">
-<section id="section-17.3">
+<section id="section-16.3">
         <h3 id="name-update-to-kerberos-pre-auth">
-<a href="#section-17.3" class="section-number selfRef">17.3. </a><a href="#name-update-to-kerberos-pre-auth" class="section-name selfRef">Update to Kerberos Pre-Authentication Data Types Registry</a>
+<a href="#section-16.3" class="section-number selfRef">16.3. </a><a href="#name-update-to-kerberos-pre-auth" class="section-name selfRef">Update to Kerberos Pre-Authentication Data Types Registry</a>
         </h3>
-<p id="section-17.3-1">IANA is requested to update the description of the existing entry for
+<p id="section-16.3-1">IANA is requested to update the description of the existing entry for
 <code>TD-DH-PARAMETERS</code> in the "Kerberos Pre-Authentication Data Types"
-sub-registry of the "Kerberos Parameters" registry:<a href="#section-17.3-1" class="pilcrow">¶</a></p>
-<span class="break"></span><dl class="dlParallel" id="section-17.3-2">
-          <dt id="section-17.3-2.1">Old description:</dt>
-          <dd style="margin-left: 1.5em" id="section-17.3-2.2">
-            <p id="section-17.3-2.2.1">"Typed data for <code>KDC_ERR_KEY_TOO_WEAK</code>; contains a list of acceptable
-Diffie-Hellman algorithm identifiers."<a href="#section-17.3-2.2.1" class="pilcrow">¶</a></p>
+sub-registry of the "Kerberos Parameters" registry:<a href="#section-16.3-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-16.3-2">
+          <dt id="section-16.3-2.1">Old description:</dt>
+          <dd style="margin-left: 1.5em" id="section-16.3-2.2">
+            <p id="section-16.3-2.2.1">"Typed data for <code>KDC_ERR_KEY_TOO_WEAK</code>; contains a list of acceptable
+Diffie-Hellman algorithm identifiers."<a href="#section-16.3-2.2.1" class="pilcrow">¶</a></p>
 </dd>
           <dd class="break"></dd>
-<dt id="section-17.3-2.3">New name and description:</dt>
-          <dd style="margin-left: 1.5em" id="section-17.3-2.4">
-            <p id="section-17.3-2.4.1"><code>TD-EPHEMERAL-KEY-PARAMETERS</code>, "Typed data for
+<dt id="section-16.3-2.3">New name and description:</dt>
+          <dd style="margin-left: 1.5em" id="section-16.3-2.4">
+            <p id="section-16.3-2.4.1"><code>TD-EPHEMERAL-KEY-PARAMETERS</code>, "Typed data for
 <code>KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED</code> and <code>KDC_ERR_KEY_TOO_WEAK</code>; contains
 a list of acceptable ephemeral key-establishment algorithm identifiers,
-including DH, ECDH, ML-KEM, and composite ML-KEM algorithms."<a href="#section-17.3-2.4.1" class="pilcrow">¶</a></p>
+including DH, ECDH, ML-KEM, and composite ML-KEM algorithms."<a href="#section-16.3-2.4.1" class="pilcrow">¶</a></p>
 </dd>
         <dd class="break"></dd>
 </dl>
-<p id="section-17.3-3">The integer value and ASN.1 encoding (<code>SEQUENCE OF AlgorithmIdentifier</code>)
-are unchanged.  No new integer allocation is required.<a href="#section-17.3-3" class="pilcrow">¶</a></p>
+<p id="section-16.3-3">The integer value and ASN.1 encoding (<code>SEQUENCE OF AlgorithmIdentifier</code>)
+are unchanged.  No new integer allocation is required.<a href="#section-16.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
 </div>
 <div id="sec-combined-references">
-<section id="section-18">
+<section id="section-17">
       <h2 id="name-references">
-<a href="#section-18" class="section-number selfRef">18. </a><a href="#name-references" class="section-name selfRef">References</a>
+<a href="#section-17" class="section-number selfRef">17. </a><a href="#name-references" class="section-name selfRef">References</a>
       </h2>
 <div id="sec-normative-references">
-<section id="section-18.1">
+<section id="section-17.1">
         <h3 id="name-normative-references">
-<a href="#section-18.1" class="section-number selfRef">18.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-17.1" class="section-number selfRef">17.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
 <dt id="FIPS203">[FIPS203]</dt>
@@ -2674,6 +2556,10 @@ are unchanged.  No new integer allocation is required.<a href="#section-17.3-3" 
 <dt id="FIPS204">[FIPS204]</dt>
         <dd>
 <span class="refAuthor">National Institute of Standards and Technology (NIST)</span>, <span class="refTitle">"Module-Lattice-Based Digital Signature Standard"</span>, <span class="seriesInfo">FIPS PUB 204</span>, <time datetime="2024-08" class="refDate">August 2024</time>, <span>&lt;<a href="https://doi.org/10.6028/NIST.FIPS.204">https://doi.org/10.6028/NIST.FIPS.204</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.rische-kitten-pkinit-crypto-deprec">[I-D.rische-kitten-pkinit-crypto-deprec]</dt>
+        <dd>
+<span class="refTitle">"*** BROKEN REFERENCE ***"</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
@@ -2739,9 +2625,9 @@ are unchanged.  No new integer allocation is required.<a href="#section-17.3-3" 
 </section>
 </div>
 <div id="sec-informative-references">
-<section id="section-18.2">
+<section id="section-17.2">
         <h3 id="name-informative-references">
-<a href="#section-18.2" class="section-number selfRef">18.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+<a href="#section-17.2" class="section-number selfRef">17.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
 <dt id="I-D.ietf-lamps-pq-composite-kem">[I-D.ietf-lamps-pq-composite-kem]</dt>
@@ -2751,10 +2637,6 @@ are unchanged.  No new integer allocation is required.<a href="#section-17.3-3" 
 <dt id="I-D.ietf-lamps-pq-composite-sigs">[I-D.ietf-lamps-pq-composite-sigs]</dt>
         <dd>
 <span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite Module-Lattice-Based Digital Signature Algorithm (ML-DSA) for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-sigs-19</span>, <time datetime="2026-04-21" class="refDate">21 April 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-sigs-19">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-sigs-19</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="MS-PKCA">[MS-PKCA]</dt>
-        <dd>
-<span class="refAuthor">Microsoft Corporation</span>, <span class="refTitle">"[MS-PKCA]: Public Key Cryptography for Initial Authentication (PKINIT) in Kerberos Protocol"</span>, <time datetime="2023-09-20" class="refDate">20 September 2023</time>, <span>&lt;<a href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-pkca/">https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-pkca/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC9882">[RFC9882]</dt>
       <dd>
