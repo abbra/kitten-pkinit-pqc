@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-09T02:55:44.420570+00:00",
+  "timestamp": "2026-06-11T03:47:44.698540+00:00",
   "repo": "abbra/kitten-pkinit-pqc",
   "labels": [
     {
@@ -153,24 +153,26 @@
       "id": "PR_kwDOSReoms7jNNEF",
       "title": "Create a dedicated draft for deprecation matters",
       "url": "https://github.com/abbra/kitten-pkinit-pqc/pull/2",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "jrisc",
       "authorAssociation": "CONTRIBUTOR",
       "assignees": [],
       "labels": [],
       "body": "## Summary by Sourcery\n\nFactor PKINIT cryptographic deprecation and checksum agility content into a new standalone draft and update the PQC PKINIT draft to reference it.\n\nNew Features:\n- Introduce a new PKINIT cryptographic deprecation draft covering RSA key transport, weak DH groups, SHA-1-based KDFs, SHA-1 CMS signatures, and the paChecksum2 extension.\n\nEnhancements:\n- Simplify the PKINIT PQC draft by removing embedded RSA path and paChecksum2 deprecation text and referencing the new deprecation draft instead.",
       "createdAt": "2026-06-05T18:01:29Z",
-      "updatedAt": "2026-06-08T11:30:31Z",
+      "updatedAt": "2026-06-10T18:35:21Z",
       "baseRepository": "abbra/kitten-pkinit-pqc",
       "baseRefName": "main",
       "baseRefOid": "03abbe56ff8a39200bee3496ff308376d8b92e60",
       "headRepository": "jrisc/kitten-pkinit-pqc",
       "headRefName": "pkinit-cypdpr",
       "headRefOid": "ddc903fd5d154a3618093483bb3bf578fbec1798",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-06-10T18:35:21Z",
+      "mergedAt": "2026-06-10T18:35:21Z",
+      "mergedBy": "abbra",
+      "mergeCommit": {
+        "oid": "638790447a008ee3a8f09a35d6bbbc155543da6a"
+      },
       "comments": [
         {
           "author": "sourcery-ai",
