@@ -4,9 +4,9 @@
 
 Common Authentication Technology Next Generation               J. Rische
 Internet-Draft                                             Red Hat, Inc.
-Updates: 4556, 5349, 8636 (if approved)                     10 June 2026
+Updates: 4556, 5349, 8636 (if approved)                     23 June 2026
 Intended status: Standards Track                                        
-Expires: 12 December 2026
+Expires: 25 December 2026
 
 
    Deprecation of Outdated Cryptographic Algorithms and Parameters in
@@ -54,7 +54,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 December 2026.
+   This Internet-Draft will expire on 25 December 2026.
 
 Copyright Notice
 
@@ -327,13 +327,6 @@ Table of Contents
 
 8.  Security Considerations
 
-   The supportedKDFs, paChecksum2, and clientPublicValue fields are
-   protected by the CMS signature on signedAuthPack.  A man-in-the-
-   middle attacker cannot strip these fields without invalidating the
-   signature.  Clients performing anonymous PKINIT [RFC8062] do not sign
-   the AuthPack; such clients SHOULD use the strongest available
-   algorithms by default.
-
    KDCs and clients MAY accept legacy algorithm choices from peers that
    have not been updated to conform to this specification, subject to
    local policy.  Implementations SHOULD log such fallback events.
@@ -399,11 +392,6 @@ Table of Contents
               Agility and Selecting Mandatory-to-Implement Algorithms",
               BCP 201, RFC 7696, DOI 10.17487/RFC7696, November 2015,
               <https://www.rfc-editor.org/rfc/rfc7696>.
-
-   [RFC8062]  Zhu, L., Leach, P., Hartman, S., and S. Emery, Ed.,
-              "Anonymity Support for Kerberos", RFC 8062,
-              DOI 10.17487/RFC8062, February 2017,
-              <https://www.rfc-editor.org/rfc/rfc8062>.
 
    [RFC8070]  Short, M., Ed., Moore, S., and P. Miller, "Public Key
               Cryptography for Initial Authentication in Kerberos
