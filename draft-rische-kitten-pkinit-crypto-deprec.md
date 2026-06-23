@@ -45,7 +45,6 @@ informative:
   RFC2409:
   RFC2412:
   RFC7696:
-  RFC8062:
   RFC8070:
   RFC9155:
   I-D.irtf-cfrg-rsa-guidance:
@@ -319,13 +318,6 @@ KDC validation:
 This document has no IANA actions.
 
 # Security Considerations {#sec-security}
-
-The `supportedKDFs`, `paChecksum2`, and `clientPublicValue` fields
-are protected by the CMS signature on `signedAuthPack`.  A
-man-in-the-middle attacker cannot strip these fields without
-invalidating the signature.  Clients performing anonymous PKINIT
-{{RFC8062}} do not sign the `AuthPack`; such clients SHOULD use the
-strongest available algorithms by default.
 
 KDCs and clients MAY accept legacy algorithm choices from peers that
 have not been updated to conform to this specification, subject to
