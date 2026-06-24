@@ -274,7 +274,7 @@ KDCKEMInfo ::= SEQUENCE {
 
 `kemAlgorithm` makes `KDCKEMInfo` self-describing and provides signed
 confirmation that the KDC processed the correct algorithm (verified in
-{{sec-client-processing}} step 4), avoiding implicit inference from
+{{sec-client-processing}} step 5), avoiding implicit inference from
 `kemct` length alone.
 
 ## Extended `AuthPack` {#sec-authpack}
@@ -428,37 +428,42 @@ client MUST erase `dk` before returning.
 
 1. **Verify KDC signature** over `kemSignedData`.  Abort if invalid.
 
-2. **Verify `serverNonce` is absent**: `KDCKEMInfo.serverNonce` MUST NOT
+2. **Enforce KDC signing algorithm**: If the client used a post-quantum
+   signing certificate, verify that the KDC's `kemSignedData` signature
+   uses a quantum-resistant algorithm per {{sec-downgrade}}.  Abort if
+   the KDC signed with a traditional algorithm.
+
+3. **Verify `serverNonce` is absent**: `KDCKEMInfo.serverNonce` MUST NOT
    be present in pure ML-KEM exchanges defined by this specification.
    Abort if present.
 
-3. **Extract and verify nonce**: If `KDCKEMInfo.nonce` is present, it
+4. **Extract and verify nonce**: If `KDCKEMInfo.nonce` is present, it
    MUST equal `pkAuthenticator.nonce`.  Abort if not.  If absent,
    implementations MUST verify freshness through alternative means
    (e.g., timestamp in `PKAuthenticator`); future KEM specifications
    MUST define which mechanism applies when nonce is omitted.
 
-4. **Verify echoed algorithm**: `KDCKEMInfo.kemAlgorithm` MUST exactly
+5. **Verify echoed algorithm**: `KDCKEMInfo.kemAlgorithm` MUST exactly
    match the algorithm OID in the client's own
    `clientPublicValue.algorithm`.  Abort if they differ.  This confirms
    the KDC did not substitute a different algorithm.
 
-5. **Validate `kemct` length**: the byte length of `KDCKEMInfo.kemct`
+6. **Validate `kemct` length**: the byte length of `KDCKEMInfo.kemct`
    MUST match the fixed ciphertext size for `KDCKEMInfo.kemAlgorithm`
    (see {{sec-mlkem-sizes}} for ML-KEM sizes).  Abort if not.  KEM
    algorithms MUST NOT be called on incorrectly-sized ciphertexts.
 
-6. **Decapsulate**: `ss = Decap(dk, KDCKEMInfo.kemct)`
+7. **Decapsulate**: `ss = Decap(dk, KDCKEMInfo.kemct)`
    using the algorithm in `KDCKEMInfo.kemAlgorithm`.  Erase `dk`
    immediately after this call completes, before any further processing.
 
-7. **Derive reply key** from `ss` per {{sec-kdf}}.  Use this key to
+8. **Derive reply key** from `ss` per {{sec-kdf}}.  Use this key to
    decrypt the AS-REP `enc-part`.
 
-8. **Confirm `dk` erasure**.  The ephemeral decapsulation key MUST have
-   been erased in step 6 and MUST NOT be retained.
+9. **Confirm `dk` erasure**.  The ephemeral decapsulation key MUST have
+   been erased in step 7 and MUST NOT be retained.
 
-Steps 1–5 MUST complete before step 6.  Decapsulation MUST NOT be called
+Steps 1–6 MUST complete before step 7.  Decapsulation MUST NOT be called
 on an unauthenticated ciphertext.
 
 ## KDC Certificate Validation {#sec-cert-validation}
@@ -598,16 +603,29 @@ When a client uses a post-quantum certificate (e.g., ML-DSA per {{RFC9881}},
 composite ML-DSA per {{I-D.ietf-lamps-pq-composite-sigs}}, or future
 quantum-resistant signature algorithms) and sends a post-quantum KEM
 encapsulation key (ML-KEM or composite ML-KEM) in `clientPublicValue`, the
-client MUST NOT fall back to traditional key-establishment algorithms (DH,
-ECDH, RSA). This ensures quantum-resistant authentication and key
-establishment are paired. The client MAY retry with a different post-quantum
-KEM algorithm from {{sec-kem-errors}}.  If no post-quantum KEM is available,
-the client MUST fail the authentication attempt.
+following rules apply:
 
-Clients using traditional certificates (RSA, ECDSA) MAY fall back from
-post-quantum KEM to traditional key establishment (DH, ECDH) for backward
-compatibility with non-upgraded KDCs. The security considerations regarding
-unauthenticated error messages in {{RFC4556}} Section 5 apply.
+*  The client MUST NOT fall back to traditional key-establishment algorithms
+   (DH, ECDH, RSA).  The client MAY retry with a different post-quantum KEM
+   algorithm from {{sec-kem-errors}}.  If no post-quantum KEM is available,
+   the client MUST fail the authentication attempt.
+
+*  The client MUST verify that the KDC's `kemSignedData` signature was
+   produced using a quantum-resistant algorithm (e.g., ML-DSA per
+   {{RFC9882}}, composite ML-DSA per
+   {{I-D.ietf-lamps-pq-composite-sigs}}, or future quantum-resistant
+   signature algorithms).  If the KDC signed with a traditional algorithm
+   (RSA, ECDSA), the client MUST reject the response.
+
+These rules ensure that quantum-resistant authentication and key
+establishment are paired end-to-end when the client's certificate indicates
+a commitment to post-quantum security.  See {{sec-security}} for further
+discussion.
+
+Clients using traditional certificates MAY fall back from post-quantum KEM
+to traditional key establishment for backward compatibility with
+non-upgraded KDCs.  The security considerations regarding unauthenticated
+error messages in {{RFC4556}} Section 5 apply.
 
 # Algorithm Requirements {#sec-algorithms}
 
@@ -694,7 +712,7 @@ All sizes are fixed by {{FIPS203}}; no variability is permitted.
 {: #tab-mlkem-sizes title="ML-KEM fixed key and ciphertext sizes"}
 
 The client MUST validate `KDCKEMInfo.kemct` length against these values
-before calling Decapsulate ({{sec-client-processing}} step 5).
+before calling Decapsulate ({{sec-client-processing}} step 6).
 {{FIPS203}} does not define behavior for `ML-KEM.Decaps` on
 incorrectly-sized input.
 
@@ -718,7 +736,7 @@ KDC:
 :  `(ss, kemct) = ML-KEM.Encaps(ek)` per {{sec-kdc-response}} step 4.
 
 Client:
-:  `ss = ML-KEM.Decaps(dk, kemct)` per {{sec-client-processing}} step 6,
+:  `ss = ML-KEM.Decaps(dk, kemct)` per {{sec-client-processing}} step 7,
    followed by immediate `dk` erasure.
 
 The shared secret `ss` is 32 bytes for all three ML-KEM variants.
@@ -734,12 +752,15 @@ establishment but not PQC authentication; an adversary with a quantum
 computer could impersonate the KDC by forging its traditional signature.
 Deployers seeking full quantum resistance MUST use ML-DSA ({{RFC9881}})
 or a composite ML-DSA variant ({{I-D.ietf-lamps-pq-composite-sigs}}) for
-KDC signing.
+KDC signing.  When the client itself uses a post-quantum signing
+certificate, the downgrade prevention rules in {{sec-downgrade}} require the
+client to enforce quantum-resistant KDC authentication as well, ensuring
+end-to-end quantum resistance.
 
 ## Ephemeral Decapsulation Key Hygiene
 
 The ephemeral decapsulation key `dk` MUST be erased as soon as
-decapsulation completes ({{sec-client-processing}} step 6).  Failure to
+decapsulation completes ({{sec-client-processing}} step 7).  Failure to
 erase `dk` negates forward secrecy: an attacker who later recovers
 `dk` can recompute `ss` and derive the AS reply key for any recorded
 exchange that used the corresponding `ek`.
