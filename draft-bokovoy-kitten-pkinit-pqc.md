@@ -48,8 +48,6 @@ normative:
   RFC3961:
   RFC4120:
   RFC4556:
-  RFC5021:
-  RFC5349:
   RFC5652:
   RFC5869:
   RFC8009:
@@ -65,14 +63,6 @@ normative:
       org: "National Institute of Standards and Technology (NIST)"
     seriesinfo:
       "FIPS PUB": "203"
-  FIPS204:
-    title: "Module-Lattice-Based Digital Signature Standard"
-    target: https://doi.org/10.6028/NIST.FIPS.204
-    date: 2024-08
-    author:
-      org: "National Institute of Standards and Technology (NIST)"
-    seriesinfo:
-      "FIPS PUB": "204"
   SP800-90A:
     title: "Recommendation for Random Number Generation Using Deterministic Random Bit Generators"
     target: https://doi.org/10.6028/NIST.SP.800-90Ar1
@@ -82,12 +72,22 @@ normative:
     seriesinfo:
       "NIST SP": "800-90A Rev. 1"
 
-  I-D.rische-kitten-pkinit-crypto-deprec:
-
-informative:
   RFC9882:
   I-D.ietf-lamps-pq-composite-kem:
   I-D.ietf-lamps-pq-composite-sigs:
+
+informative:
+  RFC5021:
+  RFC5349:
+  FIPS204:
+    title: "Module-Lattice-Based Digital Signature Standard"
+    target: https://doi.org/10.6028/NIST.FIPS.204
+    date: 2024-08
+    author:
+      org: "National Institute of Standards and Technology (NIST)"
+    seriesinfo:
+      "FIPS PUB": "204"
+  I-D.rische-kitten-pkinit-crypto-deprec:
 
 --- abstract
 
