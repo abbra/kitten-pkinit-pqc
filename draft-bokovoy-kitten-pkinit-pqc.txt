@@ -5,9 +5,9 @@
 Common Authentication Technology Next Generation              A. Bokovoy
 Internet-Draft                                                 J. Rische
 Intended status: Standards Track                           Red Hat, Inc.
-Expires: 25 December 2026                                    N. Williams
+Expires: 28 December 2026                                    N. Williams
                                                             Cryptonector
-                                                            23 June 2026
+                                                            26 June 2026
 
 
  Post-quantum Key Encapsulation with ML-KEM in Public Key Cryptography
@@ -54,7 +54,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 25 December 2026.
+   This Internet-Draft will expire on 28 December 2026.
 
 Copyright Notice
 
@@ -296,7 +296,7 @@ Table of Contents
 
    kemAlgorithm makes KDCKEMInfo self-describing and provides signed
    confirmation that the KDC processed the correct algorithm (verified
-   in Section 8.3 step 4), avoiding implicit inference from kemct length
+   in Section 8.3 step 5), avoiding implicit inference from kemct length
    alone.
 
 6.4.  Extended AuthPack
@@ -461,37 +461,42 @@ Table of Contents
 
    1.  *Verify KDC signature* over kemSignedData.  Abort if invalid.
 
-   2.  *Verify serverNonce is absent*: KDCKEMInfo.serverNonce MUST NOT
+   2.  *Enforce KDC signing algorithm*: If the client used a post-
+       quantum signing certificate, verify that the KDC's kemSignedData
+       signature uses a quantum-resistant algorithm per Section 11.
+       Abort if the KDC signed with a traditional algorithm.
+
+   3.  *Verify serverNonce is absent*: KDCKEMInfo.serverNonce MUST NOT
        be present in pure ML-KEM exchanges defined by this
        specification.  Abort if present.
 
-   3.  *Extract and verify nonce*: If KDCKEMInfo.nonce is present, it
+   4.  *Extract and verify nonce*: If KDCKEMInfo.nonce is present, it
        MUST equal pkAuthenticator.nonce.  Abort if not.  If absent,
        implementations MUST verify freshness through alternative means
        (e.g., timestamp in PKAuthenticator); future KEM specifications
        MUST define which mechanism applies when nonce is omitted.
 
-   4.  *Verify echoed algorithm*: KDCKEMInfo.kemAlgorithm MUST exactly
+   5.  *Verify echoed algorithm*: KDCKEMInfo.kemAlgorithm MUST exactly
        match the algorithm OID in the client's own
        clientPublicValue.algorithm.  Abort if they differ.  This
        confirms the KDC did not substitute a different algorithm.
 
-   5.  *Validate kemct length*: the byte length of KDCKEMInfo.kemct MUST
+   6.  *Validate kemct length*: the byte length of KDCKEMInfo.kemct MUST
        match the fixed ciphertext size for KDCKEMInfo.kemAlgorithm (see
        Section 14.1 for ML-KEM sizes).  Abort if not.  KEM algorithms
        MUST NOT be called on incorrectly-sized ciphertexts.
 
-   6.  *Decapsulate*: ss = Decap(dk, KDCKEMInfo.kemct) using the
+   7.  *Decapsulate*: ss = Decap(dk, KDCKEMInfo.kemct) using the
        algorithm in KDCKEMInfo.kemAlgorithm.  Erase dk immediately after
        this call completes, before any further processing.
 
-   7.  *Derive reply key* from ss per Section 9.  Use this key to
+   8.  *Derive reply key* from ss per Section 9.  Use this key to
        decrypt the AS-REP enc-part.
 
-   8.  *Confirm dk erasure*.  The ephemeral decapsulation key MUST have
-       been erased in step 6 and MUST NOT be retained.
+   9.  *Confirm dk erasure*.  The ephemeral decapsulation key MUST have
+       been erased in step 7 and MUST NOT be retained.
 
-   Steps 1–5 MUST complete before step 6.  Decapsulation MUST NOT be
+   Steps 1–6 MUST complete before step 7.  Decapsulation MUST NOT be
    called on an unauthenticated ciphertext.
 
 8.4.  KDC Certificate Validation
@@ -632,18 +637,30 @@ reply_key = random-to-key(reply_key_material)
    [RFC9881], composite ML-DSA per [I-D.ietf-lamps-pq-composite-sigs],
    or future quantum-resistant signature algorithms) and sends a post-
    quantum KEM encapsulation key (ML-KEM or composite ML-KEM) in
-   clientPublicValue, the client MUST NOT fall back to traditional key-
-   establishment algorithms (DH, ECDH, RSA).  This ensures quantum-
-   resistant authentication and key establishment are paired.  The
-   client MAY retry with a different post-quantum KEM algorithm from
-   Section 10.3.  If no post-quantum KEM is available, the client MUST
-   fail the authentication attempt.
+   clientPublicValue, the following rules apply:
 
-   Clients using traditional certificates (RSA, ECDSA) MAY fall back
-   from post-quantum KEM to traditional key establishment (DH, ECDH) for
-   backward compatibility with non-upgraded KDCs.  The security
-   considerations regarding unauthenticated error messages in [RFC4556]
-   Section 5 apply.
+   *  The client MUST NOT fall back to traditional key-establishment
+      algorithms (DH, ECDH, RSA).  The client MAY retry with a different
+      post-quantum KEM algorithm from Section 10.3.  If no post-quantum
+      KEM is available, the client MUST fail the authentication attempt.
+
+   *  The client MUST verify that the KDC's kemSignedData signature was
+      produced using a quantum-resistant algorithm (e.g., ML-DSA per
+      [RFC9882], composite ML-DSA per
+      [I-D.ietf-lamps-pq-composite-sigs], or future quantum-resistant
+      signature algorithms).  If the KDC signed with a traditional
+      algorithm (RSA, ECDSA), the client MUST reject the response.
+
+   These rules ensure that quantum-resistant authentication and key
+   establishment are paired end-to-end when the client's certificate
+   indicates a commitment to post-quantum security.  See Section 15 for
+   further discussion.
+
+   Clients using traditional certificates MAY fall back from post-
+   quantum KEM to traditional key establishment for backward
+   compatibility with non-upgraded KDCs.  The security considerations
+   regarding unauthenticated error messages in [RFC4556] Section 5
+   apply.
 
 12.  Algorithm Requirements
 
@@ -758,7 +775,7 @@ reply_key = random-to-key(reply_key_material)
               Table 7: ML-KEM fixed key and ciphertext sizes
 
    The client MUST validate KDCKEMInfo.kemct length against these values
-   before calling Decapsulate (Section 8.3 step 5).  [FIPS203] does not
+   before calling Decapsulate (Section 8.3 step 6).  [FIPS203] does not
    define behavior for ML-KEM.Decaps on incorrectly-sized input.
 
 14.2.  CSPRNG Requirement
@@ -782,7 +799,7 @@ reply_key = random-to-key(reply_key_material)
 
    KDC:  (ss, kemct) = ML-KEM.Encaps(ek) per Section 8.2 step 4.
 
-   Client:  ss = ML-KEM.Decaps(dk, kemct) per Section 8.3 step 6,
+   Client:  ss = ML-KEM.Decaps(dk, kemct) per Section 8.3 step 7,
       followed by immediate dk erasure.
 
    The shared secret ss is 32 bytes for all three ML-KEM variants.
@@ -798,12 +815,16 @@ reply_key = random-to-key(reply_key_material)
    adversary with a quantum computer could impersonate the KDC by
    forging its traditional signature.  Deployers seeking full quantum
    resistance MUST use ML-DSA ([RFC9881]) or a composite ML-DSA variant
-   ([I-D.ietf-lamps-pq-composite-sigs]) for KDC signing.
+   ([I-D.ietf-lamps-pq-composite-sigs]) for KDC signing.  When the
+   client itself uses a post-quantum signing certificate, the downgrade
+   prevention rules in Section 11 require the client to enforce quantum-
+   resistant KDC authentication as well, ensuring end-to-end quantum
+   resistance.
 
 15.2.  Ephemeral Decapsulation Key Hygiene
 
    The ephemeral decapsulation key dk MUST be erased as soon as
-   decapsulation completes (Section 8.3 step 6).  Failure to erase dk
+   decapsulation completes (Section 8.3 step 7).  Failure to erase dk
    negates forward secrecy: an attacker who later recovers dk can
    recompute ss and derive the AS reply key for any recorded exchange
    that used the corresponding ek.
@@ -898,13 +919,22 @@ reply_key = random-to-key(reply_key_material)
               Standard", FIPS PUB 203, August 2024,
               <https://doi.org/10.6028/NIST.FIPS.203>.
 
-   [FIPS204]  National Institute of Standards and Technology (NIST),
-              "Module-Lattice-Based Digital Signature Standard", FIPS
-              PUB 204, August 2024,
-              <https://doi.org/10.6028/NIST.FIPS.204>.
+   [I-D.ietf-lamps-pq-composite-kem]
+              Ounsworth, M., Gray, J., Pala, M., Klaußner, J., and S.
+              Fluhrer, "Composite ML-KEM for use in X.509 Public Key
+              Infrastructure", Work in Progress, Internet-Draft, draft-
+              ietf-lamps-pq-composite-kem-16, 15 June 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-lamps-
+              pq-composite-kem-16>.
 
-   [I-D.rische-kitten-pkinit-crypto-deprec]
-              "*** BROKEN REFERENCE ***".
+   [I-D.ietf-lamps-pq-composite-sigs]
+              Ounsworth, M., Gray, J., Pala, M., Klaußner, J., and S.
+              Fluhrer, "Composite Module-Lattice-Based Digital Signature
+              Algorithm (ML-DSA) for use in X.509 Public Key
+              Infrastructure", Work in Progress, Internet-Draft, draft-
+              ietf-lamps-pq-composite-sigs-19, 21 April 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-lamps-
+              pq-composite-sigs-19>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -924,17 +954,6 @@ reply_key = random-to-key(reply_key_material)
               Authentication in Kerberos (PKINIT)", RFC 4556,
               DOI 10.17487/RFC4556, June 2006,
               <https://www.rfc-editor.org/rfc/rfc4556>.
-
-   [RFC5021]  Josefsson, S., "Extended Kerberos Version 5 Key
-              Distribution Center (KDC) Exchanges over TCP", RFC 5021,
-              DOI 10.17487/RFC5021, August 2007,
-              <https://www.rfc-editor.org/rfc/rfc5021>.
-
-   [RFC5349]  Zhu, L., Jaganathan, K., and K. Lauter, "Elliptic Curve
-              Cryptography (ECC) Support for Public Key Cryptography for
-              Initial Authentication in Kerberos (PKINIT)", RFC 5349,
-              DOI 10.17487/RFC5349, September 2008,
-              <https://www.rfc-editor.org/rfc/rfc5349>.
 
    [RFC5652]  Housley, R., "Cryptographic Message Syntax (CMS)", STD 70,
               RFC 5652, DOI 10.17487/RFC5652, September 2009,
@@ -971,6 +990,11 @@ reply_key = random-to-key(reply_key_material)
               DOI 10.17487/RFC9881, October 2025,
               <https://www.rfc-editor.org/rfc/rfc9881>.
 
+   [RFC9882]  Salter, B., Raine, A., and D. Van Geest, "Use of the ML-
+              DSA Signature Algorithm in the Cryptographic Message
+              Syntax (CMS)", RFC 9882, DOI 10.17487/RFC9882, October
+              2025, <https://www.rfc-editor.org/rfc/rfc9882>.
+
    [RFC9935]  Turner, S., Kampanakis, P., Massimo, J., and B. E.
               Westerbaan, "Internet X.509 Public Key Infrastructure -
               Algorithm Identifiers for the Module-Lattice-Based Key-
@@ -986,27 +1010,29 @@ reply_key = random-to-key(reply_key_material)
 
 17.2.  Informative References
 
-   [I-D.ietf-lamps-pq-composite-kem]
-              Ounsworth, M., Gray, J., Pala, M., Klaußner, J., and S.
-              Fluhrer, "Composite ML-KEM for use in X.509 Public Key
-              Infrastructure", Work in Progress, Internet-Draft, draft-
-              ietf-lamps-pq-composite-kem-16, 15 June 2026,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-lamps-
-              pq-composite-kem-16>.
+   [FIPS204]  National Institute of Standards and Technology (NIST),
+              "Module-Lattice-Based Digital Signature Standard", FIPS
+              PUB 204, August 2024,
+              <https://doi.org/10.6028/NIST.FIPS.204>.
 
-   [I-D.ietf-lamps-pq-composite-sigs]
-              Ounsworth, M., Gray, J., Pala, M., Klaußner, J., and S.
-              Fluhrer, "Composite Module-Lattice-Based Digital Signature
-              Algorithm (ML-DSA) for use in X.509 Public Key
-              Infrastructure", Work in Progress, Internet-Draft, draft-
-              ietf-lamps-pq-composite-sigs-19, 21 April 2026,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-lamps-
-              pq-composite-sigs-19>.
+   [I-D.rische-kitten-pkinit-crypto-deprec]
+              Rische, J., "Deprecation of Outdated Cryptographic
+              Algorithms and Parameters in Kerberos PKINIT", Work in
+              Progress, Internet-Draft, draft-rische-kitten-pkinit-
+              crypto-deprec-00, 23 June 2026,
+              <https://datatracker.ietf.org/doc/html/draft-rische-
+              kitten-pkinit-crypto-deprec-00>.
 
-   [RFC9882]  Salter, B., Raine, A., and D. Van Geest, "Use of the ML-
-              DSA Signature Algorithm in the Cryptographic Message
-              Syntax (CMS)", RFC 9882, DOI 10.17487/RFC9882, October
-              2025, <https://www.rfc-editor.org/rfc/rfc9882>.
+   [RFC5021]  Josefsson, S., "Extended Kerberos Version 5 Key
+              Distribution Center (KDC) Exchanges over TCP", RFC 5021,
+              DOI 10.17487/RFC5021, August 2007,
+              <https://www.rfc-editor.org/rfc/rfc5021>.
+
+   [RFC5349]  Zhu, L., Jaganathan, K., and K. Lauter, "Elliptic Curve
+              Cryptography (ECC) Support for Public Key Cryptography for
+              Initial Authentication in Kerberos (PKINIT)", RFC 5349,
+              DOI 10.17487/RFC5349, September 2008,
+              <https://www.rfc-editor.org/rfc/rfc5349>.
 
 Acknowledgements
 
