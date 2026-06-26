@@ -1,0 +1,431 @@
+
+
+
+
+Common Authentication Technology Next Generation               J. Rische
+Internet-Draft                                             Red Hat, Inc.
+Updates: 4556, 5349, 8636 (if approved)                     26 June 2026
+Intended status: Standards Track                                        
+Expires: 28 December 2026
+
+
+   Deprecation of Outdated Cryptographic Algorithms and Parameters in
+                            Kerberos PKINIT
+            draft-rische-kitten-pkinit-crypto-deprec-latest
+
+Abstract
+
+   This document deprecates several outdated cryptographic algorithms
+   and parameters from the Kerberos PKINIT specification (RFC 4556) and
+   its extensions (RFC 5349, RFC 8636).  Specifically, it deprecates the
+   RSA key transport mechanism for reply key delivery, the Diffie-
+   Hellman MODP group 2 (1024-bit) parameter, the SHA-1-based
+   octetstring2key key derivation function, and the
+   sha1WithRSAEncryption CMS signature algorithm.  It also defines a new
+   paChecksum2 field in the PKAuthenticator structure to provide
+   checksum algorithm agility.
+
+   This document updates RFC 4556, RFC 5349, and RFC 8636.
+
+Discussion Venues
+
+   This note is to be removed before publishing as an RFC.
+
+   Discussion of this document takes place on the Common Authentication
+   Technology Next Generation Working Group mailing list
+   (kitten@ietf.org), which is archived at
+   https://mailarchive.ietf.org/arch/browse/kitten/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/abbra/kitten-pkinit-pqc.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 28 December 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction
+     1.1.  Requirements Language
+   2.  RSA Key Transport
+   3.  MODP Group 2
+   4.  SHA-1-Based octetstring2key() KDF
+   5.  CMS Signature Algorithms
+   6.  paChecksum2 Extension
+   7.  IANA Considerations
+   8.  Security Considerations
+   9.  References
+     9.1.  Normative References
+     9.2.  Informative References
+   Acknowledgements
+   Author's Address
+
+1.  Introduction
+
+   Since the publication of the initial PKINIT specification in
+   [RFC4556], significant advances in cryptanalysis and computing power
+   have rendered several of its cryptographic elements inadequate for
+   current use.  BCP 201 [RFC7696] stresses the importance of
+   proactively deprecating weakened algorithms.  This document addresses
+   five such elements.
+
+   The RSA key transport mechanism defined in [RFC4556] Section 3.2.3.2
+   relies on RSAES-PKCS-v1_5, which has been subject to Bleichenbacher-
+   style adaptive chosen-ciphertext attacks since 1998 and to numerous
+   side-channel attacks documented in [I-D.irtf-cfrg-rsa-guidance].  It
+   also prevents the client from contributing entropy to the session
+   key.
+
+   The 1024-bit Diffie-Hellman MODP group 2 ([RFC2409] Section 6.2,
+   [RFC2412] Appendix E.2), mandatory in [RFC4556], provides at most
+   approximately 80 bits of security strength.  NIST has deprecated
+   1024-bit discrete-logarithm key sizes and major cryptographic
+   libraries such as OpenSSL no longer support this group, creating
+   practical interoperability failures in PKINIT deployments.
+
+   SHA-1 has been demonstrably broken for collision resistance since
+   2017.  NIST disallowed SHA-1 for digital signature generation in
+   2013, and [RFC9155] formally deprecated it in TLS 1.2.  Three
+   elements of the PKINIT protocol depend on SHA-1: the
+   sha1WithRSAEncryption CMS signature algorithm mandated in [RFC4556]
+   Section 3.2.2, the octetstring2key() key derivation function in
+   [RFC4556] Section 3.2.3.1, and the hardwired SHA-1 checksum in the
+   paChecksum field of PKAuthenticator.  [RFC8636] introduced negotiable
+   KDFs and acknowledged the paChecksum limitation but left both the KDF
+   negotiation and the checksum algorithm as optional.
+
+   This specification:
+
+   1.  Deprecates the RSA key transport mechanism (Section 2).
+
+   2.  Deprecates MODP group 2 (Section 3).
+
+   3.  Makes the supportedKDFs field mandatory and deprecates the SHA-1
+       KDF (Section 4).
+
+   4.  Deprecates sha1WithRSAEncryption and ecdsa-with-SHA1 in CMS
+       signatures (Section 5).
+
+   5.  Defines paChecksum2 for checksum algorithm agility (Section 6).
+
+1.1.  Requirements Language
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+2.  RSA Key Transport
+
+   Implementations conforming to this specification MUST NOT use the RSA
+   key transport mechanism (the encKeyPack choice of PA-PK-AS-REP)
+   defined in [RFC4556] Section 3.2.3.2.
+
+   Clients conforming to this specification:
+
+   *  MUST include the clientPublicValue field in the AuthPack
+      structure, containing a Diffie-Hellman or ECDH public key.
+
+   *  MUST NOT omit clientPublicValue in order to request RSA key
+      transport.
+
+   KDCs conforming to this specification:
+
+   *  MUST reply using the dhInfo choice in PA-PK-AS-REP (the Diffie-
+      Hellman key delivery method described in [RFC4556] Section 3.2.3.1
+      or the ECDH method described in [RFC5349]).
+
+   *  MUST NOT reply using the encKeyPack choice in PA-PK-AS-REP.
+
+   *  SHOULD return KDC_ERR_PREAUTH_FAILED if a client request omits the
+      clientPublicValue field.
+
+3.  MODP Group 2
+
+   Implementations conforming to this specification MUST NOT use Diffie-
+   Hellman MODP group 2 (the Second Oakley Group, 1024-bit prime).
+
+   The requirements from [RFC4556] Section 3.2.3.1 are updated as
+   follows:
+
+   *  Implementations MUST support MODP group 14 (2048-bit prime,
+      [RFC3526] Section 3).
+
+   *  Implementations SHOULD support MODP group 16 (4096-bit prime,
+      [RFC3526] Section 5).
+
+   *  Implementations MAY support additional MODP groups defined in
+      [RFC3526] with a modulus size of 2048 bits or larger.
+
+   When a client sends a clientPublicValue using a deprecated group, a
+   KDC conforming to this specification MUST reject the request and
+   SHOULD reply with TD-DH-PARAMETERS containing only groups that meet
+   the minimum strength requirements defined above.
+
+4.  SHA-1-Based octetstring2key() KDF
+
+   The supportedKDFs field defined in [RFC8636] is now REQUIRED.
+
+   Clients conforming to this specification:
+
+   *  MUST include the supportedKDFs field in the AuthPack structure.
+
+   *  MUST include id-pkinit-kdf-ah-sha256 in the supportedKDFs set.
+
+   *  SHOULD include id-pkinit-kdf-ah-sha384 and id-pkinit-kdf-ah-sha512
+      in the supportedKDFs set.
+
+   *  MUST NOT include id-pkinit-kdf-ah-sha1 in the supportedKDFs set.
+
+   KDCs conforming to this specification:
+
+   *  MUST select a KDF from the supportedKDFs field in the request.
+
+   *  MUST NOT select id-pkinit-kdf-ah-sha1.
+
+   *  If the supportedKDFs field is absent from the request, the KDC
+      SHOULD reject the request and reply with KDC_ERR_NO_ACCEPTABLE_KDF
+      (error code 100, [RFC8636]).  Alternatively, the KDC MAY fall back
+      to the [RFC4556] octetstring2key() KDF if local policy permits
+      interoperability with legacy clients.
+
+5.  CMS Signature Algorithms
+
+   Implementations conforming to this specification MUST NOT use
+   sha1WithRSAEncryption for generating CMS signatures in PKINIT
+   messages.
+
+   For RSA signatures, the following requirements apply:
+
+   *  Implementations MUST support sha256WithRSAEncryption [RFC5754].
+
+   *  Implementations SHOULD support sha384WithRSAEncryption and
+      sha512WithRSAEncryption [RFC5754].
+
+   For ECDSA signatures, the requirements from [RFC5349] Section 3 are
+   updated as follows:
+
+   *  Implementations MUST support ecdsa-with-SHA256.
+
+   *  Implementations SHOULD support ecdsa-with-SHA384 and ecdsa-with-
+      SHA512.
+
+   *  Implementations SHOULD NOT use ecdsa-with-SHA1.  The SHOULD
+      requirement for ecdsa-with-SHA1 in [RFC5349] is downgraded.
+
+   For CMS digest algorithms, the corresponding requirements apply:
+
+   *  Implementations MUST support id-sha256.
+
+   *  Implementations SHOULD support id-sha384 and id-sha512.
+
+   *  Implementations MUST NOT use id-sha1 for generating CMS signatures
+      in PKINIT messages.
+
+   When a KDC receives a CMS SignedData from a client that uses
+   sha1WithRSAEncryption, ecdsa-with-SHA1, or id-sha1 as the digest
+   algorithm, the KDC SHOULD reject the request.  A KDC MAY accept SHA-
+   1-based signatures from legacy clients if local policy permits, but
+   this is NOT RECOMMENDED.
+
+6.  paChecksum2 Extension
+
+   This specification defines a new PAChecksum2 type and extends the
+   PKAuthenticator structure from [RFC4556] with a paChecksum2 field at
+   tag [5].
+
+   PAChecksum2 ::= SEQUENCE {
+       checksum                [0] OCTET STRING,
+           -- Checksum computed over KDC-REQ-BODY using the algorithm
+           -- specified in algorithmIdentifier.
+       algorithmIdentifier     [1] AlgorithmIdentifier
+           -- Digest algorithm OID.
+   }
+
+   The checksum field contains the digest computed over KDC-REQ-BODY
+   using the algorithm identified by algorithmIdentifier.  The
+   parameters field of the AlgorithmIdentifier MUST be absent.
+
+   The PKAuthenticator structure from [RFC4556] is extended as follows:
+
+   PKAuthenticator ::= SEQUENCE {
+       cusec                   [0] INTEGER (0..999999),
+       ctime                   [1] KerberosTime,
+       nonce                   [2] INTEGER (0..4294967295),
+       paChecksum              [3] OCTET STRING OPTIONAL,
+           -- RFC 4556: SHA-1 checksum over KDC-REQ-BODY.
+       freshnessToken          [4] OCTET STRING OPTIONAL,
+           -- RFC 8070: PA_AS_FRESHNESS token from KDC.
+       paChecksum2             [5] PAChecksum2 OPTIONAL,
+           -- This specification: algorithm-agile checksum
+           -- over KDC-REQ-BODY.
+       ...
+   }
+
+   The following digest algorithms are defined for use with paChecksum2:
+
+   *  Implementations MUST support SHA-256 (OID 2.16.840.1.101.3.4.2.1,
+      [RFC5754]).
+
+   *  Implementations MAY support SHA-384 (OID 2.16.840.1.101.3.4.2.2,
+      [RFC5754]) and SHA-512 (OID 2.16.840.1.101.3.4.2.3, [RFC5754]).
+
+   Client behavior:  A client constructing a PKINIT request conforming
+      to this specification MUST include the paChecksum2 field and
+      SHOULD include the paChecksum field (SHA-1, per [RFC4556]).  Both
+      checksums, when present, are computed over the same KDC-REQ-BODY
+      input.
+
+   KDC validation:  A KDC conforming to this specification MUST require
+      paChecksum2 to be present in the request.  If paChecksum2 is
+      absent, the KDC returns KDC_ERR_PA_CHECKSUM_MUST_BE_INCLUDED
+      (error code 79, [RFC4556]).
+
+      The KDC MUST validate paChecksum2.  If paChecksum is also present,
+      the KDC MUST validate it as well.  The KDC returns the following
+      errors:
+
+      *  KDC_ERR_SUMTYPE_NOSUPP (error code 15, [RFC4120]): if the
+         digest algorithm in paChecksum2.algorithmIdentifier is not
+         supported by the KDC.
+
+      *  KRB_AP_ERR_MODIFIED (error code 41, [RFC4120]): if verification
+         of paChecksum2 fails, or if paChecksum is present and its
+         verification fails.
+
+7.  IANA Considerations
+
+   This document has no IANA actions.
+
+8.  Security Considerations
+
+   KDCs and clients MAY accept legacy algorithm choices from peers that
+   have not been updated to conform to this specification, subject to
+   local policy.  Implementations SHOULD log such fallback events.
+   Deployments are encouraged to coordinate a phased rollout in which
+   the KDC accepts (but does not yet require) the new fields before
+   enforcement is enabled.
+
+9.  References
+
+9.1.  Normative References
+
+   [RFC3526]  Kivinen, T. and M. Kojo, "More Modular Exponential (MODP)
+              Diffie-Hellman groups for Internet Key Exchange (IKE)",
+              RFC 3526, DOI 10.17487/RFC3526, May 2003,
+              <https://www.rfc-editor.org/rfc/rfc3526>.
+
+   [RFC4120]  Neuman, C., Yu, T., Hartman, S., and K. Raeburn, "The
+              Kerberos Network Authentication Service (V5)", RFC 4120,
+              DOI 10.17487/RFC4120, July 2005,
+              <https://www.rfc-editor.org/rfc/rfc4120>.
+
+   [RFC4556]  Zhu, L. and B. Tung, "Public Key Cryptography for Initial
+              Authentication in Kerberos (PKINIT)", RFC 4556,
+              DOI 10.17487/RFC4556, June 2006,
+              <https://www.rfc-editor.org/rfc/rfc4556>.
+
+   [RFC5349]  Zhu, L., Jaganathan, K., and K. Lauter, "Elliptic Curve
+              Cryptography (ECC) Support for Public Key Cryptography for
+              Initial Authentication in Kerberos (PKINIT)", RFC 5349,
+              DOI 10.17487/RFC5349, September 2008,
+              <https://www.rfc-editor.org/rfc/rfc5349>.
+
+   [RFC5754]  Turner, S., "Using SHA2 Algorithms with Cryptographic
+              Message Syntax", RFC 5754, DOI 10.17487/RFC5754, January
+              2010, <https://www.rfc-editor.org/rfc/rfc5754>.
+
+   [RFC8636]  Hornquist Astrand, L., Zhu, L., Cullen, M., and G. Hudson,
+              "Public Key Cryptography for Initial Authentication in
+              Kerberos (PKINIT) Algorithm Agility", RFC 8636,
+              DOI 10.17487/RFC8636, July 2019,
+              <https://www.rfc-editor.org/rfc/rfc8636>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+9.2.  Informative References
+
+   [RFC2409]  Harkins, D. and D. Carrel, "The Internet Key Exchange
+              (IKE)", RFC 2409, DOI 10.17487/RFC2409, November 1998,
+              <https://www.rfc-editor.org/rfc/rfc2409>.
+
+   [RFC2412]  Orman, H., "The OAKLEY Key Determination Protocol",
+              RFC 2412, DOI 10.17487/RFC2412, November 1998,
+              <https://www.rfc-editor.org/rfc/rfc2412>.
+
+   [RFC7696]  Housley, R., "Guidelines for Cryptographic Algorithm
+              Agility and Selecting Mandatory-to-Implement Algorithms",
+              BCP 201, RFC 7696, DOI 10.17487/RFC7696, November 2015,
+              <https://www.rfc-editor.org/rfc/rfc7696>.
+
+   [RFC8070]  Short, M., Ed., Moore, S., and P. Miller, "Public Key
+              Cryptography for Initial Authentication in Kerberos
+              (PKINIT) Freshness Extension", RFC 8070,
+              DOI 10.17487/RFC8070, February 2017,
+              <https://www.rfc-editor.org/rfc/rfc8070>.
+
+   [RFC9155]  Velvindron, L., Moriarty, K., and A. Ghedini, "Deprecating
+              MD5 and SHA-1 Signature Hashes in TLS 1.2 and DTLS 1.2",
+              RFC 9155, DOI 10.17487/RFC9155, December 2021,
+              <https://www.rfc-editor.org/rfc/rfc9155>.
+
+   [I-D.irtf-cfrg-rsa-guidance]
+              Kario, H., "Implementation Guidance for the PKCS#1 RSA
+              Cryptography Specification", Work in Progress, Internet-
+              Draft, draft-irtf-cfrg-rsa-guidance-08, March 2026,
+              <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
+              rsa-guidance-08>.
+
+   [MS-PKCA]  Microsoft Corporation, "Public Key Cryptography for
+              Initial Authentication (PKINIT) in Kerberos Protocol",
+              2025, <https://learn.microsoft.com/en-
+              us/openspecs/windows_protocols/ms-pkca/>.
+
+Acknowledgements
+
+   The paChecksum2 extension is based on the PAChecksum2 structure first
+   defined in Microsoft's [MS-PKCA] specification.
+
+Author's Address
+
+   Julien Rische
+   Red Hat, Inc.
+   23-25 rue Delarivière Lefoullon
+   92800 Puteaux
+   France
+   Email: jrische@redhat.com
