@@ -36,12 +36,6 @@ author:
     organization: Red Hat, Inc.
     email: jrische@redhat.com
 
-  -
-    ins: N. Williams
-    name: Nico Williams
-    organization: Cryptonector
-    email: nico@cryptonector.com
-
 normative:
   RFC2119:
   RFC8174:
