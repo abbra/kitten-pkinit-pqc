@@ -5,9 +5,7 @@
 Common Authentication Technology Next Generation              A. Bokovoy
 Internet-Draft                                                 J. Rische
 Intended status: Standards Track                           Red Hat, Inc.
-Expires: 28 December 2026                                    N. Williams
-                                                            Cryptonector
-                                                            26 June 2026
+Expires: 28 December 2026                                   26 June 2026
 
 
  Post-quantum Key Encapsulation with ML-KEM in Public Key Cryptography
@@ -1050,8 +1048,3 @@ Authors' Addresses
    Julien Rische
    Red Hat, Inc.
    Email: jrische@redhat.com
-
-
-   Nico Williams
-   Cryptonector
-   Email: nico@cryptonector.com
