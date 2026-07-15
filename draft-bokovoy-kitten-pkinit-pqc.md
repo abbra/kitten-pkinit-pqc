@@ -361,7 +361,9 @@ path indicated by `clientPublicValue.algorithm`: HKDF algorithm OIDs
    Section 5) per {{RFC4556}} Section 3.2.2 and sign with the client's
    signing certificate.  For full quantum resistance, the client SHOULD
    use an ML-DSA certificate ({{RFC9881}}); traditional ECDSA and RSA
-   certificates are permitted during the transition period.
+   certificates are permitted during the transition period.  When
+   signing with ML-DSA, the CMS `SignedData` MUST conform to
+   {{RFC9882}} Section 3 (Signed-Data Conventions).
 
 The ephemeral encapsulation key `ek` is authenticated by the client's
 signing certificate via `AuthPack.SignedData` ({{RFC5652}} Section 5.2),
@@ -404,8 +406,9 @@ certificate is required.
    *  `nonce` = `pkAuthenticator.nonce` from the client's request
       (SHOULD be included; see {{sec-kdckeminfo}})
 
-6. Sign `KDCKEMInfo` using CMS SignedData ({{RFC5652}} Section 5) with
-   ML-DSA ({{RFC9882}}) RECOMMENDED.  Place in `kemSignedData`.
+6. Sign `KDCKEMInfo` using CMS SignedData ({{RFC5652}} Section 5).
+   ML-DSA is RECOMMENDED; when used, the CMS `SignedData` MUST
+   conform to {{RFC9882}} Section 3.  Place in `kemSignedData`.
    `eContent` MUST be present.  Step 7 MUST follow step 6 because
    `PkinitKEMSuppPubInfo.kemSignedData` is set to the DER encoding of
    `KEMRepInfo.kemSignedData` produced in this step.
