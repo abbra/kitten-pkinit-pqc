@@ -536,25 +536,29 @@ computation.
 
 ## Proactive Advertisement {#sec-proactive-adv}
 
-A KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in
-`KDC_ERR_PREAUTH_REQUIRED` to allow the client to select an acceptable
-algorithm on its first attempt. This avoids a retry round trip, which is
-particularly valuable for post-quantum deployments where both ML-DSA
-signatures and ML-KEM encapsulation keys are significantly larger than their
-traditional counterparts, making the overhead of a failed attempt much
-higher.
+{{RFC4556}} Section 3.4 specifies that the `padata-value` of the
+`PA_PK_AS_REQ` element in the `KDC_ERR_PREAUTH_REQUIRED` `METHOD-DATA`
+MUST be empty, and that "future extensions to this protocol may specify
+other data to send instead of an empty OCTET STRING."  This specification
+defines such an extension.
+
+A KDC SHOULD populate the `padata-value` of the `PA_PK_AS_REQ` element
+with the DER encoding of `PA-PK-AS-REQ-Hint`:
 
 ~~~ asn1
--- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
--- existing IANA integer from RFC 4556 Section 3.2.2. The ASN.1 encoding
--- is unchanged (SEQUENCE OF AlgorithmIdentifier); RFC 5349 extended the
--- scope to include ECDH. This specification further extends it to include
--- ML-KEM and composite ML-KEM parameter sets.
-
-TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
-    -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms the KDC supports,
-    -- in decreasing preference order (RFC 4556 Section 3.2.2).
+PA-PK-AS-REQ-Hint ::= SEQUENCE {
+    ephemeralKeyParameters [0] SEQUENCE OF AlgorithmIdentifier
+                                   OPTIONAL,
+        -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms
+        -- the KDC supports, in decreasing preference order.
+    ...
+}
 ~~~
+
+Clients that understand `PA-PK-AS-REQ-Hint` SHOULD use the
+`ephemeralKeyParameters` field to select an ephemeral key algorithm for
+their first PKINIT attempt.  Clients that do not understand this extension
+will ignore the `padata-value` as required by {{RFC4556}} Section 3.4.
 
 ## Ephemeral Key Parameter Errors {#sec-ephemeral-key-errors}
 
@@ -576,12 +580,22 @@ This error is returned when:
 * The algorithm OID is not recognized or not implemented by the KDC
 * The algorithm does not meet the KDC's security requirements
 
-The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` (as defined in
-{{sec-proactive-adv}}) in the error response. After receiving this error,
-the client follows {{RFC4556}} Section 3.2.2 retry behavior, selecting a
-different parameter set from `TD-EPHEMERAL-KEY-PARAMETERS-DATA` that
-satisfies the client's security policy. If no mutually acceptable parameter
-set exists, the exchange MUST be terminated.
+The KDC SHOULD include `TD-EPHEMERAL-KEY-PARAMETERS-DATA` in the error
+response.  `TD-EPHEMERAL-KEY-PARAMETERS` (formerly `TD-DH-PARAMETERS`)
+reuses the existing IANA integer from {{RFC4556}} Section 3.2.2.  The
+ASN.1 encoding is unchanged; {{RFC5349}} extended the scope to include
+ECDH, and this specification further extends it to include ML-KEM and
+composite ML-KEM parameter sets.
+
+~~~ asn1
+TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
+~~~
+
+After receiving this error, the client follows {{RFC4556}} Section 3.2.2
+retry behavior, selecting a different parameter set from
+`TD-EPHEMERAL-KEY-PARAMETERS-DATA` that satisfies the client's security
+policy. If no mutually acceptable parameter set exists, the exchange
+MUST be terminated.
 
 ## KEM Path Errors {#sec-kem-errors}
 
