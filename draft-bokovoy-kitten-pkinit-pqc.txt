@@ -5,7 +5,7 @@
 Common Authentication Technology Next Generation              A. Bokovoy
 Internet-Draft                                                 J. Rische
 Intended status: Standards Track                           Red Hat, Inc.
-Expires: 28 December 2026                                   26 June 2026
+Expires: 22 January 2027                                    21 July 2026
 
 
  Post-quantum Key Encapsulation with ML-KEM in Public Key Cryptography
@@ -52,7 +52,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 28 December 2026.
+   This Internet-Draft will expire on 22 January 2027.
 
 Copyright Notice
 
@@ -395,6 +395,8 @@ Table of Contents
        signing certificate.  For full quantum resistance, the client
        SHOULD use an ML-DSA certificate ([RFC9881]); traditional ECDSA
        and RSA certificates are permitted during the transition period.
+       When signing with ML-DSA, the CMS SignedData MUST conform to
+       [RFC9882] Section 3 (Signed-Data Conventions).
 
    The ephemeral encapsulation key ek is authenticated by the client's
    signing certificate via AuthPack.SignedData ([RFC5652] Section 5.2),
@@ -441,9 +443,10 @@ Table of Contents
        *  nonce = pkAuthenticator.nonce from the client's request
           (SHOULD be included; see Section 6.3)
 
-   6.  Sign KDCKEMInfo using CMS SignedData ([RFC5652] Section 5) with
-       ML-DSA ([RFC9882]) RECOMMENDED.  Place in kemSignedData. eContent
-       MUST be present.  Step 7 MUST follow step 6 because
+   6.  Sign KDCKEMInfo using CMS SignedData ([RFC5652] Section 5).  ML-
+       DSA is RECOMMENDED; when used, the CMS SignedData MUST conform to
+       [RFC9882] Section 3.  Place in kemSignedData. eContent MUST be
+       present.  Step 7 MUST follow step 6 because
        PkinitKEMSuppPubInfo.kemSignedData is set to the DER encoding of
        KEMRepInfo.kemSignedData produced in this step.
 
@@ -576,23 +579,28 @@ reply_key = random-to-key(reply_key_material)
 
 10.1.  Proactive Advertisement
 
-   A KDC SHOULD include TD-EPHEMERAL-KEY-PARAMETERS-DATA in
-   KDC_ERR_PREAUTH_REQUIRED to allow the client to select an acceptable
-   algorithm on its first attempt.  This avoids a retry round trip,
-   which is particularly valuable for post-quantum deployments where
-   both ML-DSA signatures and ML-KEM encapsulation keys are
-   significantly larger than their traditional counterparts, making the
-   overhead of a failed attempt much higher.
+   [RFC4556] Section 3.4 specifies that the padata-value of the
+   PA_PK_AS_REQ element in the KDC_ERR_PREAUTH_REQUIRED METHOD-DATA MUST
+   be empty, and that "future extensions to this protocol may specify
+   other data to send instead of an empty OCTET STRING."  This
+   specification defines such an extension.
 
-   -- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
-   -- existing IANA integer from RFC 4556 Section 3.2.2. The ASN.1 encoding
-   -- is unchanged (SEQUENCE OF AlgorithmIdentifier); RFC 5349 extended the
-   -- scope to include ECDH. This specification further extends it to include
-   -- ML-KEM and composite ML-KEM parameter sets.
+   A KDC SHOULD populate the padata-value of the PA_PK_AS_REQ element
+   with the DER encoding of PA-PK-AS-REQ-Hint:
 
-   TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
-       -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms the KDC supports,
-       -- in decreasing preference order (RFC 4556 Section 3.2.2).
+   PA-PK-AS-REQ-Hint ::= SEQUENCE {
+       ephemeralKeyParameters [0] SEQUENCE OF AlgorithmIdentifier
+                                      OPTIONAL,
+           -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms
+           -- the KDC supports, in decreasing preference order.
+       ...
+   }
+
+   Clients that understand PA-PK-AS-REQ-Hint SHOULD use the
+   ephemeralKeyParameters field to select an ephemeral key algorithm for
+   their first PKINIT attempt.  Clients that do not understand this
+   extension will ignore the padata-value as required by [RFC4556]
+   Section 3.4.
 
 10.2.  Ephemeral Key Parameter Errors
 
@@ -613,12 +621,20 @@ reply_key = random-to-key(reply_key_material)
 
    *  The algorithm does not meet the KDC's security requirements
 
-   The KDC SHOULD include TD-EPHEMERAL-KEY-PARAMETERS-DATA (as defined
-   in Section 10.1) in the error response.  After receiving this error,
-   the client follows [RFC4556] Section 3.2.2 retry behavior, selecting
-   a different parameter set from TD-EPHEMERAL-KEY-PARAMETERS-DATA that
-   satisfies the client's security policy.  If no mutually acceptable
-   parameter set exists, the exchange MUST be terminated.
+   The KDC SHOULD include TD-EPHEMERAL-KEY-PARAMETERS-DATA in the error
+   response.  TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS)
+   reuses the existing IANA integer from [RFC4556] Section 3.2.2.  The
+   ASN.1 encoding is unchanged; [RFC5349] extended the scope to include
+   ECDH, and this specification further extends it to include ML-KEM and
+   composite ML-KEM parameter sets.
+
+   TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
+
+   After receiving this error, the client follows [RFC4556]
+   Section 3.2.2 retry behavior, selecting a different parameter set
+   from TD-EPHEMERAL-KEY-PARAMETERS-DATA that satisfies the client's
+   security policy.  If no mutually acceptable parameter set exists, the
+   exchange MUST be terminated.
 
 10.3.  KEM Path Errors
 
@@ -921,9 +937,9 @@ reply_key = random-to-key(reply_key_material)
               Ounsworth, M., Gray, J., Pala, M., Klaußner, J., and S.
               Fluhrer, "Composite ML-KEM for use in X.509 Public Key
               Infrastructure", Work in Progress, Internet-Draft, draft-
-              ietf-lamps-pq-composite-kem-16, 15 June 2026,
+              ietf-lamps-pq-composite-kem-17, 28 June 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-lamps-
-              pq-composite-kem-16>.
+              pq-composite-kem-17>.
 
    [I-D.ietf-lamps-pq-composite-sigs]
               Ounsworth, M., Gray, J., Pala, M., Klaußner, J., and S.
