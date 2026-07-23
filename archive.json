@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-07-21T02:29:37.418262+00:00",
+  "timestamp": "2026-07-23T02:32:39.492374+00:00",
   "repo": "abbra/kitten-pkinit-pqc",
   "labels": [
     {
@@ -400,24 +400,26 @@
       "id": "PR_kwDOSReoms7zYEmE",
       "title": "Fix proactive advertisement and CMS digest attribute",
       "url": "https://github.com/abbra/kitten-pkinit-pqc/pull/6",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "jrisc",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "* Defined new PA-PK-AS-REQ-Hint sequence for the AS-REP `PREAUTH_REQUIRED` error in PA-PK-AS-REQ type as a proper container for the list of supported algos and parameter sets for (EC)DH and KEM\r\n* Based on RFC9882 Section 3, the digest attribute should be set with the SHA-512 hash when the message is signed with ML-DSA\n\n## Summary by Sourcery\n\nClarify PKINIT PQC specification around proactive key parameter advertisement and CMS SignedData requirements for ML-DSA signatures.\n\nEnhancements:\n- Define a new PA-PK-AS-REQ-Hint structure to convey KDC-supported ephemeral key algorithms in PREAUTH_REQUIRED responses.\n- Refine the use of TD-EPHEMERAL-KEY-PARAMETERS-DATA in key parameter error handling while extending its scope to ML-KEM and composite ML-KEM algorithms.\n- Tighten CMS SignedData requirements so that ML-DSA-signed structures conform to RFC 9882 Section 3 in both client authentication and KDCKEMInfo signing paths.",
       "createdAt": "2026-07-18T17:39:07Z",
-      "updatedAt": "2026-07-18T17:39:41Z",
+      "updatedAt": "2026-07-21T08:02:59Z",
       "baseRepository": "abbra/kitten-pkinit-pqc",
       "baseRefName": "main",
       "baseRefOid": "74c45d643307cad9dacda04d7b0b50cebe2a95e1",
       "headRepository": "jrisc/kitten-pkinit-pqc",
       "headRefName": "fix_proact_adv",
       "headRefOid": "02712b5381e13e47bac4b523e9c8abdbfb7b6317",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-07-21T08:02:59Z",
+      "mergedAt": "2026-07-21T08:02:59Z",
+      "mergedBy": "abbra",
+      "mergeCommit": {
+        "oid": "8e24a19a31c988e8fae5e46744489a90805eb1bf"
+      },
       "comments": [
         {
           "author": "sourcery-ai",
