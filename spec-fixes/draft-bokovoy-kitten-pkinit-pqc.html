@@ -7,7 +7,6 @@
 <title>Post-quantum Key Encapsulation with ML-KEM in Public Key Cryptography for Initial Authentication in Kerberos (PKINIT)</title>
 <meta content="Alexander Bokovoy" name="author">
 <meta content="Julien Rische" name="author">
-<meta content="Nico Williams" name="author">
 <meta content="
        This document specifies extensions to the Kerberos PKINIT
 pre-authentication mechanism     to support
@@ -36,11 +35,11 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.10.0
+    platformdirs 4.10.1
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.8.1
+    wcwidth 0.8.2
 -->
 <link href="draft-bokovoy-kitten-pkinit-pqc.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -76,7 +75,6 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
   src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: italic;
@@ -125,7 +123,6 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
   src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: normal;
@@ -190,7 +187,6 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
 }
 
 @font-face {
@@ -1059,11 +1055,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">PKINIT-PQC</td>
-<td class="right">June 2026</td>
+<td class="right">August 2026</td>
 </tr></thead>
 <tfoot><tr>
-<td class="left">Bokovoy, et al.</td>
-<td class="center">Expires 28 December 2026</td>
+<td class="left">Bokovoy &amp; Rische</td>
+<td class="center">Expires 2 February 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1076,12 +1072,12 @@ svg {
 <dd class="internet-draft">draft-bokovoy-kitten-pkinit-pqc-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-06-26" class="published">26 June 2026</time>
+<time datetime="2026-08-01" class="published">1 August 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-12-28">28 December 2026</time></dd>
+<dd class="expires"><time datetime="2027-02-02">2 February 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1091,10 +1087,6 @@ svg {
 <div class="author">
       <div class="author-name">J. Rische</div>
 <div class="org">Red Hat, Inc.</div>
-</div>
-<div class="author">
-      <div class="author-name">N. Williams</div>
-<div class="org">Cryptonector</div>
 </div>
 </dd>
 </dl>
@@ -1142,7 +1134,7 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.<a href="#section-
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 28 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 2 February 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1477,12 +1469,16 @@ algorithm family:<a href="#section-5-1" class="pilcrow">¶</a></p>
         <h3 id="name-extended-pa-pk-as-rep">
 <a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-extended-pa-pk-as-rep" class="section-name selfRef">Extended <code>PA-PK-AS-REP</code></a>
         </h3>
-<p id="section-6.1-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> uses an <code>IMPLICIT TAGS</code> module environment.  All three arms
-are <code>IMPLICIT OCTET STRING</code> carrying DER-encoded structures; receivers
-identify the chosen arm by the context tag alone.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>'s <code>KRB5PkinitTypes</code> module is <code>DEFINITIONS EXPLICIT TAGS</code>,
+like the base Kerberos V5 module it extends.  The <code>PA-PK-AS-REP</code> arms are
+individually overridden to <code>IMPLICIT OCTET STRING</code>, carrying DER-encoded
+structures; receivers identify the chosen arm by the context tag alone.
+This per-field override is why the three arms below (and <code>kemInfo</code>,
+introduced by this specification) explicitly spell out <code>IMPLICIT</code>: it
+would not be the module default otherwise.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 <div class="lang-asn1 sourcecode" id="section-6.1-2">
 <pre>
--- KRB5PkinitTypes DEFINITIONS IMPLICIT TAGS ::= BEGIN
+-- KRB5PkinitTypes DEFINITIONS EXPLICIT TAGS ::= BEGIN
 PA-PK-AS-REP ::= CHOICE {
     dhSignedData    [0] IMPLICIT OCTET STRING,
         -- RFC 4556: DH/ECDH path
@@ -1502,6 +1498,13 @@ the informal name <code>dhInfo</code> used in some descriptions refers to the sa
 arm.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 <p id="section-6.1-4">Tag <code>[2]</code> MUST be verified against the IANA Kerberos PKINIT Parameters
 registry before publication to confirm no other extension has claimed it.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+<p id="section-6.1-5">Because the module default is <code>EXPLICIT TAGS</code>, the new structures
+defined below (<code>KDCKEMInfo</code>, <code>PkinitKEMSuppPubInfo</code>, and the extension
+fields added to <code>AuthPack</code>) that carry no explicit <code>IMPLICIT</code>/<code>EXPLICIT</code>
+keyword on a given field are tagged <code>EXPLICIT</code> by that default —
+<em>not</em> <code>IMPLICIT</code>. Implementations MUST follow the module default for
+these fields; only <code>KEMRepInfo.kemSignedData</code> (and the <code>PA-PK-AS-REP</code>
+arms above) are <code>IMPLICIT</code>, because they say so explicitly.<a href="#section-6.1-5" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-kemrepinfo">
@@ -1713,7 +1716,9 @@ HKDF-SHA-512 is assumed.<a href="#section-8.1-1.3.1" class="pilcrow">¶</a></p>
 Section 5) per <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2 and sign with the client's
 signing certificate.  For full quantum resistance, the client SHOULD
 use an ML-DSA certificate (<span>[<a href="#RFC9881" class="cite xref">RFC9881</a>]</span>); traditional ECDSA and RSA
-certificates are permitted during the transition period.<a href="#section-8.1-1.4.1" class="pilcrow">¶</a></p>
+certificates are permitted during the transition period.  When
+signing with ML-DSA, the CMS <code>SignedData</code> MUST conform to
+<span>[<a href="#RFC9882" class="cite xref">RFC9882</a>]</span> Section 3 (Signed-Data Conventions).<a href="#section-8.1-1.4.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
 <p id="section-8.1-2">The ephemeral encapsulation key <code>ek</code> is authenticated by the client's
@@ -1777,8 +1782,9 @@ subsequent steps (for ML-KEM specifics, see <a href="#sec-mlkem-encap" class="au
             </ul>
 </li>
           <li id="section-8.2-1.6">
-            <p id="section-8.2-1.6.1">Sign <code>KDCKEMInfo</code> using CMS SignedData (<span>[<a href="#RFC5652" class="cite xref">RFC5652</a>]</span> Section 5) with
-ML-DSA (<span>[<a href="#RFC9882" class="cite xref">RFC9882</a>]</span>) RECOMMENDED.  Place in <code>kemSignedData</code>.
+            <p id="section-8.2-1.6.1">Sign <code>KDCKEMInfo</code> using CMS SignedData (<span>[<a href="#RFC5652" class="cite xref">RFC5652</a>]</span> Section 5).
+ML-DSA is RECOMMENDED; when used, the CMS <code>SignedData</code> MUST
+conform to <span>[<a href="#RFC9882" class="cite xref">RFC9882</a>]</span> Section 3.  Place in <code>kemSignedData</code>.
 <code>eContent</code> MUST be present.  Step 7 MUST follow step 6 because
 <code>PkinitKEMSuppPubInfo.kemSignedData</code> is set to the DER encoding of
 <code>KEMRepInfo.kemSignedData</code> produced in this step.<a href="#section-8.2-1.6.1" class="pilcrow">¶</a></p>
@@ -1909,8 +1915,11 @@ id-alg-hkdf-with-sha512 OBJECT IDENTIFIER ::=
 </div>
 <p id="section-9.1-4">When <code>clientPublicValue.algorithm</code> contains an ML-KEM or composite ML-KEM
 OID, the KDC selects a KDF from <code>supportedKDFs</code> that appears in the
-approved list above. If <code>supportedKDFs</code> is absent or contains no approved
-KDF, the KDC defaults to <code>id-alg-hkdf-with-sha512</code>.<a href="#section-9.1-4" class="pilcrow">¶</a></p>
+approved list above. If <code>supportedKDFs</code> is absent, the KDC defaults to
+<code>id-alg-hkdf-with-sha512</code>. If <code>supportedKDFs</code> is present but contains no
+approved KDF, the KDC returns <code>KDC_ERR_NO_ACCEPTABLE_KDF</code> per
+<a href="#sec-kdc-response" class="auto internal xref">Section 8.2</a> step 3; it MUST NOT silently substitute a KDF the
+client did not offer.<a href="#section-9.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-kdf-derivation">
@@ -1990,26 +1999,28 @@ computation.<a href="#section-9.2-6" class="pilcrow">¶</a></p>
         <h3 id="name-proactive-advertisement">
 <a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-proactive-advertisement" class="section-name selfRef">Proactive Advertisement</a>
         </h3>
-<p id="section-10.1-1">A KDC SHOULD include <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> in
-<code>KDC_ERR_PREAUTH_REQUIRED</code> to allow the client to select an acceptable
-algorithm on its first attempt. This avoids a retry round trip, which is
-particularly valuable for post-quantum deployments where both ML-DSA
-signatures and ML-KEM encapsulation keys are significantly larger than their
-traditional counterparts, making the overhead of a failed attempt much
-higher.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
-<div class="lang-asn1 sourcecode" id="section-10.1-2">
+<p id="section-10.1-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.4 specifies that the <code>padata-value</code> of the
+<code>PA_PK_AS_REQ</code> element in the <code>KDC_ERR_PREAUTH_REQUIRED</code> <code>METHOD-DATA</code>
+MUST be empty, and that "future extensions to this protocol may specify
+other data to send instead of an empty OCTET STRING."  This specification
+defines such an extension.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
+<p id="section-10.1-2">A KDC SHOULD populate the <code>padata-value</code> of the <code>PA_PK_AS_REQ</code> element
+with the DER encoding of <code>PA-PK-AS-REQ-Hint</code>:<a href="#section-10.1-2" class="pilcrow">¶</a></p>
+<div class="lang-asn1 sourcecode" id="section-10.1-3">
 <pre>
--- TD-EPHEMERAL-KEY-PARAMETERS (formerly TD-DH-PARAMETERS) reuses the
--- existing IANA integer from RFC 4556 Section 3.2.2. The ASN.1 encoding
--- is unchanged (SEQUENCE OF AlgorithmIdentifier); RFC 5349 extended the
--- scope to include ECDH. This specification further extends it to include
--- ML-KEM and composite ML-KEM parameter sets.
-
-TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
-    -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms the KDC supports,
-    -- in decreasing preference order (RFC 4556 Section 3.2.2).
-</pre><a href="#section-10.1-2" class="pilcrow">¶</a>
+PA-PK-AS-REQ-Hint ::= SEQUENCE {
+    ephemeralKeyParameters [0] SEQUENCE OF AlgorithmIdentifier
+                                   OPTIONAL,
+        -- DH, ECDH, ML-KEM, and composite ML-KEM algorithms
+        -- the KDC supports, in decreasing preference order.
+    ...
+}
+</pre><a href="#section-10.1-3" class="pilcrow">¶</a>
 </div>
+<p id="section-10.1-4">Clients that understand <code>PA-PK-AS-REQ-Hint</code> SHOULD use the
+<code>ephemeralKeyParameters</code> field to select an ephemeral key algorithm for
+their first PKINIT attempt.  Clients that do not understand this extension
+will ignore the <code>padata-value</code> as required by <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.4.<a href="#section-10.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-ephemeral-key-errors">
@@ -2038,12 +2049,22 @@ composite ML-KEM.<a href="#section-10.2-3" class="pilcrow">¶</a></p>
             <p id="section-10.2-5.2.1">The algorithm does not meet the KDC's security requirements<a href="#section-10.2-5.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-10.2-6">The KDC SHOULD include <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> (as defined in
-<a href="#sec-proactive-adv" class="auto internal xref">Section 10.1</a>) in the error response. After receiving this error,
-the client follows <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2 retry behavior, selecting a
-different parameter set from <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> that
-satisfies the client's security policy. If no mutually acceptable parameter
-set exists, the exchange MUST be terminated.<a href="#section-10.2-6" class="pilcrow">¶</a></p>
+<p id="section-10.2-6">The KDC SHOULD include <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> in the error
+response.  <code>TD-EPHEMERAL-KEY-PARAMETERS</code> (formerly <code>TD-DH-PARAMETERS</code>)
+reuses the existing IANA integer from <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2.  The
+ASN.1 encoding is unchanged; <span>[<a href="#RFC5349" class="cite xref">RFC5349</a>]</span> extended the scope to include
+ECDH, and this specification further extends it to include ML-KEM and
+composite ML-KEM parameter sets.<a href="#section-10.2-6" class="pilcrow">¶</a></p>
+<div class="lang-asn1 sourcecode" id="section-10.2-7">
+<pre>
+TD-EPHEMERAL-KEY-PARAMETERS-DATA ::= SEQUENCE OF AlgorithmIdentifier
+</pre><a href="#section-10.2-7" class="pilcrow">¶</a>
+</div>
+<p id="section-10.2-8">After receiving this error, the client follows <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2
+retry behavior, selecting a different parameter set from
+<code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> that satisfies the client's security
+policy. If no mutually acceptable parameter set exists, the exchange
+MUST be terminated.<a href="#section-10.2-8" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-kem-errors">
@@ -2581,7 +2602,7 @@ are unchanged.  No new integer allocation is required.<a href="#section-16.3-3" 
 <dd class="break"></dd>
 <dt id="I-D.ietf-lamps-pq-composite-kem">[I-D.ietf-lamps-pq-composite-kem]</dt>
         <dd>
-<span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite ML-KEM for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-kem-16</span>, <time datetime="2026-06-15" class="refDate">15 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-16">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-16</a>&gt;</span>. </dd>
+<span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite ML-KEM for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-kem-18</span>, <time datetime="2026-07-23" class="refDate">23 July 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-18">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-18</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-lamps-pq-composite-sigs">[I-D.ietf-lamps-pq-composite-sigs]</dt>
         <dd>
@@ -2702,14 +2723,6 @@ discussion of post-quantum PKINIT approaches, and the NIST team for
 <div class="email">
 <span>Email:</span>
 <a href="mailto:jrische@redhat.com" class="email">jrische@redhat.com</a>
-</div>
-</address>
-<address class="vcard">
-        <div dir="auto" class="left"><span class="fn nameRole">Nico Williams</span></div>
-<div dir="auto" class="left"><span class="org">Cryptonector</span></div>
-<div class="email">
-<span>Email:</span>
-<a href="mailto:nico@cryptonector.com" class="email">nico@cryptonector.com</a>
 </div>
 </address>
 </section>
