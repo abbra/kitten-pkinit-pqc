@@ -192,12 +192,16 @@ algorithm family:
 
 ## Extended `PA-PK-AS-REP` {#sec-pa-pk-as-rep}
 
-{{RFC4556}} uses an `IMPLICIT TAGS` module environment.  All three arms
-are `IMPLICIT OCTET STRING` carrying DER-encoded structures; receivers
-identify the chosen arm by the context tag alone.
+{{RFC4556}}'s `KRB5PkinitTypes` module is `DEFINITIONS EXPLICIT TAGS`,
+like the base Kerberos V5 module it extends.  The `PA-PK-AS-REP` arms are
+individually overridden to `IMPLICIT OCTET STRING`, carrying DER-encoded
+structures; receivers identify the chosen arm by the context tag alone.
+This per-field override is why the three arms below (and `kemInfo`,
+introduced by this specification) explicitly spell out `IMPLICIT`: it
+would not be the module default otherwise.
 
 ~~~ asn1
--- KRB5PkinitTypes DEFINITIONS IMPLICIT TAGS ::= BEGIN
+-- KRB5PkinitTypes DEFINITIONS EXPLICIT TAGS ::= BEGIN
 PA-PK-AS-REP ::= CHOICE {
     dhSignedData    [0] IMPLICIT OCTET STRING,
         -- RFC 4556: DH/ECDH path
@@ -218,6 +222,14 @@ arm.
 
 Tag `[2]` MUST be verified against the IANA Kerberos PKINIT Parameters
 registry before publication to confirm no other extension has claimed it.
+
+Because the module default is `EXPLICIT TAGS`, the new structures
+defined below (`KDCKEMInfo`, `PkinitKEMSuppPubInfo`, and the extension
+fields added to `AuthPack`) that carry no explicit `IMPLICIT`/`EXPLICIT`
+keyword on a given field are tagged `EXPLICIT` by that default —
+*not* `IMPLICIT`. Implementations MUST follow the module default for
+these fields; only `KEMRepInfo.kemSignedData` (and the `PA-PK-AS-REP`
+arms above) are `IMPLICIT`, because they say so explicitly.
 
 ## `KEMRepInfo` {#sec-kemrepinfo}
 
@@ -489,8 +501,11 @@ id-alg-hkdf-with-sha512 OBJECT IDENTIFIER ::=
 
 When `clientPublicValue.algorithm` contains an ML-KEM or composite ML-KEM
 OID, the KDC selects a KDF from `supportedKDFs` that appears in the
-approved list above. If `supportedKDFs` is absent or contains no approved
-KDF, the KDC defaults to `id-alg-hkdf-with-sha512`.
+approved list above. If `supportedKDFs` is absent, the KDC defaults to
+`id-alg-hkdf-with-sha512`. If `supportedKDFs` is present but contains no
+approved KDF, the KDC returns `KDC_ERR_NO_ACCEPTABLE_KDF` per
+{{sec-kdc-response}} step 3; it MUST NOT silently substitute a KDF the
+client did not offer.
 
 ## Derivation {#sec-kdf-derivation}
 
