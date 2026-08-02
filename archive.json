@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-07-30T02:09:19.645715+00:00",
+  "timestamp": "2026-08-02T02:34:49.998287+00:00",
   "repo": "abbra/kitten-pkinit-pqc",
   "labels": [
     {
@@ -441,6 +441,54 @@
           "body": "Hey - I've left some high level feedback:\n\n- Consider explicitly stating the relationship between `PA-PK-AS-REQ-Hint.ephemeralKeyParameters` and `TD-EPHEMERAL-KEY-PARAMETERS-DATA` (e.g., that they use the same `AlgorithmIdentifier` semantics and preference ordering) to avoid ambiguity between proactive hints and error-driven parameter lists.\n- In the `PA-PK-AS-REQ-Hint` ASN.1 definition, it may be useful to clarify the intended semantics when `ephemeralKeyParameters` is omitted (e.g., whether this means 'no proactive hint' vs. 'use implementation defaults') so implementers interpret the OPTIONAL consistently.\n- Where you introduce `PA-PK-AS-REQ-Hint`, you might reference the specific `padata-type` value or IANA registry entry (or note that it reuses the existing `PA_PK_AS_REQ` padata-type) so that implementers know there is no new padata number involved, only a new encoding for the existing `padata-value`.\n\n<details>\n<summary>Prompt for AI Agents</summary>\n\n~~~markdown\nPlease address the comments from this code review:\n\n## Overall Comments\n- Consider explicitly stating the relationship between `PA-PK-AS-REQ-Hint.ephemeralKeyParameters` and `TD-EPHEMERAL-KEY-PARAMETERS-DATA` (e.g., that they use the same `AlgorithmIdentifier` semantics and preference ordering) to avoid ambiguity between proactive hints and error-driven parameter lists.\n- In the `PA-PK-AS-REQ-Hint` ASN.1 definition, it may be useful to clarify the intended semantics when `ephemeralKeyParameters` is omitted (e.g., whether this means 'no proactive hint' vs. 'use implementation defaults') so implementers interpret the OPTIONAL consistently.\n- Where you introduce `PA-PK-AS-REQ-Hint`, you might reference the specific `padata-type` value or IANA registry entry (or note that it reuses the existing `PA_PK_AS_REQ` padata-type) so that implementers know there is no new padata number involved, only a new encoding for the existing `padata-value`.\n~~~\n\n</details>\n\n***\n\n<details>\n<summary>Sourcery is free for open source - if you like our reviews please consider sharing them \u2728</summary>\n\n- [X](https://twitter.com/intent/tweet?text=I%20just%20got%20an%20instant%20code%20review%20from%20%40SourceryAI%2C%20and%20it%20was%20brilliant%21%20It%27s%20free%20for%20open%20source%20and%20has%20a%20free%20trial%20for%20private%20code.%20Check%20it%20out%20https%3A//sourcery.ai)\n- [Mastodon](https://mastodon.social/share?text=I%20just%20got%20an%20instant%20code%20review%20from%20%40SourceryAI%2C%20and%20it%20was%20brilliant%21%20It%27s%20free%20for%20open%20source%20and%20has%20a%20free%20trial%20for%20private%20code.%20Check%20it%20out%20https%3A//sourcery.ai)\n- [LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https://sourcery.ai)\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https://sourcery.ai)\n\n</details>\n\n<sub>\nHelp me be more useful! Please click \ud83d\udc4d or \ud83d\udc4e on each comment and I'll use the feedback to improve your reviews.\n</sub>",
           "createdAt": "2026-07-18T17:39:41Z",
           "updatedAt": "2026-07-18T17:39:41Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "id": "PR_kwDOSReoms75WaZc",
+      "title": "Fix EXPLICIT vs IMPLICIT from RFC4556",
+      "url": "https://github.com/abbra/kitten-pkinit-pqc/pull/7",
+      "state": "OPEN",
+      "author": "abbra",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "## Summary by Sourcery\n\nClarify PKINIT ASN.1 tagging semantics and KDF selection behavior for ML-KEM usage in PA-PK-AS-REP.\n\nEnhancements:\n- Correct the KRB5PkinitTypes module to use EXPLICIT TAGS and explain the per-field IMPLICIT overrides for PA-PK-AS-REP and related structures.\n- Clarify that new PQC-related structures without explicit tagging keywords default to EXPLICIT TAGS and require implementations to follow the module default.\n- Refine KDF selection rules so that absence of supportedKDFs defaults to HKDF-SHA512, while an offered set containing no approved KDF results in a KDC_ERR_NO_ACCEPTABLE_KDF error instead of silent substitution.",
+      "createdAt": "2026-08-01T09:41:19Z",
+      "updatedAt": "2026-08-01T09:44:30Z",
+      "baseRepository": "abbra/kitten-pkinit-pqc",
+      "baseRefName": "main",
+      "baseRefOid": "8e24a19a31c988e8fae5e46744489a90805eb1bf",
+      "headRepository": "abbra/kitten-pkinit-pqc",
+      "headRefName": "spec-fixes",
+      "headRefOid": "c9f144e5d98e7e0c31d27e3233372e232f44d9dd",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "sourcery-ai",
+          "authorAssociation": "NONE",
+          "body": "<!-- Generated by sourcery-ai[bot]: start review_guide -->\n\n## Reviewer's Guide\n\nClarifies ASN.1 tagging semantics relative to RFC4556 and tightens KDF selection behavior for ML-KEM, ensuring explicit/implicit tagging is correctly specified and KDF negotiation failure is signaled rather than silently defaulted.\n\n#### Flow diagram for ML-KEM KDF selection and error signaling\n\n```mermaid\nflowchart TD\n  A[clientPublicValue.algorithm contains ML_KEM or composite ML_KEM OID] --> B[Check supportedKDFs]\n  B -->|absent| C[Default to id-alg-hkdf-with-sha512]\n  B -->|present| D[Select KDF from supportedKDFs that is in approved list]\n  D -->|approved KDF found| E[Use selected KDF]\n  D -->|no approved KDF| F[Return KDC_ERR_NO_ACCEPTABLE_KDF per sec-kdc-response step 3]\n```\n\n### File-Level Changes\n\n| Change | Details | Files |\n| ------ | ------- | ----- |\n| Correct ASN.1 module tagging from IMPLICIT to EXPLICIT and explain per-field IMPLICIT overrides in PA-PK-AS-REP and related structures. | <ul><li>Update narrative text to state that KRB5PkinitTypes uses DEFINITIONS EXPLICIT TAGS like the base Kerberos V5 module.</li><li>Clarify that PA-PK-AS-REP arms are individually overridden to IMPLICIT OCTET STRING and that receivers rely on context tags.</li><li>Change the ASN.1 module header comment from DEFINITIONS IMPLICIT TAGS to DEFINITIONS EXPLICIT TAGS.</li><li>Add explanatory text about the module default being EXPLICIT TAGS and that fields without explicit IMPLICIT/EXPLICIT keywords are thus EXPLICIT by default.</li><li>Highlight that only specific fields (PA-PK-AS-REP arms and KEMRepInfo.kemSignedData) are IMPLICIT because they say so explicitly.</li></ul> | `draft-bokovoy-kitten-pkinit-pqc.md` |\n| Tighten KDF selection rules for ML-KEM to avoid silent substitution and require explicit error signaling when no acceptable KDF is offered. | <ul><li>Refine description of KDC behavior when supportedKDFs is absent to explicitly default to id-alg-hkdf-with-sha512.</li><li>Specify that if supportedKDFs is present but contains no approved KDF, the KDC returns KDC_ERR_NO_ACCEPTABLE_KDF per sec-kdc-response step 3.</li><li>Explicitly prohibit the KDC from silently substituting a KDF that the client did not offer.</li></ul> | `draft-bokovoy-kitten-pkinit-pqc.md` |\n\n---\n\n<details>\n<summary>Tips and commands</summary>\n\n#### Interacting with Sourcery\n\n- **Trigger a new review:** Comment `@sourcery-ai review` on the pull request.\n- **Continue discussions:** Reply directly to Sourcery's review comments.\n- **Generate a GitHub issue from a review comment:** Ask Sourcery to create an\n  issue from a review comment by replying to it. You can also reply to a\n  review comment with `@sourcery-ai issue` to create an issue from it.\n- **Generate a pull request title:** Write `@sourcery-ai` anywhere in the pull\n  request title to generate a title at any time. You can also comment\n  `@sourcery-ai title` on the pull request to (re-)generate the title at any time.\n- **Generate a pull request summary:** Write `@sourcery-ai summary` anywhere in\n  the pull request body to generate a PR summary at any time exactly where you\n  want it. You can also comment `@sourcery-ai summary` on the pull request to\n  (re-)generate the summary at any time.\n- **Generate reviewer's guide:** Comment `@sourcery-ai guide` on the pull\n  request to (re-)generate the reviewer's guide at any time.\n- **Resolve all Sourcery comments:** Comment `@sourcery-ai resolve` on the\n  pull request to resolve all Sourcery comments. Useful if you've already\n  addressed all the comments and don't want to see them anymore.\n- **Dismiss all Sourcery reviews:** Comment `@sourcery-ai dismiss` on the pull\n  request to dismiss all existing Sourcery reviews. Especially useful if you\n  want to start fresh with a new review - don't forget to comment\n  `@sourcery-ai review` to trigger a new review!\n\n#### Customizing Your Experience\n\nAccess your [dashboard](https://app.sourcery.ai) to:\n- Enable or disable review features such as the Sourcery-generated pull request\n  summary, the reviewer's guide, and others.\n- Change the review language.\n- Add, remove or edit custom review instructions.\n- Adjust other review settings.\n\n#### Getting Help\n\n- [Contact our support team](mailto:support@sourcery.ai) for questions or feedback.\n- Visit our [documentation](https://docs.sourcery.ai) for detailed guides and information.\n- Keep in touch with the Sourcery team by following us on [X/Twitter](https://x.com/SourceryAI), [LinkedIn](https://www.linkedin.com/company/sourcery-ai/) or [GitHub](https://github.com/sourcery-ai).\n\n</details>\n\n<!-- Generated by sourcery-ai[bot]: end review_guide -->",
+          "createdAt": "2026-08-01T09:41:25Z",
+          "updatedAt": "2026-08-01T09:41:40Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "PRR_kwDOSReoms8AAAABICdC1g",
+          "commit": {
+            "abbreviatedOid": "050b356"
+          },
+          "author": "sourcery-ai",
+          "authorAssociation": "NONE",
+          "state": "COMMENTED",
+          "body": "Hey - I've reviewed your changes and they look great!\n\n***\n\n<details>\n<summary>Sourcery is free for open source - if you like our reviews please consider sharing them \u2728</summary>\n\n- [X](https://twitter.com/intent/tweet?text=I%20just%20got%20an%20instant%20code%20review%20from%20%40SourceryAI%2C%20and%20it%20was%20brilliant%21%20It%27s%20free%20for%20open%20source%20and%20has%20a%20free%20trial%20for%20private%20code.%20Check%20it%20out%20https%3A//sourcery.ai/%3Futm_source%3Dtwitter%26utm_medium%3Dsocial%26utm_campaign%3Dbot_review_share)\n- [Mastodon](https://mastodon.social/share?text=I%20just%20got%20an%20instant%20code%20review%20from%20%40SourceryAI%2C%20and%20it%20was%20brilliant%21%20It%27s%20free%20for%20open%20source%20and%20has%20a%20free%20trial%20for%20private%20code.%20Check%20it%20out%20https%3A//sourcery.ai/%3Futm_source%3Dmastodon%26utm_medium%3Dsocial%26utm_campaign%3Dbot_review_share)\n- [LinkedIn](https://www.linkedin.com/sharing/share-offsite/?url=https%3A//sourcery.ai/%3Futm_source%3Dlinkedin%26utm_medium%3Dsocial%26utm_campaign%3Dbot_review_share)\n- [Facebook](https://www.facebook.com/sharer/sharer.php?u=https%3A//sourcery.ai/%3Futm_source%3Dfacebook%26utm_medium%3Dsocial%26utm_campaign%3Dbot_review_share)\n\n</details>\n\n<sub>\nHelp me be more useful! Please click \ud83d\udc4d or \ud83d\udc4e on each comment and I'll use the feedback to improve your reviews.\n</sub>",
+          "createdAt": "2026-08-01T09:41:48Z",
+          "updatedAt": "2026-08-01T09:41:48Z",
           "comments": []
         }
       ]
