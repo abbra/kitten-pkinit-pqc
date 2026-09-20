@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-09-17T03:26:23.686834+00:00",
+  "timestamp": "2026-09-20T03:25:29.531707+00:00",
   "repo": "abbra/kitten-pkinit-pqc",
   "labels": [
     {
@@ -457,7 +457,7 @@
       "labels": [],
       "body": "## Summary by Sourcery\n\nClarify PKINIT ASN.1 tagging semantics and KDF selection behavior for ML-KEM usage in PA-PK-AS-REP.\n\nEnhancements:\n- Correct the KRB5PkinitTypes module to use EXPLICIT TAGS and explain the per-field IMPLICIT overrides for PA-PK-AS-REP and related structures.\n- Clarify that new PQC-related structures without explicit tagging keywords default to EXPLICIT TAGS and require implementations to follow the module default.\n- Refine KDF selection rules so that absence of supportedKDFs defaults to HKDF-SHA512, while an offered set containing no approved KDF results in a KDC_ERR_NO_ACCEPTABLE_KDF error instead of silent substitution.",
       "createdAt": "2026-08-01T09:41:19Z",
-      "updatedAt": "2026-08-01T09:44:30Z",
+      "updatedAt": "2026-09-17T13:02:19Z",
       "baseRepository": "abbra/kitten-pkinit-pqc",
       "baseRefName": "main",
       "baseRefOid": "8e24a19a31c988e8fae5e46744489a90805eb1bf",
@@ -490,6 +490,32 @@
           "createdAt": "2026-08-01T09:41:48Z",
           "updatedAt": "2026-08-01T09:41:48Z",
           "comments": []
+        },
+        {
+          "id": "PRR_kwDOSReoms8AAAABOBSVzQ",
+          "commit": {
+            "abbreviatedOid": "c9f144e"
+          },
+          "author": "jrisc",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-09-17T12:49:50Z",
+          "updatedAt": "2026-09-17T13:02:19Z",
+          "comments": [
+            {
+              "originalPosition": 17,
+              "body": "`EXPLICIT TAGS` should indeed be used by default to stick to RFC4556's `KerberosV5-PK-INIT-SPEC` module definition (even if in practice it makes no difference because all current fields are already explicitly tagged). But I don't think it's necessary to explain how ASN.1 fields tagging works. I think the previous version of the paragraph provides enough details already.",
+              "createdAt": "2026-09-17T12:49:51Z",
+              "updatedAt": "2026-09-17T13:02:19Z"
+            },
+            {
+              "originalPosition": 31,
+              "body": "`PkinitKEMSuppPubInfo` is not a sub-element of the KEM arm. It's a structure used to encode information passed as parameter to the key derivation function. As such, it should have its own default tagging definition. In this case, I actually think that implicit tagging might actually make more sense here, because I don't see the point of including the field names for a sequence that is not sent over the network.\r\n\r\nFor the rest of the information here, I think it would me better to include comments in the ASN.1 definitions telling explicit tagging default is inherited from `KerberosV5-PK-INIT-SPEC` (just like `PA-PK-AS-REP`). Writing this information in a paragraph to far from the actual definitions is likely to cause mistakes.",
+              "createdAt": "2026-09-17T13:01:36Z",
+              "updatedAt": "2026-09-17T13:04:30Z"
+            }
+          ]
         }
       ]
     }
