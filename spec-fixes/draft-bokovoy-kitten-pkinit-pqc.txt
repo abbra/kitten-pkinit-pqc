@@ -244,14 +244,6 @@ Table of Contents
        ...
    }
 
-   dhInfo is the actual arm name in RFC 4556's ASN.1 module;
-   dhSignedData is the field within DHRepInfo that carries the CMS
-   SignedData wrapping KDCDHKeyInfo.
-
-   Tag [2] MUST be verified against the IANA Kerberos PKINIT Parameters
-   registry before publication to confirm no other extension has claimed
-   it.
-
 6.2.  KEMRepInfo
 
    -- id-pkinit OID arc (RFC 4556):
