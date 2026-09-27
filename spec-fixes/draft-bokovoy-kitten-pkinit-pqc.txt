@@ -224,15 +224,17 @@ Table of Contents
 6.1.  Extended PA-PK-AS-REP
 
    [RFC4556]'s KerberosV5-PK-INIT-SPEC module is DEFINITIONS EXPLICIT
-   TAGS, like the base Kerberos V5 module it extends.  All three arms
-   are IMPLICIT OCTET STRING carrying DER-encoded structures; receivers
-   identify the chosen arm by the context tag alone.
+   TAGS, like the base Kerberos V5 module it extends.  The PA-PK-AS-REP
+   arms carry DER-encoded structures; receivers identify the chosen arm
+   by the context tag alone.
 
    -- KerberosV5-PK-INIT-SPEC DEFINITIONS EXPLICIT TAGS ::= BEGIN
    PA-PK-AS-REP ::= CHOICE {
-       dhSignedData    [0] IMPLICIT OCTET STRING,
-           -- RFC 4556: DH/ECDH path
-           --   content: KDCDHKeyInfo ({{RFC4556}} Section 3.2.3.1)
+       dhInfo          [0] DHRepInfo,
+           -- RFC 4556: DH/ECDH path.  DHRepInfo ({{RFC4556}}
+           -- Section 3.2.3.1) carries:
+           --   dhSignedData:  CMS SignedData wrapping KDCDHKeyInfo
+           --   serverDHNonce: DHNonce OPTIONAL
        encKeyPack      [1] IMPLICIT OCTET STRING,
            -- RFC 4556: RSA path (deprecated)
            --   content: ReplyKeyPack ({{RFC4556}} Section 3.2.3.2)
@@ -242,9 +244,9 @@ Table of Contents
        ...
    }
 
-   The field name dhSignedData matches RFC 4556's actual ASN.1 module;
-   the informal name dhInfo used in some descriptions refers to the same
-   arm.
+   dhInfo is the actual arm name in RFC 4556's ASN.1 module;
+   dhSignedData is the field within DHRepInfo that carries the CMS
+   SignedData wrapping KDCDHKeyInfo.
 
    Tag [2] MUST be verified against the IANA Kerberos PKINIT Parameters
    registry before publication to confirm no other extension has claimed
