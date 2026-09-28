@@ -18,7 +18,7 @@ derivation (HKDF-SHA-512 for ML-KEM), and downgrade-prevention rules.
 The KEM path framework supports multiple KEM algorithms including
 ML-KEM, composite ML-KEM algorithms, and future KEM standards. 
     " name="description">
-<meta content="xml2rfc 3.34.0" name="generator">
+<meta content="xml2rfc 3.34.1" name="generator">
 <meta content="Kerberos" name="keyword">
 <meta content="PKINIT" name="keyword">
 <meta content="post-quantum" name="keyword">
@@ -27,19 +27,19 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
 <meta content="KEM" name="keyword">
 <meta content="draft-bokovoy-kitten-pkinit-pqc-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.34.0
-    Python 3.14.5
-    ConfigArgParse 1.7.5
+  xml2rfc 3.34.1
+    Python 3.14.7
+    ConfigArgParse 1.7.7
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.10.1
+    platformdirs 4.11.10
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.8.2
+    wcwidth 0.8.4
 -->
 <link href="draft-bokovoy-kitten-pkinit-pqc.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -75,7 +75,6 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
   src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: italic;
@@ -124,7 +123,6 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
   src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
-
 @font-face {
   font-family: 'Lora';
   font-style: normal;
@@ -189,7 +187,6 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
   font-display: swap;
   src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
 }
 
 @font-face {
@@ -1058,11 +1055,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">PKINIT-PQC</td>
-<td class="right">July 2026</td>
+<td class="right">September 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Bokovoy &amp; Rische</td>
-<td class="center">Expires 22 January 2027</td>
+<td class="center">Expires 1 April 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1075,12 +1072,12 @@ svg {
 <dd class="internet-draft">draft-bokovoy-kitten-pkinit-pqc-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-07-21" class="published">21 July 2026</time>
+<time datetime="2026-09-28" class="published">28 September 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-01-22">22 January 2027</time></dd>
+<dd class="expires"><time datetime="2027-04-01">1 April 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1137,7 +1134,7 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.<a href="#section-
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 22 January 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 1 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1472,16 +1469,19 @@ algorithm family:<a href="#section-5-1" class="pilcrow">¶</a></p>
         <h3 id="name-extended-pa-pk-as-rep">
 <a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-extended-pa-pk-as-rep" class="section-name selfRef">Extended <code>PA-PK-AS-REP</code></a>
         </h3>
-<p id="section-6.1-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> uses an <code>IMPLICIT TAGS</code> module environment.  All three arms
-are <code>IMPLICIT OCTET STRING</code> carrying DER-encoded structures; receivers
-identify the chosen arm by the context tag alone.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-1"><span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>'s <code>KerberosV5-PK-INIT-SPEC</code> module is <code>DEFINITIONS EXPLICIT
+TAGS</code>, like the base Kerberos V5 module it extends.  The <code>PA-PK-AS-REP</code>
+arms carry DER-encoded structures; receivers identify the chosen arm
+by the context tag alone.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
 <div class="lang-asn1 sourcecode" id="section-6.1-2">
 <pre>
--- KRB5PkinitTypes DEFINITIONS IMPLICIT TAGS ::= BEGIN
+-- KerberosV5-PK-INIT-SPEC DEFINITIONS EXPLICIT TAGS ::= BEGIN
 PA-PK-AS-REP ::= CHOICE {
-    dhSignedData    [0] IMPLICIT OCTET STRING,
-        -- RFC 4556: DH/ECDH path
-        --   content: KDCDHKeyInfo ({{RFC4556}} Section 3.2.3.1)
+    dhInfo          [0] DHRepInfo,
+        -- RFC 4556: DH/ECDH path.  DHRepInfo ({{RFC4556}}
+        -- Section 3.2.3.1) carries:
+        --   dhSignedData:  CMS SignedData wrapping KDCDHKeyInfo
+        --   serverDHNonce: DHNonce OPTIONAL
     encKeyPack      [1] IMPLICIT OCTET STRING,
         -- RFC 4556: RSA path (deprecated)
         --   content: ReplyKeyPack ({{RFC4556}} Section 3.2.3.2)
@@ -1492,11 +1492,6 @@ PA-PK-AS-REP ::= CHOICE {
 }
 </pre><a href="#section-6.1-2" class="pilcrow">¶</a>
 </div>
-<p id="section-6.1-3">The field name <code>dhSignedData</code> matches RFC 4556's actual ASN.1 module;
-the informal name <code>dhInfo</code> used in some descriptions refers to the same
-arm.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
-<p id="section-6.1-4">Tag <code>[2]</code> MUST be verified against the IANA Kerberos PKINIT Parameters
-registry before publication to confirm no other extension has claimed it.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-kemrepinfo">
@@ -1511,6 +1506,8 @@ registry before publication to confirm no other extension has claimed it.<a href
 
 id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit TBD-IANA }
 
+-- KerberosV5-PK-INIT-SPEC module default (RFC 4556): fields without
+-- an explicit IMPLICIT or EXPLICIT keyword are EXPLICIT tagged.
 KEMRepInfo ::= SEQUENCE {
     kemSignedData       [0] IMPLICIT OCTET STRING,
         -- CMS SignedData ({{RFC5652}} Section 5):
@@ -1532,6 +1529,8 @@ prohibited).<a href="#section-6.2-2" class="pilcrow">¶</a></p>
         </h3>
 <div class="lang-asn1 sourcecode" id="section-6.3-1">
 <pre>
+-- KerberosV5-PK-INIT-SPEC module default (RFC 4556): fields without
+-- an explicit IMPLICIT or EXPLICIT keyword are EXPLICIT tagged.
 KDCKEMInfo ::= SEQUENCE {
     kemAlgorithm    [0] AlgorithmIdentifier,
         -- KEM algorithm and parameter set used (e.g., ML-KEM-768).
@@ -1568,6 +1567,8 @@ confirmation that the KDC processed the correct algorithm (verified in
         </h3>
 <div class="lang-asn1 sourcecode" id="section-6.4-1">
 <pre>
+-- KerberosV5-PK-INIT-SPEC module default (RFC 4556): fields without
+-- an explicit IMPLICIT or EXPLICIT keyword are EXPLICIT tagged.
 AuthPack ::= SEQUENCE {
     pkAuthenticator     [0] PKAuthenticator,
     clientPublicValue   [1] SubjectPublicKeyInfo OPTIONAL,
@@ -1603,14 +1604,20 @@ AuthPack ::= SEQUENCE {
         </h3>
 <div class="lang-asn1 sourcecode" id="section-6.5-1">
 <pre>
--- Types imported from RFC 4120 (KerberosV5 module): Int32
+-- Types imported from RFC 4120 (KerberosV5Spec2 module): Int32
+--
+-- PkinitKEMSuppPubInfo is not a sub-element of the KEM arm; it is
+-- only used as the HKDF "info" parameter ({{sec-kdf-derivation}})
+-- and is never transmitted.  Its fields are IMPLICIT tagged rather
+-- than inheriting the EXPLICIT TAGS default of
+-- KerberosV5-PK-INIT-SPEC (RFC 4556).
 
 PkinitKEMSuppPubInfo ::= SEQUENCE {
-    enctype         [0] Int32,
+    enctype         [0] IMPLICIT Int32,
         -- Kerberos enctype of the AS reply key.
-    as-REQ          [1] OCTET STRING,
+    as-REQ          [1] IMPLICIT OCTET STRING,
         -- DER(AS-REQ).
-    kemSignedData   [2] OCTET STRING,
+    kemSignedData   [2] IMPLICIT OCTET STRING,
         -- DER(KEMRepInfo.kemSignedData): the KDC-signed KDCKEMInfo.
     ...
 }
@@ -1907,8 +1914,11 @@ id-alg-hkdf-with-sha512 OBJECT IDENTIFIER ::=
 </div>
 <p id="section-9.1-4">When <code>clientPublicValue.algorithm</code> contains an ML-KEM or composite ML-KEM
 OID, the KDC selects a KDF from <code>supportedKDFs</code> that appears in the
-approved list above. If <code>supportedKDFs</code> is absent or contains no approved
-KDF, the KDC defaults to <code>id-alg-hkdf-with-sha512</code>.<a href="#section-9.1-4" class="pilcrow">¶</a></p>
+approved list above. If <code>supportedKDFs</code> is absent, the KDC defaults to
+<code>id-alg-hkdf-with-sha512</code>. If <code>supportedKDFs</code> is present but contains no
+approved KDF, the KDC returns <code>KDC_ERR_NO_ACCEPTABLE_KDF</code> per
+<a href="#sec-kdc-response" class="auto internal xref">Section 8.2</a> step 3; it MUST NOT silently substitute a KDF the
+client did not offer.<a href="#section-9.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-kdf-derivation">
@@ -2591,7 +2601,7 @@ are unchanged.  No new integer allocation is required.<a href="#section-16.3-3" 
 <dd class="break"></dd>
 <dt id="I-D.ietf-lamps-pq-composite-kem">[I-D.ietf-lamps-pq-composite-kem]</dt>
         <dd>
-<span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite ML-KEM for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-kem-17</span>, <time datetime="2026-06-28" class="refDate">28 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-17">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-17</a>&gt;</span>. </dd>
+<span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite ML-KEM for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-kem-21</span>, <time datetime="2026-09-01" class="refDate">1 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-21">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-21</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-lamps-pq-composite-sigs">[I-D.ietf-lamps-pq-composite-sigs]</dt>
         <dd>
