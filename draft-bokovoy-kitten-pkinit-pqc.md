@@ -380,6 +380,12 @@ certificate is required.
 
 ## KDC Response Construction {#sec-kdc-response}
 
+The KDC's validation of the client request — verifying the CMS `SignedData`
+signature over `AuthPack` and validating the client's certificate — follows
+{{RFC4556}} Section 3.2.2 unchanged; a failed signature yields
+`KDC_ERR_INVALID_SIG`. This section specifies only the KEM-path-specific steps
+that follow validation.
+
 1. Detect the KEM algorithm OID in `clientPublicValue.algorithm`.
 
 2. Check whether the algorithm is supported and meets the KDC's security
