@@ -5,7 +5,7 @@
 Common Authentication Technology Next Generation              A. Bokovoy
 Internet-Draft                                                 J. Rische
 Intended status: Standards Track                           Red Hat, Inc.
-Expires: 1 April 2027                                  28 September 2026
+Expires: 3 April 2027                                  30 September 2026
 
 
  Post-quantum Key Encapsulation with ML-KEM in Public Key Cryptography
@@ -52,7 +52,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 1 April 2027.
+   This Internet-Draft will expire on 3 April 2027.
 
 Copyright Notice
 
@@ -411,6 +411,12 @@ Table of Contents
    certificate is required.
 
 8.2.  KDC Response Construction
+
+   The KDC's validation of the client request — verifying the CMS
+   SignedData signature over AuthPack and validating the client's
+   certificate — follows [RFC4556] Section 3.2.2 unchanged; a failed
+   signature yields KDC_ERR_INVALID_SIG.  This section specifies only
+   the KEM-path-specific steps that follow validation.
 
    1.  Detect the KEM algorithm OID in clientPublicValue.algorithm.
 

@@ -1059,7 +1059,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Bokovoy &amp; Rische</td>
-<td class="center">Expires 1 April 2027</td>
+<td class="center">Expires 3 April 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1072,12 +1072,12 @@ svg {
 <dd class="internet-draft">draft-bokovoy-kitten-pkinit-pqc-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-09-28" class="published">28 September 2026</time>
+<time datetime="2026-09-30" class="published">30 September 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-01">1 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-04-03">3 April 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1134,7 +1134,7 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.<a href="#section-
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 1 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 3 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1731,69 +1731,74 @@ certificate is required.<a href="#section-8.1-2" class="pilcrow">¶</a></p>
         <h3 id="name-kdc-response-construction">
 <a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-kdc-response-construction" class="section-name selfRef">KDC Response Construction</a>
         </h3>
-<ol start="1" type="1" class="normal type-1" id="section-8.2-1">
-<li id="section-8.2-1.1">
-            <p id="section-8.2-1.1.1">Detect the KEM algorithm OID in <code>clientPublicValue.algorithm</code>.<a href="#section-8.2-1.1.1" class="pilcrow">¶</a></p>
+<p id="section-8.2-1">The KDC's validation of the client request — verifying the CMS <code>SignedData</code>
+signature over <code>AuthPack</code> and validating the client's certificate — follows
+<span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2 unchanged; a failed signature yields
+<code>KDC_ERR_INVALID_SIG</code>. This section specifies only the KEM-path-specific steps
+that follow validation.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-8.2-2">
+<li id="section-8.2-2.1">
+            <p id="section-8.2-2.1.1">Detect the KEM algorithm OID in <code>clientPublicValue.algorithm</code>.<a href="#section-8.2-2.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-8.2-1.2">
-            <p id="section-8.2-1.2.1">Check whether the algorithm is supported and meets the KDC's security
-policy (per <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2):<a href="#section-8.2-1.2.1" class="pilcrow">¶</a></p>
-<p id="section-8.2-1.2.2">
+          <li id="section-8.2-2.2">
+            <p id="section-8.2-2.2.1">Check whether the algorithm is supported and meets the KDC's security
+policy (per <span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span> Section 3.2.2):<a href="#section-8.2-2.2.1" class="pilcrow">¶</a></p>
+<p id="section-8.2-2.2.2">
 a.  If the algorithm OID is not recognized or not implemented, return
     <code>KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED</code> (error code 65) with
     <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> listing supported algorithms;
-    stop.<a href="#section-8.2-1.2.2" class="pilcrow">¶</a></p>
-<p id="section-8.2-1.2.3">
+    stop.<a href="#section-8.2-2.2.2" class="pilcrow">¶</a></p>
+<p id="section-8.2-2.2.3">
 b.  If the algorithm does not satisfy the KDC's security policy, return
     <code>KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED</code> (error code 65) with
     <code>TD-EPHEMERAL-KEY-PARAMETERS-DATA</code> listing acceptable algorithms;
-    stop.<a href="#section-8.2-1.2.3" class="pilcrow">¶</a></p>
+    stop.<a href="#section-8.2-2.2.3" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-8.2-1.3">
-            <p id="section-8.2-1.3.1">Select a KDF from <code>supportedKDFs</code> that is approved for the KEM
+          <li id="section-8.2-2.3">
+            <p id="section-8.2-2.3.1">Select a KDF from <code>supportedKDFs</code> that is approved for the KEM
 algorithm (see <a href="#sec-kdf-oids" class="auto internal xref">Section 9.1</a>).  If <code>supportedKDFs</code> is absent,
 default to <code>id-alg-hkdf-with-sha512</code>.  If no approved KDF can be
 selected, return <code>KDC_ERR_NO_ACCEPTABLE_KDF</code> (error code 100,
-<span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span>); stop.<a href="#section-8.2-1.3.1" class="pilcrow">¶</a></p>
+<span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span>); stop.<a href="#section-8.2-2.3.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-8.2-1.4">
-            <p id="section-8.2-1.4.1">Call <code>Encap(ek)</code> → <code>(ss, kemct)</code> using the selected algorithm (see
+          <li id="section-8.2-2.4">
+            <p id="section-8.2-2.4.1">Call <code>Encap(ek)</code> → <code>(ss, kemct)</code> using the selected algorithm (see
 <a href="#sec-kem-interface" class="auto internal xref">Section 4</a>).  Exactly one encapsulation MUST be performed per
 exchange; the resulting <code>(ss, kemct)</code> pair MUST be used in all
-subsequent steps (for ML-KEM specifics, see <a href="#sec-mlkem-encap" class="auto internal xref">Section 14.3</a>).<a href="#section-8.2-1.4.1" class="pilcrow">¶</a></p>
+subsequent steps (for ML-KEM specifics, see <a href="#sec-mlkem-encap" class="auto internal xref">Section 14.3</a>).<a href="#section-8.2-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-8.2-1.5">
-            <p id="section-8.2-1.5.1">Build <code>KDCKEMInfo</code>:<a href="#section-8.2-1.5.1" class="pilcrow">¶</a></p>
+          <li id="section-8.2-2.5">
+            <p id="section-8.2-2.5.1">Build <code>KDCKEMInfo</code>:<a href="#section-8.2-2.5.1" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-8.2-1.5.2.1">
-                <p id="section-8.2-1.5.2.1.1"><code>kemAlgorithm</code> = OID from <code>clientPublicValue.algorithm</code> (echoed back)<a href="#section-8.2-1.5.2.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-8.2-2.5.2.1">
+                <p id="section-8.2-2.5.2.1.1"><code>kemAlgorithm</code> = OID from <code>clientPublicValue.algorithm</code> (echoed back)<a href="#section-8.2-2.5.2.1.1" class="pilcrow">¶</a></p>
 </li>
-              <li class="normal" id="section-8.2-1.5.2.2">
-                <p id="section-8.2-1.5.2.2.1"><code>kemct</code> = the ciphertext from step 4<a href="#section-8.2-1.5.2.2.1" class="pilcrow">¶</a></p>
+              <li class="normal" id="section-8.2-2.5.2.2">
+                <p id="section-8.2-2.5.2.2.1"><code>kemct</code> = the ciphertext from step 4<a href="#section-8.2-2.5.2.2.1" class="pilcrow">¶</a></p>
 </li>
-              <li class="normal" id="section-8.2-1.5.2.3">
-                <p id="section-8.2-1.5.2.3.1"><code>kdfAlgorithm</code> = selected HKDF OID<a href="#section-8.2-1.5.2.3.1" class="pilcrow">¶</a></p>
+              <li class="normal" id="section-8.2-2.5.2.3">
+                <p id="section-8.2-2.5.2.3.1"><code>kdfAlgorithm</code> = selected HKDF OID<a href="#section-8.2-2.5.2.3.1" class="pilcrow">¶</a></p>
 </li>
-              <li class="normal" id="section-8.2-1.5.2.4">
-                <p id="section-8.2-1.5.2.4.1"><code>nonce</code> = <code>pkAuthenticator.nonce</code> from the client's request
-(SHOULD be included; see <a href="#sec-kdckeminfo" class="auto internal xref">Section 6.3</a>)<a href="#section-8.2-1.5.2.4.1" class="pilcrow">¶</a></p>
+              <li class="normal" id="section-8.2-2.5.2.4">
+                <p id="section-8.2-2.5.2.4.1"><code>nonce</code> = <code>pkAuthenticator.nonce</code> from the client's request
+(SHOULD be included; see <a href="#sec-kdckeminfo" class="auto internal xref">Section 6.3</a>)<a href="#section-8.2-2.5.2.4.1" class="pilcrow">¶</a></p>
 </li>
             </ul>
 </li>
-          <li id="section-8.2-1.6">
-            <p id="section-8.2-1.6.1">Sign <code>KDCKEMInfo</code> using CMS SignedData (<span>[<a href="#RFC5652" class="cite xref">RFC5652</a>]</span> Section 5).
+          <li id="section-8.2-2.6">
+            <p id="section-8.2-2.6.1">Sign <code>KDCKEMInfo</code> using CMS SignedData (<span>[<a href="#RFC5652" class="cite xref">RFC5652</a>]</span> Section 5).
 ML-DSA is RECOMMENDED; when used, the CMS <code>SignedData</code> MUST
 conform to <span>[<a href="#RFC9882" class="cite xref">RFC9882</a>]</span> Section 3.  Place in <code>kemSignedData</code>.
 <code>eContent</code> MUST be present.  Step 7 MUST follow step 6 because
 <code>PkinitKEMSuppPubInfo.kemSignedData</code> is set to the DER encoding of
-<code>KEMRepInfo.kemSignedData</code> produced in this step.<a href="#section-8.2-1.6.1" class="pilcrow">¶</a></p>
+<code>KEMRepInfo.kemSignedData</code> produced in this step.<a href="#section-8.2-2.6.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-8.2-1.7">
-            <p id="section-8.2-1.7.1">Derive the AS reply key from <code>ss</code> per <a href="#sec-kdf" class="auto internal xref">Section 9</a>.  The KDC uses it to
-encrypt the AS-REP <code>enc-part</code>.<a href="#section-8.2-1.7.1" class="pilcrow">¶</a></p>
+          <li id="section-8.2-2.7">
+            <p id="section-8.2-2.7.1">Derive the AS reply key from <code>ss</code> per <a href="#sec-kdf" class="auto internal xref">Section 9</a>.  The KDC uses it to
+encrypt the AS-REP <code>enc-part</code>.<a href="#section-8.2-2.7.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-8.2-1.8">
-            <p id="section-8.2-1.8.1">Return <code>PA-PK-AS-REP.kemInfo</code> containing <code>KEMRepInfo</code>.<a href="#section-8.2-1.8.1" class="pilcrow">¶</a></p>
+          <li id="section-8.2-2.8">
+            <p id="section-8.2-2.8.1">Return <code>PA-PK-AS-REP.kemInfo</code> containing <code>KEMRepInfo</code>.<a href="#section-8.2-2.8.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
 </section>
