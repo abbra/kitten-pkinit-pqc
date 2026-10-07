@@ -82,6 +82,11 @@ informative:
     seriesinfo:
       "FIPS PUB": "204"
   I-D.rische-kitten-pkinit-crypto-deprec:
+  KRB5-OIDS:
+    title: "Kerberos Version 5 Object Identifiers"
+    target: https://web.mit.edu/kerberos/krb5-oids/krb5-oids.asn
+    author:
+      org: "Massachusetts Institute of Technology"
 
 --- abstract
 
@@ -226,7 +231,7 @@ constructed `[2]` tag (`0xA2`) whose content is the DER encoding of the
 -- id-pkinit OID arc (RFC 4556):
 -- id-pkinit OBJECT IDENTIFIER ::= { 1 3 6 1 5 2 3 }
 
-id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit TBD-IANA }
+id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit 7 }
 
 -- KerberosV5-PK-INIT-SPEC module default (RFC 4556): fields without
 -- an explicit IMPLICIT or EXPLICIT keyword are EXPLICIT tagged.
@@ -840,16 +845,14 @@ registry:
 | 65 | `KDC_ERR_DH_KEY_PARAMETERS_NOT_ACCEPTED` | `KDC_ERR_EPHEMERAL_KEY_PARAMS_NOT_ACCEPTED` | {{RFC4556}}, This document |
 {: #tab-iana-error title="Renamed Kerberos error code"}
 
-## New PKINIT OID
+## Assignment `id-pkinit-KEMKeyData` {#sec-oid-assignment}
 
-IANA is requested to assign a new object identifier under the PKINIT OID
-arc (`id-pkinit`, `1.3.6.1.5.2.3`) in the "SMI Security for PKIX
-Module Identifier" registry:
-
-| Decimal | Description | Reference |
-|:---|:---|:---|
-| TBD | `id-pkinit-KEMKeyData` | This document |
-{: #tab-iana-oid title="New PKINIT OID assignment"}
+This document requires no IANA action for the `id-pkinit-KEMKeyData`
+object identifier.  The `id-pkinit` arc (`1.3.6.1.5.2.3`) lies under
+`kerberosV5` (`1.3.6.1.5.2`), which the IANA "SMI Security Codes" registry
+delegates to the Kerberos community; assignments below it are recorded
+in the Kerberos OID registry maintained at MIT {{KRB5-OIDS}}, where
+value 7 was allocated for `id-pkinit-KEMKeyData`.
 
 ## Update to Kerberos Pre-Authentication Data Types Registry
 
