@@ -1315,7 +1315,7 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.<a href="#section-
                 <p id="section-toc.1-1.16.2.1.1"><a href="#section-16.1" class="auto internal xref">16.1</a>.  <a href="#name-new-kerberos-error-code" class="internal xref">New Kerberos Error Code</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.2">
-                <p id="section-toc.1-1.16.2.2.1"><a href="#section-16.2" class="auto internal xref">16.2</a>.  <a href="#name-no-iana-action-for-id-pkini" class="internal xref">No IANA Action for <code>id-pkinit-KEMKeyData</code></a></p>
+                <p id="section-toc.1-1.16.2.2.1"><a href="#section-16.2" class="auto internal xref">16.2</a>.  <a href="#name-assignment-id-pkinit-kemkey" class="internal xref">Assignment <code>id-pkinit-KEMKeyData</code></a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.3">
                 <p id="section-toc.1-1.16.2.3.1"><a href="#section-16.3" class="auto internal xref">16.3</a>.  <a href="#name-update-to-kerberos-pre-auth" class="internal xref">Update to Kerberos Pre-Authentication Data Types Registry</a></p>
@@ -1508,8 +1508,7 @@ constructed <code>[2]</code> tag (<code>0xA2</code>) whose content is the DER en
 -- id-pkinit OID arc (RFC 4556):
 -- id-pkinit OBJECT IDENTIFIER ::= { 1 3 6 1 5 2 3 }
 
-id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit TBD }
-    -- TBD: see {{sec-oid-assignment}}; 7 is requested.
+id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit 7 }
 
 -- KerberosV5-PK-INIT-SPEC module default (RFC 4556): fields without
 -- an explicit IMPLICIT or EXPLICIT keyword are EXPLICIT tagged.
@@ -2532,41 +2531,15 @@ registry:<a href="#section-16.1-1" class="pilcrow">¶</a></p>
 </div>
 <div id="sec-oid-assignment">
 <section id="section-16.2">
-        <h3 id="name-no-iana-action-for-id-pkini">
-<a href="#section-16.2" class="section-number selfRef">16.2. </a><a href="#name-no-iana-action-for-id-pkini" class="section-name selfRef">No IANA Action for <code>id-pkinit-KEMKeyData</code></a>
+        <h3 id="name-assignment-id-pkinit-kemkey">
+<a href="#section-16.2" class="section-number selfRef">16.2. </a><a href="#name-assignment-id-pkinit-kemkey" class="section-name selfRef">Assignment <code>id-pkinit-KEMKeyData</code></a>
         </h3>
 <p id="section-16.2-1">This document requires no IANA action for the <code>id-pkinit-KEMKeyData</code>
 object identifier.  The <code>id-pkinit</code> arc (<code>1.3.6.1.5.2.3</code>) lies under
 <code>kerberosV5</code> (<code>1.3.6.1.5.2</code>), which the IANA "SMI Security Codes" registry
 delegates to the Kerberos community; assignments below it are recorded
 in the Kerberos OID registry maintained at MIT <span>[<a href="#KRB5-OIDS" class="cite xref">KRB5-OIDS</a>]</span>, where
-<code>id-pkinit</code> values 1 to 6 are allocated (<span>[<a href="#RFC4556" class="cite xref">RFC4556</a>]</span>, <span>[<a href="#RFC8636" class="cite xref">RFC8636</a>]</span>).<a href="#section-16.2-1" class="pilcrow">¶</a></p>
-<p id="section-16.2-2">The value 7, currently unassigned there, is requested for
-<code>id-pkinit-KEMKeyData</code>:<a href="#section-16.2-2" class="pilcrow">¶</a></p>
-<span id="name-requested-id-pkinit-assignm"></span><div id="tab-oid">
-<table class="center" id="table-9">
-          <caption>
-<a href="#table-9" class="selfRef">Table 9</a>:
-<a href="#name-requested-id-pkinit-assignm" class="selfRef">Requested id-pkinit assignment</a>
-          </caption>
-<thead>
-            <tr>
-              <th class="text-left" rowspan="1" colspan="1">Decimal</th>
-              <th class="text-left" rowspan="1" colspan="1">Description</th>
-              <th class="text-left" rowspan="1" colspan="1">Reference</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="text-left" rowspan="1" colspan="1">7 (TBD)</td>
-              <td class="text-left" rowspan="1" colspan="1">
-                <code>id-pkinit-KEMKeyData</code>
-</td>
-              <td class="text-left" rowspan="1" colspan="1">This document</td>
-            </tr>
-          </tbody>
-        </table>
-</div>
+value 7 was allocated for <code>id-pkinit-KEMKeyData</code>.<a href="#section-16.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="update-to-kerberos-pre-authentication-data-types-registry">
