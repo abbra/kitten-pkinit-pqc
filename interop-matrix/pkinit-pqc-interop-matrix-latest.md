@@ -7,7 +7,7 @@ specifications each side implements:
 - RFC 4556 (PKINIT base — DH key establishment)
 - RFC 5349 (ECDH support)
 - RFC 8636 (algorithm agility — KDF negotiation)
-- `draft-bokovoy-kitten-pkinit-pqc-01` (ML-KEM key establishment)
+- `draft-bokovoy-kitten-pkinit-pqc-02` (ML-KEM key establishment)
 
 ## Client Profiles
 
@@ -431,7 +431,7 @@ RFC 5349. The matrix assumes K1 does not.
 
 ### Note 4: KE Downgrade Rules After err 65
 
-The draft §9:
+The draft §11 (Downgrade Prevention):
 - **PQ cert + KEM rejected → MUST NOT fall back** to DH/ECDH. MAY retry
   with a different PQ KEM.
 - **Traditional cert + KEM rejected → MAY fall back** to DH/ECDH.
@@ -463,10 +463,11 @@ reply if local policy forbids the use of the old KDF."*
 
 ### Note 6: KDC Signing Algorithm Enforcement (PQ Client Certificate)
 
-The draft §9: when a client uses a PQ signing certificate and sends a PQ
-KEM encapsulation key, the client **MUST verify that the KDC signed its
-reply using a quantum-resistant algorithm**. If the KDC signed with a
-traditional algorithm, the client MUST reject the response.
+The draft §11 (Downgrade Prevention): when a client uses a PQ signing
+certificate and sends a PQ KEM encapsulation key, the client **MUST
+verify that the KDC signed its reply using a quantum-resistant
+algorithm**. If the KDC signed with a traditional algorithm, the client
+MUST reject the response.
 
 This affects **C5b × K5a**: ML-KEM key establishment succeeds, but K5a
 signs with ECDSA. C5b detects the traditional KDC signature and aborts.
