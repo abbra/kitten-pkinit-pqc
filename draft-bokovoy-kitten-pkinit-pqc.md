@@ -640,7 +640,7 @@ following rules apply:
 
 *  The client MUST NOT fall back to traditional key-establishment algorithms
    (DH, ECDH, RSA).  The client MAY retry with a different post-quantum KEM
-   algorithm from {{sec-kem-errors}}.  If no post-quantum KEM is available,
+   algorithm ({{sec-kem-algs}}).  If no post-quantum KEM is available,
    the client MUST fail the authentication attempt.
 
 *  The client MUST verify that the KDC's `kemSignedData` signature was
