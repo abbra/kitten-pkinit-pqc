@@ -208,12 +208,17 @@ PA-PK-AS-REP ::= CHOICE {
     encKeyPack      [1] IMPLICIT OCTET STRING,
         -- RFC 4556: RSA path (deprecated)
         --   content: ReplyKeyPack ({{RFC4556}} Section 3.2.3.2)
-    kemInfo         [2] IMPLICIT OCTET STRING,
-        -- NEW: KEM path (this specification)
-        --   content: KEMRepInfo ({{sec-kemrepinfo}})
+    kemInfo         [2] KEMRepInfo,
+        -- NEW: KEM path (this specification); KEMRepInfo
+        -- ({{sec-kemrepinfo}}).  EXPLICIT tagged (module default).
     ...
 }
 ~~~
+
+Unlike `encKeyPack`, the `kemInfo` arm is not an `IMPLICIT OCTET STRING`:
+under the module's `EXPLICIT TAGS` default its DER encoding is a
+constructed `[2]` tag (`0xA2`) whose content is the DER encoding of the
+`KEMRepInfo` `SEQUENCE`.
 
 ## `KEMRepInfo` {#sec-kemrepinfo}
 
