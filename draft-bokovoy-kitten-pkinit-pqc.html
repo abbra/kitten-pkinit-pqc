@@ -28,18 +28,18 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.
 <meta content="draft-bokovoy-kitten-pkinit-pqc-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.34.1
-    Python 3.14.7
-    ConfigArgParse 1.7.7
+    Python 3.14.8
+    ConfigArgParse 1.8.0
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
     lxml 6.1.1
     natsort 8.4.0
-    platformdirs 4.11.10
+    platformdirs 4.12.2
     pycountry 24.6.1
     PyYAML 6.0.3
     requests 2.33.1
-    wcwidth 0.8.4
+    wcwidth 0.9.1
 -->
 <link href="draft-bokovoy-kitten-pkinit-pqc.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1055,11 +1055,11 @@ svg {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">PKINIT-PQC</td>
-<td class="right">September 2026</td>
+<td class="right">October 2026</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Bokovoy &amp; Rische</td>
-<td class="center">Expires 3 April 2027</td>
+<td class="center">Expires 11 April 2027</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1072,12 +1072,12 @@ svg {
 <dd class="internet-draft">draft-bokovoy-kitten-pkinit-pqc-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-09-30" class="published">30 September 2026</time>
+<time datetime="2026-10-08" class="published">8 October 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Standards Track</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2027-04-03">3 April 2027</time></dd>
+<dd class="expires"><time datetime="2027-04-11">11 April 2027</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1134,7 +1134,7 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.<a href="#section-
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 3 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 11 April 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1315,7 +1315,7 @@ ML-KEM, composite ML-KEM algorithms, and future KEM standards.<a href="#section-
                 <p id="section-toc.1-1.16.2.1.1"><a href="#section-16.1" class="auto internal xref">16.1</a>.  <a href="#name-new-kerberos-error-code" class="internal xref">New Kerberos Error Code</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.2">
-                <p id="section-toc.1-1.16.2.2.1"><a href="#section-16.2" class="auto internal xref">16.2</a>.  <a href="#name-new-pkinit-oid" class="internal xref">New PKINIT OID</a></p>
+                <p id="section-toc.1-1.16.2.2.1"><a href="#section-16.2" class="auto internal xref">16.2</a>.  <a href="#name-assignment-id-pkinit-kemkey" class="internal xref">Assignment <code>id-pkinit-KEMKeyData</code></a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16.2.3">
                 <p id="section-toc.1-1.16.2.3.1"><a href="#section-16.3" class="auto internal xref">16.3</a>.  <a href="#name-update-to-kerberos-pre-auth" class="internal xref">Update to Kerberos Pre-Authentication Data Types Registry</a></p>
@@ -1485,13 +1485,17 @@ PA-PK-AS-REP ::= CHOICE {
     encKeyPack      [1] IMPLICIT OCTET STRING,
         -- RFC 4556: RSA path (deprecated)
         --   content: ReplyKeyPack ({{RFC4556}} Section 3.2.3.2)
-    kemInfo         [2] IMPLICIT OCTET STRING,
-        -- NEW: KEM path (this specification)
-        --   content: KEMRepInfo ({{sec-kemrepinfo}})
+    kemInfo         [2] KEMRepInfo,
+        -- NEW: KEM path (this specification); KEMRepInfo
+        -- ({{sec-kemrepinfo}}).  EXPLICIT tagged (module default).
     ...
 }
 </pre><a href="#section-6.1-2" class="pilcrow">¶</a>
 </div>
+<p id="section-6.1-3">Unlike <code>encKeyPack</code>, the <code>kemInfo</code> arm is not an <code>IMPLICIT OCTET STRING</code>:
+under the module's <code>EXPLICIT TAGS</code> default its DER encoding is a
+constructed <code>[2]</code> tag (<code>0xA2</code>) whose content is the DER encoding of the
+<code>KEMRepInfo</code> <code>SEQUENCE</code>.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-kemrepinfo">
@@ -1504,7 +1508,7 @@ PA-PK-AS-REP ::= CHOICE {
 -- id-pkinit OID arc (RFC 4556):
 -- id-pkinit OBJECT IDENTIFIER ::= { 1 3 6 1 5 2 3 }
 
-id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit TBD-IANA }
+id-pkinit-KEMKeyData OBJECT IDENTIFIER ::= { id-pkinit 7 }
 
 -- KerberosV5-PK-INIT-SPEC module default (RFC 4556): fields without
 -- an explicit IMPLICIT or EXPLICIT keyword are EXPLICIT tagged.
@@ -2099,7 +2103,7 @@ following rules apply:<a href="#section-11-1" class="pilcrow">¶</a></p>
 <li class="normal" id="section-11-2.1">
           <p id="section-11-2.1.1">The client MUST NOT fall back to traditional key-establishment algorithms
 (DH, ECDH, RSA).  The client MAY retry with a different post-quantum KEM
-algorithm from <a href="#sec-kem-errors" class="auto internal xref">Section 10.3</a>.  If no post-quantum KEM is available,
+algorithm (<a href="#sec-kem-algs" class="auto internal xref">Section 12.1</a>).  If no post-quantum KEM is available,
 the client MUST fail the authentication attempt.<a href="#section-11-2.1.1" class="pilcrow">¶</a></p>
 </li>
         <li class="normal" id="section-11-2.2">
@@ -2525,38 +2529,17 @@ registry:<a href="#section-16.1-1" class="pilcrow">¶</a></p>
 </div>
 </section>
 </div>
-<div id="new-pkinit-oid">
+<div id="sec-oid-assignment">
 <section id="section-16.2">
-        <h3 id="name-new-pkinit-oid">
-<a href="#section-16.2" class="section-number selfRef">16.2. </a><a href="#name-new-pkinit-oid" class="section-name selfRef">New PKINIT OID</a>
+        <h3 id="name-assignment-id-pkinit-kemkey">
+<a href="#section-16.2" class="section-number selfRef">16.2. </a><a href="#name-assignment-id-pkinit-kemkey" class="section-name selfRef">Assignment <code>id-pkinit-KEMKeyData</code></a>
         </h3>
-<p id="section-16.2-1">IANA is requested to assign a new object identifier under the PKINIT OID
-arc (<code>id-pkinit</code>, <code>1.3.6.1.5.2.3</code>) in the "SMI Security for PKIX
-Module Identifier" registry:<a href="#section-16.2-1" class="pilcrow">¶</a></p>
-<span id="name-new-pkinit-oid-assignment"></span><div id="tab-iana-oid">
-<table class="center" id="table-9">
-          <caption>
-<a href="#table-9" class="selfRef">Table 9</a>:
-<a href="#name-new-pkinit-oid-assignment" class="selfRef">New PKINIT OID assignment</a>
-          </caption>
-<thead>
-            <tr>
-              <th class="text-left" rowspan="1" colspan="1">Decimal</th>
-              <th class="text-left" rowspan="1" colspan="1">Description</th>
-              <th class="text-left" rowspan="1" colspan="1">Reference</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="text-left" rowspan="1" colspan="1">TBD</td>
-              <td class="text-left" rowspan="1" colspan="1">
-                <code>id-pkinit-KEMKeyData</code>
-</td>
-              <td class="text-left" rowspan="1" colspan="1">This document</td>
-            </tr>
-          </tbody>
-        </table>
-</div>
+<p id="section-16.2-1">This document requires no IANA action for the <code>id-pkinit-KEMKeyData</code>
+object identifier.  The <code>id-pkinit</code> arc (<code>1.3.6.1.5.2.3</code>) lies under
+<code>kerberosV5</code> (<code>1.3.6.1.5.2</code>), which the IANA "SMI Security Codes" registry
+delegates to the Kerberos community; assignments below it are recorded
+in the Kerberos OID registry maintained at MIT <span>[<a href="#KRB5-OIDS" class="cite xref">KRB5-OIDS</a>]</span>, where
+value 7 was allocated for <code>id-pkinit-KEMKeyData</code>.<a href="#section-16.2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="update-to-kerberos-pre-authentication-data-types-registry">
@@ -2606,7 +2589,7 @@ are unchanged.  No new integer allocation is required.<a href="#section-16.3-3" 
 <dd class="break"></dd>
 <dt id="I-D.ietf-lamps-pq-composite-kem">[I-D.ietf-lamps-pq-composite-kem]</dt>
         <dd>
-<span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite ML-KEM for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-kem-21</span>, <time datetime="2026-09-01" class="refDate">1 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-21">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-21</a>&gt;</span>. </dd>
+<span class="refAuthor">Ounsworth, M.</span>, <span class="refAuthor">Gray, J.</span>, <span class="refAuthor">Pala, M.</span>, <span class="refAuthor">Klaußner, J.</span>, and <span class="refAuthor">S. Fluhrer</span>, <span class="refTitle">"Composite ML-KEM for use in X.509 Public Key Infrastructure"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-lamps-pq-composite-kem-22</span>, <time datetime="2026-10-06" class="refDate">6 October 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-22">https://datatracker.ietf.org/doc/html/draft-ietf-lamps-pq-composite-kem-22</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.ietf-lamps-pq-composite-sigs">[I-D.ietf-lamps-pq-composite-sigs]</dt>
         <dd>
@@ -2684,6 +2667,10 @@ are unchanged.  No new integer allocation is required.<a href="#section-16.3-3" 
 <dt id="I-D.rische-kitten-pkinit-crypto-deprec">[I-D.rische-kitten-pkinit-crypto-deprec]</dt>
         <dd>
 <span class="refAuthor">Rische, J.</span>, <span class="refTitle">"Deprecation of Outdated Cryptographic Algorithms and Parameters in Kerberos PKINIT"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-rische-kitten-pkinit-crypto-deprec-00</span>, <time datetime="2026-06-23" class="refDate">23 June 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-rische-kitten-pkinit-crypto-deprec-00">https://datatracker.ietf.org/doc/html/draft-rische-kitten-pkinit-crypto-deprec-00</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="KRB5-OIDS">[KRB5-OIDS]</dt>
+        <dd>
+<span class="refAuthor">Massachusetts Institute of Technology</span>, <span class="refTitle">"Kerberos Version 5 Object Identifiers"</span>, <span>n.d.</span>, <span>&lt;<a href="https://web.mit.edu/kerberos/krb5-oids/krb5-oids.asn">https://web.mit.edu/kerberos/krb5-oids/krb5-oids.asn</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC5021">[RFC5021]</dt>
         <dd>
