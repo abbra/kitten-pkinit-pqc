@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-10-08T04:31:18.654694+00:00",
+  "timestamp": "2026-10-11T04:01:03.361197+00:00",
   "repo": "abbra/kitten-pkinit-pqc",
   "labels": [
     {
@@ -583,24 +583,26 @@
       "id": "PR_kwDOSReoms8AAAABHESoHg",
       "title": "Update spec after running interop tests",
       "url": "https://github.com/abbra/kitten-pkinit-pqc/pull/9",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "abbra",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "After testing both WIP for MIT Kerberos and kurbu5-pkinit, few clarifications were required in the spec.\n\n## Summary by Sourcery\n\nClarify the PKINIT PQC specification and refresh its interoperability matrix based on interop findings.\n\nEnhancements:\n- Clarify the ASN.1 encoding and tagging of the KEM response, assign the Kerberos-managed PKINIT KEM key-data OID, and refine downgrade-prevention references and algorithm guidance.\n- Update the interoperability matrix to draft version 02 and align its section references with the revised specification.",
       "createdAt": "2026-10-07T07:09:35Z",
-      "updatedAt": "2026-10-07T13:39:55Z",
+      "updatedAt": "2026-10-08T07:37:37Z",
       "baseRepository": "abbra/kitten-pkinit-pqc",
       "baseRefName": "main",
       "baseRefOid": "c4c24dbb867dc0e53618452d468a276c234984cc",
       "headRepository": "abbra/kitten-pkinit-pqc",
       "headRefName": "interop-fixes",
       "headRefOid": "aa42bdf9c8e71d6ebaddf639550202354be9edc8",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-10-08T07:37:37Z",
+      "mergedAt": "2026-10-08T07:37:36Z",
+      "mergedBy": "abbra",
+      "mergeCommit": {
+        "oid": "51968d2d64a4a750bed7cc8ff0213e05fbf38491"
+      },
       "comments": [
         {
           "author": "sourcery-ai",
