@@ -1,0 +1,4 @@
+# Automatically generated CODEOWNERS
+# Regenerate with `make update-codeowners`
+draft-ietf-kitten-pkinit-crypto-deprec.md jrische@redhat.com
+draft-ietf-kitten-pkinit-pqc.md abokovoy@redhat.com jrische@redhat.com
