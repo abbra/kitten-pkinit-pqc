@@ -4,10 +4,10 @@
 
 This is the working area for the individual Internet-Draft, "PKINIT Extensions for Post-Quantum Cryptography".
 
-* [Editor's Copy](https://abbra.github.io/kitten-pkinit-pqc/#go.draft-bokovoy-kitten-pkinit-pqc.html)
-* [Datatracker Page](https://datatracker.ietf.org/doc/draft-bokovoy-kitten-pkinit-pqc)
-* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-bokovoy-kitten-pkinit-pqc)
-* [Compare Editor's Copy to Individual Draft](https://abbra.github.io/kitten-pkinit-pqc/#go.draft-bokovoy-kitten-pkinit-pqc.diff)
+* [Editor's Copy](https://abbra.github.io/kitten-pkinit-pqc/#go.draft-ietf-kitten-pkinit-pqc.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-ietf-kitten-pkinit-pqc)
+* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-ietf-kitten-pkinit-pqc)
+* [Compare Editor's Copy to Individual Draft](https://abbra.github.io/kitten-pkinit-pqc/#go.draft-ietf-kitten-pkinit-pqc.diff)
 
 
 ## Contributing

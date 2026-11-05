@@ -1,7 +1,7 @@
 ---
 title: "Post-quantum Key Encapsulation with ML-KEM in Public Key Cryptography for Initial Authentication in Kerberos (PKINIT)"
 abbrev: "PKINIT-PQC"
-docname: draft-bokovoy-kitten-pkinit-pqc-latest
+docname: draft-ietf-kitten-pkinit-pqc-latest
 category: std
 submissiontype: IETF
 ipr: trust200902
