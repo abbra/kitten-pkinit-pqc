@@ -6,7 +6,7 @@ submissiontype: IETF
 area: Security
 wg: Common Authentication Technology Next Generation
 
-docname: draft-rische-kitten-pkinit-crypto-deprec-latest
+docname: draft-ietf-kitten-pkinit-crypto-deprec-latest
 updates: 4556, 5349, 8636
 
 title: >
