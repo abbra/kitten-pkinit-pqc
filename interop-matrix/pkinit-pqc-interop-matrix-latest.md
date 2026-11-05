@@ -7,7 +7,7 @@ specifications each side implements:
 - RFC 4556 (PKINIT base — DH key establishment)
 - RFC 5349 (ECDH support)
 - RFC 8636 (algorithm agility — KDF negotiation)
-- `draft-bokovoy-kitten-pkinit-pqc-02` (ML-KEM key establishment)
+- `draft-ietf-kitten-pkinit-pqc-00` (ML-KEM key establishment)
 
 ## Client Profiles
 
