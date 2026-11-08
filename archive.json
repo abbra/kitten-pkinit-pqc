@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-05T05:07:22.469269+00:00",
+  "timestamp": "2026-11-08T04:28:06.242822+00:00",
   "repo": "abbra/kitten-pkinit-pqc",
   "labels": [
     {
@@ -640,24 +640,26 @@
       "id": "PR_kwDOSReoms8AAAABM_G62A",
       "title": "Rename drafts after adoption",
       "url": "https://github.com/abbra/kitten-pkinit-pqc/pull/10",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "abbra",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
-      "body": "## Summary by Sourcery\n\nAdopt the IETF working-group names for the PKINIT drafts and update repository references accordingly.\n\nEnhancements:\n- Rename the PKINIT PQC and crypto deprecation drafts to their IETF working-group document names and update associated references.\n\nDocumentation:\n- Update README and interoperability matrix links and draft references to use the renamed document identifiers.",
+      "body": "## Summary by Sourcery\n\nRename the adopted PKINIT drafts and synchronize repository references with their IETF identifiers.\n\nEnhancements:\n- Rename the PKINIT PQC and crypto deprecation drafts to their IETF working-group names and update all related references.\n\nDocumentation:\n- Update README and interoperability matrix links and draft references to use the adopted IETF draft names.\n\nChores:\n- Refresh repository ownership and ignore-file configuration.",
       "createdAt": "2026-11-05T05:04:20Z",
-      "updatedAt": "2026-11-05T05:06:16Z",
+      "updatedAt": "2026-11-05T05:45:39Z",
       "baseRepository": "abbra/kitten-pkinit-pqc",
       "baseRefName": "main",
       "baseRefOid": "51968d2d64a4a750bed7cc8ff0213e05fbf38491",
       "headRepository": "abbra/kitten-pkinit-pqc",
       "headRefName": "rename-drafts-after-adoption",
-      "headRefOid": "5ced13b0695e2275a84e806a1998891f6fd997b3",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "headRefOid": "9a7e2ff49881fdd4b10aff85a7e7dda2ce6775e6",
+      "closedAt": "2026-11-05T05:45:39Z",
+      "mergedAt": "2026-11-05T05:45:39Z",
+      "mergedBy": "abbra",
+      "mergeCommit": {
+        "oid": "28c14fec2b2ca12777cb0a147987ef964c21dc85"
+      },
       "comments": [
         {
           "author": "sourcery-ai",
@@ -682,9 +684,9 @@
           "comments": [
             {
               "originalPosition": 5,
-              "body": "**\ud83d\udfe1 Medium \u00b7 Readers get wrong draft identifier**\n\nWhen readers use the latest interoperability matrix to identify the adopted draft, `pkinit-pqc-interop-matrix-latest.md` names the specification `draft-kitten-pkinit-pqc-00` instead of `draft-ietf-kitten-pkinit-pqc-00`, so readers cannot reliably locate or correlate the adopted specification.\n\nChange the citation to `draft-ietf-kitten-pkinit-pqc-00`.\n\n<details>\n<summary>Prompt for AI agents</summary>\n\n~~~markdown\nIn `interop-matrix/pkinit-pqc-interop-matrix-latest.md` at line 10:\n\n**Readers get wrong draft identifier**\n\nWhen readers use the latest interoperability matrix to identify the adopted draft, `pkinit-pqc-interop-matrix-latest.md` names the specification `draft-kitten-pkinit-pqc-00` instead of `draft-ietf-kitten-pkinit-pqc-00`, so readers cannot reliably locate or correlate the adopted specification.\n\nChange the citation to `draft-ietf-kitten-pkinit-pqc-00`.\n~~~\n\n</details>",
+              "body": "**\ud83d\udfe1 Medium \u00b7 Readers get wrong draft identifier**\n\nWhen readers use the latest interoperability matrix to identify the adopted draft, `pkinit-pqc-interop-matrix-latest.md` names the specification `draft-kitten-pkinit-pqc-00` instead of `draft-ietf-kitten-pkinit-pqc-00`, so readers cannot reliably locate or correlate the adopted specification.\n\nChange the citation to `draft-ietf-kitten-pkinit-pqc-00`.\n\n<details>\n<summary>Prompt for AI agents</summary>\n\n~~~markdown\nIn `interop-matrix/pkinit-pqc-interop-matrix-latest.md` at line 10:\n\n**Readers get wrong draft identifier**\n\nWhen readers use the latest interoperability matrix to identify the adopted draft, `pkinit-pqc-interop-matrix-latest.md` names the specification `draft-kitten-pkinit-pqc-00` instead of `draft-ietf-kitten-pkinit-pqc-00`, so readers cannot reliably locate or correlate the adopted specification.\n\nChange the citation to `draft-ietf-kitten-pkinit-pqc-00`.\n~~~\n\n</details>\n\n\u2705 Addressed in 9a7e2ff49881fdd4b10aff85a7e7dda2ce6775e6: The latest interoperability matrix now cites `draft-ietf-kitten-pkinit-pqc-00`, matching the adopted draft identifier requested.",
               "createdAt": "2026-11-05T05:06:16Z",
-              "updatedAt": "2026-11-05T05:06:16Z"
+              "updatedAt": "2026-11-05T05:41:00Z"
             }
           ]
         }
